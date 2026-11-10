@@ -1,0 +1,73 @@
+
+== 1. DNS for mail (asked to ns1, 10.4.255.10) (2026-11-10 19:07, checks commit 943df66)
+OK    MX: 10 mail.group4.umons. 
+OK    mail.group4.umons -> 10.4.255.11 
+OK    PTR 10.4.255.11 -> mail.group4.umons. 
+WARN  SPF: no 'v=spf1' TXT record (M6)
+WARN  DMARC: no record (M6)
+
+== 2. Postfix settings
+INFO  version 3.10.13
+INFO  myhostname = mail.group4.umons
+INFO  mydestination = $myhostname, group4.umons, debian, localhost.localdomain, localhost
+INFO  mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128 10.1.255.0/16 10.2.255.0/16 10.3.255.0/16 10.4.255.0/16 10.5.255.0/16 10.6.255.0/16 10.7.255.0/16 10.8.255.0/16 10.9.255.0/16
+INFO  inet_interfaces = all
+INFO  smtpd_banner = $myhostname ESMTP $mail_name (Debian)
+INFO  smtpd_tls_cert_file = /etc/ssl/certs/ssl-cert-snakeoil.pem
+INFO  smtpd_tls_key_file = /etc/ssl/private/ssl-cert-snakeoil.key
+INFO  smtpd_tls_security_level = may
+INFO  smtpd_tls_auth_only = no
+INFO  smtpd_sasl_auth_enable = no
+INFO  smtpd_sasl_type = cyrus
+INFO  smtpd_sasl_path = smtpd
+INFO  smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+INFO  smtpd_recipient_restrictions = 
+INFO  disable_vrfy_command = no
+INFO  smtpd_helo_required = no
+INFO  smtpd_client_connection_rate_limit = 0
+INFO  message_size_limit = 10240000
+INFO  services in master.cf listening on the network:
+        smtp (inet)
+
+== 3. Dovecot
+INFO  version 2.4.1-4 (7d8c0e5759)
+INFO  dovecot_config_version = 2.4.0
+INFO  mail_driver = maildir
+INFO  mail_inbox_path = /var/mail/%{user}
+INFO  mail_path = %{home}/Maildir
+INFO  no auth socket for Postfix (/var/spool/postfix/private/auth): needed for login on 587
+OK    dovecot: active, enabled at boot
+
+== 4. Live tests on 127.0.0.1 (no login, no mail sent)
+      SMTP 25: not reachable (ValueError: server_hostname cannot be an empty string or start with a leading dot.)
+      SMTP 587: not reachable (ConnectionRefusedError: [Errno 111] Connection refused)
+      IMAP 993 (TLS): IMAP4REV1 LOGIN-REFERRALS ID ENABLE IDLE SASL-IR LITERAL+ AUTH=PLAIN
+      IMAP 143 (no TLS): IMAP4REV1 LOGIN-REFERRALS ID ENABLE IDLE SASL-IR LITERAL+ STARTTLS AUTH=PLAIN
+INFO  certificate on 993:
+        subject=CN=debian
+        issuer=CN=debian
+        notAfter=Oct 19 10:00:26 2036 GMT
+INFO  certificate on 25 (STARTTLS):
+        subject=CN=debian
+        issuer=CN=debian
+        notAfter=Oct 19 10:00:26 2036 GMT
+
+== 5. Addresses and mailboxes
+INFO  aliases: postmaster: root;root: user;
+INFO  local accounts (uid >= 1000): user mother 
+INFO  mailboxes in /var/mail: root 
+OK    mail queue empty
+INFO  last mail errors in the logs (24 h):
+        postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+        warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+        warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+
+== 6. Summary of the mail tasks
+OK    M1 IMAP over TLS on 993 listening
+WARN  M1 IMAP 143 (without TLS) still open (W24)
+WARN  M2 port 587 not listening (sending with login)
+WARN  M2 smtpd_tls_auth_only is not yes
+WARN  M4 open relay: mynetworks includes 10.x networks (W3)
+WARN  M5 VRFY enabled (user enumeration)
+WARN  M5 banner shows the software name
+WARN  M5 smtpd_helo_required is not yes
