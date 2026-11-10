@@ -1,7 +1,7 @@
 
-== 1. Identity (2026-11-10 18:36, checks commit d310e8f)
-WARN  hostname: debian (expected welcome)
-OK    /etc/hosts: 127.0.1.1 debian
+== 1. Identity (2026-11-10 18:42, checks commit ae4c812)
+OK    hostname: welcome
+OK    /etc/hosts: 127.0.1.1 welcome
 INFO  address on ens18: 10.4.255.11/16 noprefixroute
 OK    10.4.255.11 present
 
@@ -75,4 +75,4 @@ OK    key /etc/ssl/group4/group4.key (600 root)
 INFO  CSR subject=C=BE, ST=Hainaut, O=Group4, OU=CyberDefense, CN=welcome.group4.umons
 
 == 9. Resources
-INFO  vCPU 2 | RAM 1973 MB, used 728 MB | disk / 14G, used 5.2G
+INFO  vCPU 2 | RAM 1973 MB, used 652 MB | disk / 14G, used 5.2G
