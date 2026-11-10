@@ -86,7 +86,7 @@ PY
     info "aliases: $(grep -vE '^[[:space:]]*(#|$)' /etc/aliases 2>/dev/null | tr '\t' ' ' | tr -s ' ' | tr '\n' ';')"
     info "local accounts (uid >= 1000): $(awk -F: '$3 >= 1000 && $3 < 65534 {printf "%s ", $1}' /etc/passwd)"
     info "mailboxes in /var/mail: $(ls -1 /var/mail 2>/dev/null | tr '\n' ' ')"
-    info "Maildir folders: $(ls -d /home/*/Maildir 2>/dev/null | tr '\n' ' ')"
+    for md in /home/*/Maildir; do [ -d "$md" ] && info "Maildir $md: $(ls "$md/new" 2>/dev/null | wc -l) new, $(ls "$md/cur" 2>/dev/null | wc -l) read"; done
     q=$(postqueue -p 2>/dev/null | tail -1)
     case "$q" in *"is empty"*) ok "mail queue empty";; *) warn "mail queue: $q";; esac
     info "last mail errors in the logs (24 h):"

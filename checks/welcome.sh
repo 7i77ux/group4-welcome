@@ -129,6 +129,20 @@ PY
 
     if [ "$(timedatectl show -p NTPSynchronized --value 2>/dev/null)" = yes ]; then ok "clock synchronized (NTP)"; else warn "clock not synchronized (NTP)"; fi
 
+    sec "Accounts (uid >= 1000): who they are, when they were created (read-only)"
+    for u in $(awk -F: '$3 >= 1000 && $3 < 65534 {print $1}' /etc/passwd); do
+        ent=$(getent passwd "$u")
+        info "$u: uid $(echo "$ent" | cut -d: -f3), home $(echo "$ent" | cut -d: -f6), shell $(echo "$ent" | cut -d: -f7), groups: $(id -nG "$u" 2>/dev/null)"
+        info "   password status / last change: $(passwd -S "$u" 2>/dev/null | awk '{print $2, $3}')"
+        if id -nG "$u" 2>/dev/null | grep -qwE 'sudo|wheel|root'; then warn "   $u has administrator rights (sudo)"; fi
+        last3=$( (wtmpdb last -n 3 "$u" 2>/dev/null || last -n 3 -F "$u" 2>/dev/null) | grep -v '^$' | grep -vE '^(wtmp|wtmpdb) ' | head -3 | tr -s ' ' | tr '\n' ';')
+        info "   last logins: ${last3:-none recorded}"
+        h=$(echo "$ent" | cut -d: -f6)
+        info "   home modified $(stat -c '%y' "$h" 2>/dev/null | cut -d. -f1), files $(find "$h" -xdev -type f 2>/dev/null | wc -l), ssh keys: $([ -s "$h/.ssh/authorized_keys" ] && echo YES || echo no), crontab: $(crontab -l -u "$u" >/dev/null 2>&1 && echo YES || echo no), processes: $(pgrep -u "$u" 2>/dev/null | wc -l)"
+    done
+    info "account creations in the logs (useradd):"
+    journalctl --no-pager -o short-iso 2>/dev/null | grep -E 'useradd.*new user: name=' | sed -E 's/^([^ ]+) [^ ]+ ([^:]+):.*new user: /\1 \2: /' | cut -c1-140 | sed 's/^/        /'
+
     sec "9. Resources"
     info "vCPU $(nproc) | RAM $(free -m | awk '/^Mem:/{print $2" MB, used "$3" MB"}') | disk / $(df -h / | awk 'NR==2{print $2", used "$3}')"
 }
