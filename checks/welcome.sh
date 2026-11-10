@@ -1,7 +1,7 @@
 #!/bin/sh
 # Read-only checks for the welcome VM (10.4.255.11). It changes nothing.
 # Run:  cd ~/Desktop/group4-welcome && git pull && sudo sh checks/welcome.sh
-# Output also saved in /tmp/check-welcome.txt (scroll with: less /tmp/check-welcome.txt)
+# Output saved in /tmp/check-welcome.txt (scroll with: less /tmp/check-welcome.txt)
 
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
 IF=ens18
@@ -16,7 +16,7 @@ sec()  { printf '\n== %s\n' "$*"; }
 has()  { command -v "$1" >/dev/null 2>&1; }
 
 main() {
-    sec "1. Identity ($(date '+%Y-%m-%d %H:%M'), checks commit $(git -C "$REPO" log -1 --format=%h 2>/dev/null))"
+    sec "1. Identity ($(date '+%Y-%m-%d %H:%M'), checks commit $(git -c safe.directory='*' -C "$REPO" log -1 --format=%h 2>/dev/null))"
     h=$(hostname)
     if [ "$h" = welcome ]; then ok "hostname: $h"; else warn "hostname: $h (expected welcome)"; fi
     if grep -Eq "^127\.0\.1\.1[[:space:]]+$h([[:space:]]|$)" /etc/hosts; then ok "/etc/hosts: 127.0.1.1 $h"; else warn "/etc/hosts: no '127.0.1.1 $h' line"; fi
@@ -133,3 +133,4 @@ PY
 
 main 2>&1 | tee "$OUT"
 printf '\n%s warning(s). Full output: %s\n' "$(grep -c '^WARN' "$OUT")" "$OUT"
+sh "$(dirname "$0")/push-results.sh" welcome "$OUT"

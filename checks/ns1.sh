@@ -1,7 +1,7 @@
 #!/bin/sh
 # Read-only checks for the ns1 VM (10.4.255.10). It changes nothing.
 # Run:  cd ~/Desktop/group4-welcome && git pull && sudo sh checks/ns1.sh
-# Output also saved in /tmp/check-ns1.txt (scroll with: less /tmp/check-ns1.txt)
+# Output saved in /tmp/check-ns1.txt (scroll with: less /tmp/check-ns1.txt)
 
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
 IF=ens18
@@ -17,7 +17,7 @@ has()  { command -v "$1" >/dev/null 2>&1; }
 q()    { dig +short +time=2 +tries=1 @127.0.0.1 "$@" 2>/dev/null | grep -v '^;;' | tr '\n' ' '; }
 
 main() {
-    sec "1. Identity ($(date '+%Y-%m-%d %H:%M'), checks commit $(git -C "$REPO" log -1 --format=%h 2>/dev/null))"
+    sec "1. Identity ($(date '+%Y-%m-%d %H:%M'), checks commit $(git -c safe.directory='*' -C "$REPO" log -1 --format=%h 2>/dev/null))"
     h=$(hostname)
     if [ "$h" = ns1 ]; then ok "hostname: $h"; else warn "hostname: $h (expected ns1)"; fi
     if grep -Eq "^127\.0\.1\.1[[:space:]]+$h([[:space:]]|$)" /etc/hosts; then ok "/etc/hosts: 127.0.1.1 $h"; else warn "/etc/hosts: no '127.0.1.1 $h' line"; fi
@@ -94,3 +94,4 @@ main() {
 
 main 2>&1 | tee "$OUT"
 printf '\n%s warning(s). Full output: %s\n' "$(grep -c '^WARN' "$OUT")" "$OUT"
+sh "$(dirname "$0")/push-results.sh" ns1 "$OUT"
