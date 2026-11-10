@@ -4,6 +4,7 @@
 # Output saved in /tmp/check-welcome.txt (scroll with: less /tmp/check-welcome.txt)
 
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
+ip -4 -o addr show | grep -q ' 10\.4\.255\.11/' || { echo "ERROR: this is the check of welcome (10.4.255.11); on ns1 run checks/ns1.sh" >&2; exit 1; }
 IF=ens18
 IP=10.4.255.11
 OUT=/tmp/check-welcome.txt
@@ -142,6 +143,28 @@ PY
     done
     info "account creations in the logs (useradd):"
     journalctl --no-pager -o short-iso 2>/dev/null | grep -E 'useradd.*new user: name=' | sed -E 's/^([^ ]+) [^ ]+ ([^:]+):.*new user: /\1 \2: /' | cut -c1-140 | sed 's/^/        /'
+
+    sec "Investigation (read-only): processes, SSH logins, sudo rules, scheduled jobs"
+    for u in $(awk -F: '$3 >= 1000 && $3 < 65534 {print $1}' /etc/passwd); do
+        n=$(pgrep -u "$u" 2>/dev/null | wc -l)
+        if [ "$n" -gt 0 ] && [ "$u" != user ]; then
+            info "processes of $u:"
+            ps -o pid,lstart,args -u "$u" 2>/dev/null | tail -n +2 | cut -c1-140 | head -10 | sed 's/^/        /'
+        fi
+        a=$(journalctl --since -7d -o short-iso --no-pager 2>/dev/null | grep -E "sshd.*(Accepted|Failed) [a-z-]+ for $u from" | tail -5)
+        [ -n "$a" ] && { info "SSH logins of $u (last 5 in 7 days):"; echo "$a" | sed -E 's/^([^ ]+) [^ ]+ /\1 /' | cut -c1-140 | sed 's/^/        /'; }
+    done
+    info "sudo rules (besides comments):"
+    grep -hvE '^[[:space:]]*(#|$|Defaults)' /etc/sudoers /etc/sudoers.d/* 2>/dev/null | sed 's/^/        /'
+    info "cron jobs:"
+    for f in /etc/crontab /etc/cron.d/* /var/spool/cron/crontabs/*; do
+        [ -f "$f" ] && grep -hvE '^[[:space:]]*(#|$)' "$f" 2>/dev/null | sed "s|^|        $f: |" | cut -c1-150
+    done
+    info "systemd timers:"
+    systemctl list-timers --all --no-pager --no-legend 2>/dev/null | awk '{print "        " $(NF-1), $NF}' | sort -u
+    info "outgoing SSH from this VM now:"
+    pgrep -a -x ssh 2>/dev/null | cut -c1-140 | sed 's/^/        /'
+    info "SSH server: password login $(sshd -T 2>/dev/null | awk '/^passwordauthentication/{print $2}'), root login $(sshd -T 2>/dev/null | awk '/^permitrootlogin/{print $2}'), keys file $(sshd -T 2>/dev/null | awk '/^authorizedkeysfile/{$1=""; print}')"
 
     sec "9. Resources"
     info "vCPU $(nproc) | RAM $(free -m | awk '/^Mem:/{print $2" MB, used "$3" MB"}') | disk / $(df -h / | awk 'NR==2{print $2", used "$3}')"

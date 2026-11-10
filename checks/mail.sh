@@ -22,8 +22,8 @@ main() {
     r=$(d group4.umons MX);       if [ -n "$r" ]; then ok "MX: $r"; else warn "MX: none"; fi
     r=$(d mail.group4.umons A);   if echo "$r" | grep -q 10.4.255.11; then ok "mail.group4.umons -> $r"; else warn "mail.group4.umons -> ${r:-none}"; fi
     r=$(d -x 10.4.255.11);        if [ "$r" = "mail.group4.umons. " ]; then ok "PTR 10.4.255.11 -> $r"; else warn "PTR 10.4.255.11 -> ${r:-none} (expected only mail.group4.umons.)"; fi
-    r=$(d group4.umons TXT | grep -o '"v=spf1[^"]*"'); if [ -n "$r" ]; then ok "SPF: $r"; else warn "SPF: no 'v=spf1' TXT record (M6)"; fi
-    r=$(d _dmarc.group4.umons TXT); if echo "$r" | grep -q 'v=DMARC1'; then ok "DMARC: $r"; else warn "DMARC: no record (M6)"; fi
+    r=$(d group4.umons TXT | grep -o '"v=spf1[^"]*"'); if [ -n "$r" ]; then ok "SPF: $r"; else info "SPF: none (not used, D22)"; fi
+    r=$(d _dmarc.group4.umons TXT); if echo "$r" | grep -q 'v=DMARC1'; then ok "DMARC: $r"; else info "DMARC: none (not used, D22)"; fi
 
     sec "2. Postfix settings"
     info "version $(postconf -h mail_version 2>/dev/null)"
@@ -41,6 +41,7 @@ main() {
     if command -v doveconf >/dev/null 2>&1; then
         info "version $(dovecot --version 2>/dev/null)"
         doveconf -n 2>/dev/null | grep -E '^(protocols|listen|ssl|ssl_cert|ssl_key|ssl_server_cert_file|ssl_server_key_file|ssl_min_protocol|auth_mechanisms|auth_allow_cleartext|disable_plaintext_auth|mail_location|mail_driver|mail_path|mail_inbox_path|first_valid_uid|dovecot_config_version)[[:space:]]*=' | sed 's/^/INFO  /'
+        if grep -q 'pam_succeed_if.so user ingroup mailusers' /etc/pam.d/dovecot 2>/dev/null; then ok "mail login limited to group mailusers (PAM), members: $(getent group mailusers | cut -d: -f4)"; else warn "no PAM rule: every Linux account can log in to the mail (D24)"; fi
         if [ -S /var/spool/postfix/private/auth ]; then ok "auth socket for Postfix: $(stat -c '%A %U %G' /var/spool/postfix/private/auth) /var/spool/postfix/private/auth"
         else info "no auth socket for Postfix (/var/spool/postfix/private/auth): needed for login on 587"; fi
         a=$(systemctl is-active dovecot 2>/dev/null); e=$(systemctl is-enabled dovecot 2>/dev/null)

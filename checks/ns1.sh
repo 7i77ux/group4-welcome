@@ -4,6 +4,7 @@
 # Output saved in /tmp/check-ns1.txt (scroll with: less /tmp/check-ns1.txt)
 
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
+ip -4 -o addr show | grep -q ' 10\.4\.255\.10/' || { echo "ERROR: this is the check of ns1 (10.4.255.10); on welcome run checks/welcome.sh" >&2; exit 1; }
 IF=ens18
 IP=10.4.255.10
 OUT=/tmp/check-ns1.txt
@@ -105,7 +106,8 @@ try:
         s.rset(); s.mail("check@ns1.group4.umons"); return s.rcpt(to)
     def show(label, c, m, good):
         txt = m.decode(errors="replace")[:70]
-        if 400 <= c < 500: tag = "WARN  temporary failure (server problem): "
+        if "Relay access denied" in txt: tag = "OK    relay refused: "
+        elif 400 <= c < 500: tag = "WARN  temporary failure (server problem): "
         else: tag = "OK    " if good(c) else "WARN  "
         print(f"{tag}{label} -> {c} {txt}")
     c, m = rcpt("relay-test@example.org"); show("RCPT to an external address (relay)", c, m, lambda c: c >= 500)
@@ -137,6 +139,28 @@ PY
     done
     info "account creations in the logs (useradd):"
     journalctl --no-pager -o short-iso 2>/dev/null | grep -E 'useradd.*new user: name=' | sed -E 's/^([^ ]+) [^ ]+ ([^:]+):.*new user: /\1 \2: /' | cut -c1-140 | sed 's/^/        /'
+
+    sec "Investigation (read-only): processes, SSH logins, sudo rules, scheduled jobs"
+    for u in $(awk -F: '$3 >= 1000 && $3 < 65534 {print $1}' /etc/passwd); do
+        n=$(pgrep -u "$u" 2>/dev/null | wc -l)
+        if [ "$n" -gt 0 ] && [ "$u" != user ]; then
+            info "processes of $u:"
+            ps -o pid,lstart,args -u "$u" 2>/dev/null | tail -n +2 | cut -c1-140 | head -10 | sed 's/^/        /'
+        fi
+        a=$(journalctl --since -7d -o short-iso --no-pager 2>/dev/null | grep -E "sshd.*(Accepted|Failed) [a-z-]+ for $u from" | tail -5)
+        [ -n "$a" ] && { info "SSH logins of $u (last 5 in 7 days):"; echo "$a" | sed -E 's/^([^ ]+) [^ ]+ /\1 /' | cut -c1-140 | sed 's/^/        /'; }
+    done
+    info "sudo rules (besides comments):"
+    grep -hvE '^[[:space:]]*(#|$|Defaults)' /etc/sudoers /etc/sudoers.d/* 2>/dev/null | sed 's/^/        /'
+    info "cron jobs:"
+    for f in /etc/crontab /etc/cron.d/* /var/spool/cron/crontabs/*; do
+        [ -f "$f" ] && grep -hvE '^[[:space:]]*(#|$)' "$f" 2>/dev/null | sed "s|^|        $f: |" | cut -c1-150
+    done
+    info "systemd timers:"
+    systemctl list-timers --all --no-pager --no-legend 2>/dev/null | awk '{print "        " $(NF-1), $NF}' | sort -u
+    info "outgoing SSH from this VM now:"
+    pgrep -a -x ssh 2>/dev/null | cut -c1-140 | sed 's/^/        /'
+    info "SSH server: password login $(sshd -T 2>/dev/null | awk '/^passwordauthentication/{print $2}'), root login $(sshd -T 2>/dev/null | awk '/^permitrootlogin/{print $2}'), keys file $(sshd -T 2>/dev/null | awk '/^authorizedkeysfile/{$1=""; print}')"
 
     sec "9. Resources"
     info "vCPU $(nproc) | RAM $(free -m | awk '/^Mem:/{print $2" MB, used "$3" MB"}') | disk / $(df -h / | awk 'NR==2{print $2", used "$3}')"
