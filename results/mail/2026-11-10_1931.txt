@@ -1,0 +1,79 @@
+
+== 1. DNS for mail (asked to ns1, 10.4.255.10) (2026-11-10 19:31, checks commit cf49848)
+OK    MX: 10 mail.group4.umons. 
+OK    mail.group4.umons -> 10.4.255.11 
+OK    PTR 10.4.255.11 -> mail.group4.umons. 
+WARN  SPF: no 'v=spf1' TXT record (M6)
+WARN  DMARC: no record (M6)
+
+== 2. Postfix settings
+INFO  version 3.10.13
+INFO  myhostname = mail.group4.umons
+INFO  mydestination = $myhostname, group4.umons, debian, localhost.localdomain, localhost
+INFO  mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+INFO  inet_interfaces = all
+INFO  smtpd_banner = $myhostname ESMTP
+INFO  smtpd_tls_cert_file = /etc/ssl/certs/ssl-cert-snakeoil.pem
+INFO  smtpd_tls_key_file = /etc/ssl/private/ssl-cert-snakeoil.key
+INFO  smtpd_tls_security_level = may
+INFO  smtpd_tls_auth_only = no
+INFO  smtpd_sasl_auth_enable = no
+INFO  smtpd_sasl_type = cyrus
+INFO  smtpd_sasl_path = smtpd
+INFO  smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+INFO  smtpd_recipient_restrictions = 
+INFO  disable_vrfy_command = yes
+INFO  smtpd_helo_required = yes
+INFO  smtpd_client_connection_rate_limit = 30
+INFO  message_size_limit = 10240000
+INFO  home_mailbox = Maildir/
+INFO  mailbox_command = 
+INFO  services in master.cf listening on the network:
+        smtp (inet)
+
+== 3. Dovecot
+INFO  version 2.4.1-4 (7d8c0e5759)
+INFO  dovecot_config_version = 2.4.0
+INFO  mail_driver = maildir
+INFO  mail_path = %{home}/Maildir
+INFO  no auth socket for Postfix (/var/spool/postfix/private/auth): needed for login on 587
+OK    dovecot: active, enabled at boot
+
+== 4. Live tests on 127.0.0.1 (no login, no mail sent)
+      SMTP 25: 220 mail.group4.umons ESMTP | STARTTLS True | AUTH before TLS: no | AUTH after TLS: no | VRFY answer 502
+      SMTP 587: test failed (ConnectionRefusedError: [Errno 111] Connection refused)
+      IMAP 993 (TLS): IMAP4REV1 LOGIN-REFERRALS ID ENABLE IDLE SASL-IR LITERAL+ AUTH=PLAIN
+      IMAP 143: not reachable (ConnectionRefusedError)
+INFO  certificate on 993:
+        subject=CN=debian
+        issuer=CN=debian
+        notAfter=Oct 19 10:00:26 2036 GMT
+INFO  certificate on 25 (STARTTLS):
+        subject=CN=debian
+        issuer=CN=debian
+        notAfter=Oct 19 10:00:26 2036 GMT
+
+== 5. Addresses and mailboxes
+INFO  aliases: postmaster: root;root: user;
+INFO  local accounts (uid >= 1000): user mother calogero 
+INFO  mailboxes in /var/mail: root 
+INFO  Maildir /home/user/Maildir: 1 new, 0 read
+OK    mail queue empty
+INFO  last mail errors in the logs (24 h):
+        warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+        warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+        warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+        warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+        warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+
+== 6. Summary of the mail tasks
+OK    mynetworks entries well formed
+WARN  W26 log: 9 'non-null host address bits' warnings in 24 h
+OK    M1 IMAP over TLS on 993 listening
+OK    M1 port 143 closed
+WARN  M2 port 587 not listening (sending with login)
+WARN  M2 smtpd_tls_auth_only is not yes
+OK    M4 mynetworks only local
+OK    M5 VRFY disabled
+OK    M5 neutral banner
+OK    M5 HELO required
