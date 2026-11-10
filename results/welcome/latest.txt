@@ -1,5 +1,5 @@
 
-== 1. Identity (2026-11-10 17:50, checks commit 167c879)
+== 1. Identity (2026-11-10 18:36, checks commit d310e8f)
 WARN  hostname: debian (expected welcome)
 OK    /etc/hosts: 127.0.1.1 debian
 INFO  address on ens18: 10.4.255.11/16 noprefixroute
@@ -28,38 +28,28 @@ INFO  dovecot installed
 == 5. Listening ports (proto, address:port, process)
       tcp  0.0.0.0:143                dovecot
       tcp  0.0.0.0:22                 sshd
-      tcp  0.0.0.0:25                 smtpd
+      tcp  0.0.0.0:25                 master
       tcp  0.0.0.0:5355               systemd-resolve
       tcp  0.0.0.0:80                 nginx
       tcp  0.0.0.0:993                dovecot
-      tcp  10.4.255.11:53             named
-      tcp  127.0.0.1:53               named
       tcp  127.0.0.1:631              cupsd
-      tcp  127.0.0.1:953              named
       tcp  127.0.0.53%lo:53           systemd-resolve
       tcp  127.0.0.54:53              systemd-resolve
       tcp  [::]:143                   dovecot
-      tcp  [::1]:53                   named
       tcp  [::1]:631                  cupsd
-      tcp  [::1]:953                  named
       tcp  [::]:22                    sshd
-      tcp  [::]:25                    smtpd
+      tcp  [::]:25                    master
       tcp  [::]:5355                  systemd-resolve
       tcp  [::]:80                    nginx
       tcp  [::]:993                   dovecot
-      tcp  [fe80::be24:11ff:fe59:b93a]%ens18:53 named
       udp  0.0.0.0:39840              avahi-daemon
       udp  0.0.0.0:5353               avahi-daemon
       udp  0.0.0.0:5355               systemd-resolve
-      udp  10.4.255.11:53             named
-      udp  127.0.0.1:53               named
       udp  127.0.0.53%lo:53           systemd-resolve
       udp  127.0.0.54:53              systemd-resolve
-      udp  [::1]:53                   named
       udp  [::]:46419                 avahi-daemon
       udp  [::]:5353                  avahi-daemon
       udp  [::]:5355                  systemd-resolve
-      udp  [fe80::be24:11ff:fe59:b93a]%ens18:53 named
 
 == 6. Web page
 OK    http://127.0.0.1/ -> 200
@@ -68,7 +58,7 @@ OK    served page = /var/www/welcome/index.html
 INFO  Server: nginx
 
 == 7. Postfix
-INFO  myhostname = debian
+INFO  myhostname = mail.group4.umons
 INFO  mydestination = $myhostname, group4.umons, debian, localhost.localdomain, localhost
 INFO  myorigin = /etc/mailname
 INFO  mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128 10.1.255.0/16 10.2.255.0/16 10.3.255.0/16 10.4.255.0/16 10.5.255.0/16 10.6.255.0/16 10.7.255.0/16 10.8.255.0/16 10.9.255.0/16
@@ -77,7 +67,7 @@ INFO  smtpd_tls_security_level = may
 WARN  mynetworks includes other groups' networks: they can relay mail through us without login
 INFO  /etc/mailname = group4.umons
 INFO  aliases: postmaster:    	root root:		user 
-      greeting: 220 debian ESMTP Postfix (Debian)
+      greeting: 220 mail.group4.umons ESMTP Postfix (Debian)
       STARTTLS offered: True | AUTH offered: False
 
 == 8. TLS key and CSR
@@ -85,4 +75,4 @@ OK    key /etc/ssl/group4/group4.key (600 root)
 INFO  CSR subject=C=BE, ST=Hainaut, O=Group4, OU=CyberDefense, CN=welcome.group4.umons
 
 == 9. Resources
-INFO  vCPU 2 | RAM 1973 MB, used 640 MB | disk / 14G, used 5.2G
+INFO  vCPU 2 | RAM 1973 MB, used 728 MB | disk / 14G, used 5.2G

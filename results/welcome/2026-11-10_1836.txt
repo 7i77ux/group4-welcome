@@ -1,0 +1,78 @@
+
+== 1. Identity (2026-11-10 18:36, checks commit d310e8f)
+WARN  hostname: debian (expected welcome)
+OK    /etc/hosts: 127.0.1.1 debian
+INFO  address on ens18: 10.4.255.11/16 noprefixroute
+OK    10.4.255.11 present
+
+== 2. Does 10.4.255.11 survive a reboot?
+INFO  NetworkManager: ens18 '100 (connected)', profile 'Wired connection 1'
+INFO  NM profile: method=manual addresses=10.4.255.11/16 gateway=10.4.255.254 dns=10.4.255.254
+INFO  ifupdown: no stanza for ens18 in /etc/network/interfaces
+OK    persistent via: NetworkManager
+
+== 3. Route and DNS
+OK    default gateway: 10.4.255.254
+INFO  resolver DNS (ens18): 10.4.255.254
+INFO  resolv.conf: nameserver 127.0.0.53 
+OK    welcome.group4.umons -> 10.4.255.11
+OK    MX group4.umons: 10 mail.group4.umons.
+
+== 4. Services
+OK    nginx: active, enabled at boot
+OK    postfix: active, enabled at boot
+OK    nginx restarts after a crash (Restart=on-failure)
+OK    apache2 not installed
+INFO  dovecot installed
+
+== 5. Listening ports (proto, address:port, process)
+      tcp  0.0.0.0:143                dovecot
+      tcp  0.0.0.0:22                 sshd
+      tcp  0.0.0.0:25                 master
+      tcp  0.0.0.0:5355               systemd-resolve
+      tcp  0.0.0.0:80                 nginx
+      tcp  0.0.0.0:993                dovecot
+      tcp  127.0.0.1:631              cupsd
+      tcp  127.0.0.53%lo:53           systemd-resolve
+      tcp  127.0.0.54:53              systemd-resolve
+      tcp  [::]:143                   dovecot
+      tcp  [::1]:631                  cupsd
+      tcp  [::]:22                    sshd
+      tcp  [::]:25                    master
+      tcp  [::]:5355                  systemd-resolve
+      tcp  [::]:80                    nginx
+      tcp  [::]:993                   dovecot
+      udp  0.0.0.0:39840              avahi-daemon
+      udp  0.0.0.0:5353               avahi-daemon
+      udp  0.0.0.0:5355               systemd-resolve
+      udp  127.0.0.53%lo:53           systemd-resolve
+      udp  127.0.0.54:53              systemd-resolve
+      udp  [::]:46419                 avahi-daemon
+      udp  [::]:5353                  avahi-daemon
+      udp  [::]:5355                  systemd-resolve
+
+== 6. Web page
+OK    http://127.0.0.1/ -> 200
+OK    http://welcome.group4.umons/ -> <title>Group 4 Mail</title>
+OK    served page = /var/www/welcome/index.html
+INFO  Server: nginx
+
+== 7. Postfix
+INFO  myhostname = mail.group4.umons
+INFO  mydestination = $myhostname, group4.umons, debian, localhost.localdomain, localhost
+INFO  myorigin = /etc/mailname
+INFO  mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128 10.1.255.0/16 10.2.255.0/16 10.3.255.0/16 10.4.255.0/16 10.5.255.0/16 10.6.255.0/16 10.7.255.0/16 10.8.255.0/16 10.9.255.0/16
+INFO  inet_interfaces = all
+INFO  smtpd_tls_security_level = may
+WARN  mynetworks includes other groups' networks: they can relay mail through us without login
+INFO  /etc/mailname = group4.umons
+INFO  aliases: postmaster:    	root root:		user 
+      greeting: 220 mail.group4.umons ESMTP Postfix (Debian)
+      STARTTLS offered: True | AUTH offered: False
+
+== 8. TLS key and CSR
+OK    key /etc/ssl/group4/group4.key (600 root)
+INFO  CSR subject=C=BE, ST=Hainaut, O=Group4, OU=CyberDefense, CN=welcome.group4.umons
+
+== 9. Resources
+INFO  vCPU 2 | RAM 1973 MB, used 728 MB | disk / 14G, used 5.2G
