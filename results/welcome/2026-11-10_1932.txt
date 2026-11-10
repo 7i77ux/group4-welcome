@@ -1,0 +1,87 @@
+
+== 1. Identity (2026-11-10 19:32, checks commit c001c0e)
+WARN  hostname: ns1 (expected welcome)
+OK    /etc/hosts: 127.0.1.1 ns1
+INFO  address on ens18: 10.4.255.10/16 noprefixroute
+WARN  10.4.255.11 missing
+
+== 2. Does 10.4.255.11 survive a reboot?
+INFO  NetworkManager: ens18 '100 (connected)', profile 'Wired connection 1'
+INFO  NM profile: method=manual addresses=10.4.255.10/16 gateway=10.4.255.254 dns=127.0.0.1,10.4.255.254
+INFO  ifupdown: no stanza for ens18 in /etc/network/interfaces
+WARN  10.4.255.11 is in NO configuration: it was added by hand and will be LOST at reboot
+
+== 3. Route and DNS
+OK    default gateway: 10.4.255.254
+INFO  resolv.conf: nameserver 127.0.0.1 nameserver 10.4.255.254 
+OK    welcome.group4.umons -> 10.4.255.11
+OK    MX group4.umons: 10 mail.group4.umons.
+
+== 4. Services
+WARN  nginx: inactive, not-found at boot
+WARN  postfix: inactive, not-found at boot
+WARN  nginx Restart=no
+OK    apache2 not installed
+INFO  dovecot not installed yet
+
+== 5. Listening ports (proto, address:port, process)
+      tcp  0.0.0.0:22                 sshd
+      tcp  10.4.255.10:53             named
+      tcp  127.0.0.1:53               named
+      tcp  127.0.0.1:631              cupsd
+      tcp  127.0.0.1:953              named
+      tcp  [::1]:53                   named
+      tcp  [::1]:631                  cupsd
+      tcp  [::1]:953                  named
+      tcp  [::]:22                    sshd
+      tcp  [fe80::be24:11ff:fe78:d3a6]%ens18:53 named
+      udp  0.0.0.0:44700              avahi-daemon
+      udp  0.0.0.0:5353               avahi-daemon
+      udp  10.4.255.10:53             named
+      udp  127.0.0.1:53               named
+      udp  [::1]:53                   named
+      udp  [::]:45396                 avahi-daemon
+      udp  [::]:5353                  avahi-daemon
+      udp  [fe80::be24:11ff:fe78:d3a6]%ens18:53 named
+
+== 6. Web page
+WARN  http://127.0.0.1/ -> 000
+OK    http://welcome.group4.umons/ -> <title>Group 4 Mail</title>
+WARN  served page differs from /var/www/welcome/index.html
+INFO  
+
+== 7. Postfix
+INFO  myhostname = 
+INFO  mydestination = 
+INFO  myorigin = 
+INFO  mynetworks = 
+INFO  inet_interfaces = 
+INFO  smtpd_tls_security_level = 
+INFO  /etc/mailname = group4.umons
+INFO  aliases: postmaster:	root 
+      SMTP test failed: [Errno 111] Connection refused
+
+== 8. TLS key and CSR
+WARN  no key in /etc/ssl/group4
+WARN  clock not synchronized (NTP)
+
+== Accounts (uid >= 1000): who they are, when they were created (read-only)
+INFO  user: uid 1000, home /home/user, shell /bin/bash, groups: user cdrom floppy sudo audio dip video plugdev users netdev scanner lpadmin
+INFO     password status / last change: P 2026-10-22
+WARN     user has administrator rights (sudo)
+INFO     last logins: user tty7 :0 Tue Nov 10 10:13 - still logged in;user tty7 :0 Tue Nov 10 09:43 - 10:12 (00:28);user tty7 :0 Tue Nov 10 08:59 - 09:43 (00:43);
+INFO     home modified 2026-11-10 18:23:08, files 2052, ssh keys: no, crontab: no, processes: 57
+INFO  mother: uid 1001, home /home/mother, shell /bin/bash, groups: mother sudo users
+INFO     password status / last change: P 2026-10-22
+WARN     mother has administrator rights (sudo)
+INFO     last logins: mother pts/1 10.4.255.11 Tue Nov 10 19:29 - 19:29 (00:00);mother pts/1 10.4.255.11 Tue Nov 10 19:26 - 19:26 (00:00);mother pts/1 10.4.255.11 Tue Nov 10 18:31 - 18:31 (00:00);
+INFO     home modified , files 0, ssh keys: no, crontab: no, processes: 0
+INFO  account creations in the logs (useradd):
+        2026-10-22T12:06:17+02:00 useradd[1280]: name=mother, UID=1001, GID=1001, home=/home/mother, shell=/bin/sh, from=/dev/pts/1
+        2026-10-22T12:06:31+02:00 useradd[1307]: name=mother, UID=1001, GID=1001, home=/home/mother, shell=/bin/bash, from=/dev/pts/1
+        2026-10-22T12:08:11+02:00 useradd[1384]: name=mother, UID=1001, GID=1001, home=/home/mother, shell=/bin/bash, from=/dev/pts/1
+        2026-11-04T09:42:53+01:00 useradd[4498]: name=bind, UID=109, GID=112, home=/var/cache/bind, shell=/usr/sbin/nologin, from=/dev/pts/2
+        2026-11-08T18:59:08+01:00 useradd[2995]: name=postfix, UID=110, GID=113, home=/var/spool/postfix, shell=/usr/sbin/nologin, from=none
+
+== 9. Resources
+INFO  vCPU 2 | RAM 1973 MB, used 954 MB | disk / 14G, used 5.1G
