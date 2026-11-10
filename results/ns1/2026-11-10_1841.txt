@@ -1,0 +1,66 @@
+
+== 1. Identity (2026-11-10 18:41, checks commit 2fe93a3)
+OK    hostname: ns1
+OK    /etc/hosts: 127.0.1.1 ns1
+INFO  address on ens18: 10.4.255.10/16 noprefixroute
+OK    10.4.255.10 present
+
+== 2. Who configures ens18 (must be one tool only)
+INFO  NetworkManager: ens18 '100 (connected)', profile 'Wired connection 1'
+INFO  NM profile: method=manual addresses=10.4.255.10/16 gateway=10.4.255.254 dns=127.0.0.1,10.4.255.254
+WARN  networking.service: inactive
+OK    ens18 configured by NetworkManager only
+
+== 3. Route and resolver
+OK    default gateway: 10.4.255.254
+INFO  resolv.conf: 127.0.0.1 10.4.255.254 
+OK    ns1 asks its own BIND first
+
+== 4. BIND
+OK    named: active, enabled at boot
+OK    named-checkconf: no errors
+INFO  zone group4.umons/IN: loaded serial 2026111012
+INFO  zone 255.4.10.in-addr.arpa/IN: loaded serial 2026111001
+INFO  options: forwarders { 		10.4.255.254; 	}
+
+== 5. Answers of ns1 (dig @127.0.0.1)
+OK    welcome.group4.umons -> 10.4.255.11 
+OK    mail.group4.umons -> 10.4.255.11 
+OK    ns1.group4.umons -> 10.4.255.10 
+OK    MX -> 10 mail.group4.umons. 
+OK    NS -> ns1.group4.umons. 
+INFO  SOA -> ns1.group4.umons. hostmaster.group4.umons. 2026111012 43200 900 345600 7200 
+OK    authoritative (flag aa)
+INFO  PTR 10.4.255.10 -> ns1.group4.umons. 
+INFO  PTR 10.4.255.11 -> mail.group4.umons. 
+OK    external name via forwarder -> debian.map.fastlydns.net. 151.101.10.132 
+INFO  zone transfer (AXFR) from this host: 0 records (check allow-transfer for the others)
+
+== 6. Listening ports (proto, address:port, process)
+      tcp  0.0.0.0:22                 sshd
+      tcp  10.4.255.10:53             named
+      tcp  127.0.0.1:53               named
+      tcp  127.0.0.1:631              cupsd
+      tcp  127.0.0.1:953              named
+      tcp  [::1]:53                   named
+      tcp  [::1]:631                  cupsd
+      tcp  [::1]:953                  named
+      tcp  [::]:22                    sshd
+      tcp  [fe80::be24:11ff:fe78:d3a6]%ens18:53 named
+      udp  0.0.0.0:44700              avahi-daemon
+      udp  0.0.0.0:5353               avahi-daemon
+      udp  10.4.255.10:53             named
+      udp  127.0.0.1:53               named
+      udp  [::1]:53                   named
+      udp  [::]:45396                 avahi-daemon
+      udp  [::]:5353                  avahi-daemon
+      udp  [fe80::be24:11ff:fe78:d3a6]%ens18:53 named
+
+== 7. Leftovers and services that should not be here
+OK    apache2 not installed
+OK    nginx not installed
+OK    pandoc not installed
+OK    /var/www/welcome absent
+
+== 8. Resources
+INFO  vCPU 2 | RAM 1973 MB, used 967 MB | disk / 14G, used 5.1G
