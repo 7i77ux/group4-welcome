@@ -1,6 +1,6 @@
 # checks
 
-Read-only test scripts: they change nothing on the VMs, they only print what they find.
+Read-only test scripts: they change nothing on the VMs, they only print what they find. They never log in and never send mail (the relay test of `ns1.sh` stops before DATA).
 
 Workflow:
 
@@ -16,5 +16,6 @@ The results are public while they are here: they will be removed at the end of t
 |---|---|---|
 | welcome (10.4.255.11) | `sudo sh checks/welcome.sh` | `/tmp/check-welcome.txt` |
 | ns1 (10.4.255.10) | `sudo sh checks/ns1.sh` | `/tmp/check-ns1.txt` |
+| welcome (10.4.255.11), mail service | `sudo sh checks/mail.sh` | `/tmp/check-mail.txt` |
 
 Each line starts with `OK`, `WARN` (something to fix) or `INFO` (a value to read). The last line counts the warnings. To scroll the full output: `less /tmp/check-<vm>.txt`.

@@ -90,7 +90,31 @@ main() {
 
     if [ "$(timedatectl show -p NTPSynchronized --value 2>/dev/null)" = yes ]; then ok "clock synchronized (NTP)"; else warn "clock not synchronized (NTP)"; fi
 
-    sec "8. Resources"
+    sec "8. welcome seen from another VM (as the other groups see it; no mail is sent)"
+    python3 -I - <<'PY' 2>&1 | sed 's/^/      /'
+import socket, smtplib
+W = "10.4.255.11"
+res = []
+for p in (22, 25, 53, 80, 143, 443, 587, 993):
+    s = socket.socket(); s.settimeout(2)
+    res.append(f"{p}:{'open' if s.connect_ex((W, p)) == 0 else 'closed'}"); s.close()
+print("ports of welcome:", " ".join(res))
+try:
+    s = smtplib.SMTP(W, 25, timeout=5); s.ehlo("ns1.group4.umons")
+    def rcpt(to):
+        s.rset(); s.mail("check@ns1.group4.umons"); return s.rcpt(to)
+    c, m = rcpt("relay-test@example.org")
+    print(("WARN  open relay: " if c == 250 else "OK    relay refused: ") + f"RCPT to an external address -> {c} {m.decode(errors='replace')}")
+    c, m = rcpt("postmaster@group4.umons")
+    print(("OK    " if c == 250 else "WARN  ") + f"RCPT postmaster@group4.umons -> {c}")
+    c, m = rcpt("no-such-user-check@group4.umons")
+    print(("OK    " if c >= 500 else "WARN  ") + f"RCPT to an unknown local user -> {c} {m.decode(errors='replace')[:60]}")
+    s.rset(); s.quit()
+except Exception as e:
+    print(f"SMTP test failed: {e}")
+PY
+
+    sec "9. Resources"
     info "vCPU $(nproc) | RAM $(free -m | awk '/^Mem:/{print $2" MB, used "$3" MB"}') | disk / $(df -h / | awk 'NR==2{print $2", used "$3}')"
 }
 
