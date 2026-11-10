@@ -127,6 +127,8 @@ PY
     [ -f /etc/ssl/group4/group4.csr ] && info "CSR $(openssl req -in /etc/ssl/group4/group4.csr -noout -subject 2>/dev/null)"
     ls /etc/ssl/group4/ 2>/dev/null | grep -vE '^group4\.(key|csr)$' | sed 's/^/INFO  other file in \/etc\/ssl\/group4: /'
 
+    if [ "$(timedatectl show -p NTPSynchronized --value 2>/dev/null)" = yes ]; then ok "clock synchronized (NTP)"; else warn "clock not synchronized (NTP)"; fi
+
     sec "9. Resources"
     info "vCPU $(nproc) | RAM $(free -m | awk '/^Mem:/{print $2" MB, used "$3" MB"}') | disk / $(df -h / | awk 'NR==2{print $2", used "$3}')"
 }

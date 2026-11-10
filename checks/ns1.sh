@@ -42,7 +42,7 @@ main() {
         tools="${tools:+$tools + }ifupdown"
         grep -hE "^[[:space:]]*(iface|address|gateway|dns-nameservers)[[:space:]]" /etc/network/interfaces /etc/network/interfaces.d/* 2>/dev/null | grep -v '[[:space:]]lo[[:space:]]' | sed 's/^[[:space:]]*/INFO  interfaces: /'
     fi
-    if [ "$(systemctl is-active networking 2>/dev/null)" = active ]; then ok "networking.service active"; else warn "networking.service: $(systemctl is-active networking 2>/dev/null)"; fi
+    ns=$(systemctl is-active networking 2>/dev/null); if [ "$ns" = failed ]; then warn "networking.service: failed"; else ok "networking.service: $ns (not failed)"; fi
     case "$tools" in
         *" + "*) warn "$IF configured by $tools: keep only one";;
         "")      warn "$IP is in no configuration: lost at reboot";;
@@ -87,6 +87,8 @@ main() {
         if dpkg -l "$p" 2>/dev/null | grep -q '^ii'; then warn "$p installed on ns1"; else ok "$p not installed"; fi
     done
     if [ -e /var/www/welcome ]; then warn "/var/www/welcome exists"; else ok "/var/www/welcome absent"; fi
+
+    if [ "$(timedatectl show -p NTPSynchronized --value 2>/dev/null)" = yes ]; then ok "clock synchronized (NTP)"; else warn "clock not synchronized (NTP)"; fi
 
     sec "8. Resources"
     info "vCPU $(nproc) | RAM $(free -m | awk '/^Mem:/{print $2" MB, used "$3" MB"}') | disk / $(df -h / | awk 'NR==2{print $2", used "$3}')"
