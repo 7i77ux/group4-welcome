@@ -40,6 +40,12 @@ systemctl daemon-reload
 nginx -t
 systemctl reload nginx
 
-# 6. check
-curl -s http://127.0.0.1/ | grep -o '<title>.*</title>'
-echo "OK: http://welcome.group4.umons"
+# 6. check: the reload is asynchronous, so wait, then compare the served page with the generated one
+sleep 2
+if curl -s -H 'Host: welcome.group4.umons' http://127.0.0.1/ | cmp -s - /var/www/welcome/index.html; then
+    curl -s http://127.0.0.1/ | grep -o '<title>.*</title>'
+    echo "OK: http://welcome.group4.umons"
+else
+    echo "ERROR: nginx does not serve the new page. Check: ls /etc/nginx/sites-enabled/ (only 'welcome')" >&2
+    exit 1
+fi
