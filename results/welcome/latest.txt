@@ -1,5 +1,5 @@
 
-== 1. Identity (2026-11-10 18:42, checks commit ae4c812)
+== 1. Identity (2026-11-10 19:31, checks commit c443cb5)
 OK    hostname: welcome
 OK    /etc/hosts: 127.0.1.1 welcome
 INFO  address on ens18: 10.4.255.11/16 noprefixroute
@@ -26,19 +26,17 @@ OK    apache2 not installed
 INFO  dovecot installed
 
 == 5. Listening ports (proto, address:port, process)
-      tcp  0.0.0.0:143                dovecot
       tcp  0.0.0.0:22                 sshd
-      tcp  0.0.0.0:25                 master
+      tcp  0.0.0.0:25                 smtpd
       tcp  0.0.0.0:5355               systemd-resolve
       tcp  0.0.0.0:80                 nginx
       tcp  0.0.0.0:993                dovecot
       tcp  127.0.0.1:631              cupsd
       tcp  127.0.0.53%lo:53           systemd-resolve
       tcp  127.0.0.54:53              systemd-resolve
-      tcp  [::]:143                   dovecot
       tcp  [::1]:631                  cupsd
       tcp  [::]:22                    sshd
-      tcp  [::]:25                    master
+      tcp  [::]:25                    smtpd
       tcp  [::]:5355                  systemd-resolve
       tcp  [::]:80                    nginx
       tcp  [::]:993                   dovecot
@@ -61,18 +59,43 @@ INFO  Server: nginx
 INFO  myhostname = mail.group4.umons
 INFO  mydestination = $myhostname, group4.umons, debian, localhost.localdomain, localhost
 INFO  myorigin = /etc/mailname
-INFO  mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128 10.1.255.0/16 10.2.255.0/16 10.3.255.0/16 10.4.255.0/16 10.5.255.0/16 10.6.255.0/16 10.7.255.0/16 10.8.255.0/16 10.9.255.0/16
+INFO  mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
 INFO  inet_interfaces = all
 INFO  smtpd_tls_security_level = may
-WARN  mynetworks includes other groups' networks: they can relay mail through us without login
 INFO  /etc/mailname = group4.umons
 INFO  aliases: postmaster:    	root root:		user 
-      greeting: 220 mail.group4.umons ESMTP Postfix (Debian)
+      greeting: 220 mail.group4.umons ESMTP
       STARTTLS offered: True | AUTH offered: False
 
 == 8. TLS key and CSR
 OK    key /etc/ssl/group4/group4.key (600 root)
 INFO  CSR subject=C=BE, ST=Hainaut, O=Group4, OU=CyberDefense, CN=welcome.group4.umons
+WARN  clock not synchronized (NTP)
+
+== Accounts (uid >= 1000): who they are, when they were created (read-only)
+INFO  user: uid 1000, home /home/user, shell /bin/bash, groups: user cdrom floppy sudo audio dip video plugdev users netdev scanner lpadmin
+INFO     password status / last change: P 2026-10-22
+WARN     user has administrator rights (sudo)
+INFO     last logins: user tty7 :0 Tue Nov 10 09:44 - still logged in;user tty7 :0 Tue Nov 10 08:59 - 09:40 (00:40);user tty7 :0 Mon Nov 9 15:18 - still logged in;
+INFO     home modified 2026-11-10 17:39:23, files 1353, ssh keys: no, crontab: no, processes: 45
+INFO  mother: uid 1001, home /home/mother, shell /bin/bash, groups: mother sudo users
+INFO     password status / last change: P 2026-10-22
+WARN     mother has administrator rights (sudo)
+INFO     last logins: mother pts/2 10.4.255.10 Tue Nov 10 18:36 - 18:36 (00:00);mother pts/1 10.4.255.10 Tue Nov 10 17:35 - 17:35 (00:00);mother pts/1 10.4.255.10 Tue Nov 10 16:32 - 16:32 (00:00);
+INFO     home modified , files 0, ssh keys: no, crontab: no, processes: 8
+INFO  calogero: uid 1003, home /home/calogero, shell /usr/sbin/nologin, groups: calogero users mailusers
+INFO     password status / last change: P 2026-11-10
+INFO     last logins: none recorded
+INFO     home modified 2026-11-10 19:30:17, files 4, ssh keys: no, crontab: no, processes: 0
+INFO  account creations in the logs (useradd):
+        2026-10-22T12:06:17+02:00 useradd[1280]: name=mother, UID=1001, GID=1001, home=/home/mother, shell=/bin/sh, from=/dev/pts/1
+        2026-10-22T12:06:31+02:00 useradd[1307]: name=mother, UID=1001, GID=1001, home=/home/mother, shell=/bin/bash, from=/dev/pts/1
+        2026-10-22T12:08:11+02:00 useradd[1384]: name=mother, UID=1001, GID=1001, home=/home/mother, shell=/bin/bash, from=/dev/pts/1
+        2026-11-04T09:42:14+01:00 useradd[1657]: name=bind, UID=109, GID=112, home=/var/cache/bind, shell=/usr/sbin/nologin, from=/dev/pts/2
+        2026-11-08T19:32:20+01:00 useradd[3207]: name=postfix, UID=110, GID=113, home=/var/spool/postfix, shell=/usr/sbin/nologin, from=none
+        2026-11-09T16:46:49+01:00 useradd[4411]: name=dovecot, UID=111, GID=115, home=/usr/lib/dovecot, shell=/usr/sbin/nologin, from=/dev/pts/2
+        2026-11-09T16:46:49+01:00 useradd[4432]: name=dovenull, UID=112, GID=116, home=/nonexistent, shell=/usr/sbin/nologin, from=/dev/pts/2
+        2026-11-10T19:30:16+01:00 useradd[9845]: name=calogero, UID=1003, GID=1003, home=/home/calogero, shell=/usr/sbin/nologin, from=/dev/pts/1
 
 == 9. Resources
-INFO  vCPU 2 | RAM 1973 MB, used 652 MB | disk / 14G, used 5.2G
+INFO  vCPU 2 | RAM 1973 MB, used 647 MB | disk / 14G, used 5.2G
