@@ -7,5 +7,6 @@ Before running one: take a PVE snapshot of the VM.
 | VM | Command | Fixes |
 |---|---|---|
 | welcome (10.4.255.11) | `sudo sh fixes/welcome.sh` | hostname `welcome`; Postfix `myhostname = mail.group4.umons`; remove the leftover BIND |
+| ns1 (10.4.255.10) | `sudo sh fixes/ns1.sh` | one tool for the network (NetworkManager, gateway and DNS 127.0.0.1 in the profile, ens18 removed from `/etc/network/interfaces`); one PTR for 10.4.255.11 (`mail.group4.umons.`), serial raised |
 
 Each script refuses to run on another VM.

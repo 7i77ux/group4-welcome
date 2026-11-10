@@ -32,7 +32,7 @@ main() {
         conn=$(nmcli -g GENERAL.CONNECTION device show "$IF" 2>/dev/null)
         info "NetworkManager: $IF '$st', profile '${conn:-none}'"
         if [ -n "$conn" ]; then
-            info "NM profile: method=$(nmcli -g ipv4.method connection show "$conn" 2>/dev/null) addresses=$(nmcli -g ipv4.addresses connection show "$conn" 2>/dev/null)"
+            info "NM profile: method=$(nmcli -g ipv4.method connection show "$conn" 2>/dev/null) addresses=$(nmcli -g ipv4.addresses connection show "$conn" 2>/dev/null) gateway=$(nmcli -g ipv4.gateway connection show "$conn" 2>/dev/null) dns=$(nmcli -g ipv4.dns connection show "$conn" 2>/dev/null)"
             tools="NetworkManager"
         fi
     else
