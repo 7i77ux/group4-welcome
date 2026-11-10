@@ -1,5 +1,5 @@
 
-== 1. Identity (2026-11-10 17:49, checks commit 3af6286)
+== 1. Identity (2026-11-10 17:50, checks commit 167c879)
 WARN  hostname: debian (expected welcome)
 OK    /etc/hosts: 127.0.1.1 debian
 INFO  address on ens18: 10.4.255.11/16 noprefixroute
@@ -28,7 +28,7 @@ INFO  dovecot installed
 == 5. Listening ports (proto, address:port, process)
       tcp  0.0.0.0:143                dovecot
       tcp  0.0.0.0:22                 sshd
-      tcp  0.0.0.0:25                 master
+      tcp  0.0.0.0:25                 smtpd
       tcp  0.0.0.0:5355               systemd-resolve
       tcp  0.0.0.0:80                 nginx
       tcp  0.0.0.0:993                dovecot
@@ -43,7 +43,7 @@ INFO  dovecot installed
       tcp  [::1]:631                  cupsd
       tcp  [::1]:953                  named
       tcp  [::]:22                    sshd
-      tcp  [::]:25                    master
+      tcp  [::]:25                    smtpd
       tcp  [::]:5355                  systemd-resolve
       tcp  [::]:80                    nginx
       tcp  [::]:993                   dovecot
@@ -85,4 +85,4 @@ OK    key /etc/ssl/group4/group4.key (600 root)
 INFO  CSR subject=C=BE, ST=Hainaut, O=Group4, OU=CyberDefense, CN=welcome.group4.umons
 
 == 9. Resources
-INFO  vCPU 2 | RAM 1973 MB, used 653 MB | disk / 14G, used 5.2G
+INFO  vCPU 2 | RAM 1973 MB, used 640 MB | disk / 14G, used 5.2G
