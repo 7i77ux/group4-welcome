@@ -3,7 +3,7 @@
 # confirmation [y/N], backup of the files it changes, change, check.
 # At the end it runs checks/welcome.sh, which pushes the result.
 # Take a PVE snapshot of welcome first.
-# Run:  cd ~/Desktop/group4-welcome && git pull && sudo sh fixes/welcome.sh
+# Run:  cd ~/Desktop/group4-welcome && git pull && sudo sh fixes/fix_welcome.sh
 set -u
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
 ip -4 -o addr show | grep -q ' 10\.4\.255\.11/' || { echo "ERROR: run this script on welcome (10.4.255.11)." >&2; exit 1; }

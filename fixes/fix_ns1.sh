@@ -2,8 +2,8 @@
 # Fixes for the ns1 VM (10.4.255.10). For each fix: current state, reason,
 # confirmation [y/N], backup of the files it changes, change, check.
 # At the end it runs checks/ns1.sh, which pushes the result.
-# Take a PVE snapshot of ns1 first. Run fixes/welcome.sh on welcome before fix 2.
-# Run:  cd ~/Desktop/group4-welcome && git pull && sudo sh fixes/ns1.sh
+# Take a PVE snapshot of ns1 first. Run fixes/fix_welcome.sh on welcome before fix 2.
+# Run:  cd ~/Desktop/group4-welcome && git pull && sudo sh fixes/fix_ns1.sh
 set -u
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
 ip -4 -o addr show | grep -q ' 10\.4\.255\.10/' || { echo "ERROR: run this script on ns1 (10.4.255.10)." >&2; exit 1; }
