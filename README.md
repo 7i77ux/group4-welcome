@@ -5,6 +5,9 @@ Source of the welcome page of Group 4: http://welcome.group4.umons
 - `index.md`: the page, written in Markdown
 - `deploy.sh`: publishes the page with nginx on the Welcome + mail VM and keeps it always on
 - `make-csr.sh`: generates the private key and the certificate signing request (CSR) for the course CA
+- `checks/`: read-only test scripts for the VMs (see `checks/README.md`)
+
+`deploy.sh` and `make-csr.sh` refuse to run on a VM other than welcome (10.4.255.11).
 
 ## Deploy (on the Welcome + mail VM)
 

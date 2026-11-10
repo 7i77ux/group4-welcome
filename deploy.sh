@@ -4,6 +4,9 @@
 #   sh /home/user/Downloads/deploy.sh
 # Safe to run again: to update the page, download the new index.md and rerun.
 set -e
+
+# run only on welcome (10.4.255.11): on 2026-11-10 deploy.sh was run on ns1 by mistake
+ip -4 -o addr show | grep -q ' 10\.4\.255\.11/' || { echo "ERROR: run this script on welcome (10.4.255.11), not on $(hostname)." >&2; exit 1; }
 SRC="$(dirname "$0")"
 
 # 1. pandoc (Markdown -> HTML)

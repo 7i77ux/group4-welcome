@@ -4,6 +4,9 @@
 #   sudo sh make-csr.sh
 # Send ONLY the .csr to the teacher. The .key never leaves the VM.
 set -e
+
+# run only on welcome (10.4.255.11): on 2026-11-10 deploy.sh was run on ns1 by mistake
+ip -4 -o addr show | grep -q ' 10\.4\.255\.11/' || { echo "ERROR: run this script on welcome (10.4.255.11), not on $(hostname)." >&2; exit 1; }
 DIR="${DIR:-/etc/ssl/group4}"
 KEY="$DIR/group4.key"
 CSR="$DIR/group4.csr"
