@@ -30,7 +30,7 @@ main() {
     for k in myhostname mydestination mynetworks inet_interfaces smtpd_banner smtpd_tls_cert_file smtpd_tls_key_file \
              smtpd_tls_security_level smtpd_tls_auth_only smtpd_sasl_auth_enable smtpd_sasl_type smtpd_sasl_path \
              smtpd_relay_restrictions smtpd_recipient_restrictions disable_vrfy_command smtpd_helo_required \
-             smtpd_client_connection_rate_limit message_size_limit; do
+             smtpd_client_connection_rate_limit message_size_limit home_mailbox mailbox_command; do
         info "$k = $(postconf -h "$k" 2>/dev/null)"
     done
     info "services in master.cf listening on the network:"
@@ -55,7 +55,7 @@ import smtplib, imaplib, ssl
 ctx = ssl.create_default_context(); ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
 def smtp(port):
     try:
-        s = smtplib.SMTP(timeout=5); code, greet = s.connect("127.0.0.1", port)
+        s = smtplib.SMTP(timeout=5); code, greet = s.connect("127.0.0.1", port); s._host = "127.0.0.1"
         s.ehlo("check.group4.umons")
         tls = bool(s.has_extn("starttls")); auth_plain = s.esmtp_features.get("auth", "")
         line = f"SMTP {port}: {code} {greet.decode(errors='replace')} | STARTTLS {tls} | AUTH before TLS: {auth_plain or 'no'}"
@@ -66,7 +66,7 @@ def smtp(port):
         line += f" | VRFY answer {vrfy}"
         s.quit(); print(line)
     except Exception as e:
-        print(f"SMTP {port}: not reachable ({e.__class__.__name__}: {e})")
+        print(f"SMTP {port}: test failed ({e.__class__.__name__}: {e})")
 smtp(25); smtp(587)
 try:
     i = imaplib.IMAP4_SSL("127.0.0.1", 993, ssl_context=ctx, timeout=5)
@@ -86,12 +86,24 @@ PY
     info "aliases: $(grep -vE '^[[:space:]]*(#|$)' /etc/aliases 2>/dev/null | tr '\t' ' ' | tr -s ' ' | tr '\n' ';')"
     info "local accounts (uid >= 1000): $(awk -F: '$3 >= 1000 && $3 < 65534 {printf "%s ", $1}' /etc/passwd)"
     info "mailboxes in /var/mail: $(ls -1 /var/mail 2>/dev/null | tr '\n' ' ')"
+    info "Maildir folders: $(ls -d /home/*/Maildir 2>/dev/null | tr '\n' ' ')"
     q=$(postqueue -p 2>/dev/null | tail -1)
     case "$q" in *"is empty"*) ok "mail queue empty";; *) warn "mail queue: $q";; esac
     info "last mail errors in the logs (24 h):"
     journalctl --since -24h -o cat 2>/dev/null | grep -E 'postfix/|dovecot' | grep -iE 'reject|warning|fatal|error|failed' | tail -5 | cut -c1-150 | sed 's/^/        /'
 
     sec "6. Summary of the mail tasks"
+    if command -v postconf >/dev/null 2>&1; then
+        bad=$(postconf -h mynetworks | python3 -I -c 'import sys, ipaddress
+bad = []
+for e in sys.stdin.read().replace(",", " ").split():
+    try: ipaddress.ip_network(e.strip("[]").replace("]/", "/"), strict=True)
+    except ValueError: bad.append(e)
+print(" ".join(bad))' 2>/dev/null)
+        if [ -n "$bad" ]; then warn "W26 malformed mynetworks entries (host bits set): $bad -> remote senders get 451"; else ok "mynetworks entries well formed"; fi
+        n=$(journalctl --since -24h -o cat 2>/dev/null | grep -c 'non-null host address bits')
+        [ "$n" -gt 0 ] && warn "W26 log: $n 'non-null host address bits' warnings in 24 h"
+    fi
     if listening 993; then ok "M1 IMAP over TLS on 993 listening"; else warn "M1 IMAP 993 not listening"; fi
     if listening 143; then warn "M1 IMAP 143 (without TLS) still open (W24)"; else ok "M1 port 143 closed"; fi
     if ! command -v postconf >/dev/null 2>&1; then

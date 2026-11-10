@@ -103,15 +103,25 @@ try:
     s = smtplib.SMTP(W, 25, timeout=5); s.ehlo("ns1.group4.umons")
     def rcpt(to):
         s.rset(); s.mail("check@ns1.group4.umons"); return s.rcpt(to)
-    c, m = rcpt("relay-test@example.org")
-    print(("WARN  open relay: " if c == 250 else "OK    relay refused: ") + f"RCPT to an external address -> {c} {m.decode(errors='replace')}")
-    c, m = rcpt("postmaster@group4.umons")
-    print(("OK    " if c == 250 else "WARN  ") + f"RCPT postmaster@group4.umons -> {c}")
-    c, m = rcpt("no-such-user-check@group4.umons")
-    print(("OK    " if c >= 500 else "WARN  ") + f"RCPT to an unknown local user -> {c} {m.decode(errors='replace')[:60]}")
+    def show(label, c, m, good):
+        txt = m.decode(errors="replace")[:70]
+        if 400 <= c < 500: tag = "WARN  temporary failure (server problem): "
+        else: tag = "OK    " if good(c) else "WARN  "
+        print(f"{tag}{label} -> {c} {txt}")
+    c, m = rcpt("relay-test@example.org"); show("RCPT to an external address (relay)", c, m, lambda c: c >= 500)
+    if c == 250: print("WARN  open relay from this network")
+    c, m = rcpt("postmaster@group4.umons"); show("RCPT postmaster@group4.umons", c, m, lambda c: c == 250)
+    c, m = rcpt("no-such-user-check@group4.umons"); show("RCPT to an unknown local user", c, m, lambda c: c >= 500)
     s.rset(); s.quit()
 except Exception as e:
     print(f"SMTP test failed: {e}")
+try:
+    import imaplib
+    i = imaplib.IMAP4(W, 143, timeout=5)
+    caps = " ".join(i.capabilities); i.logout()
+    print(("OK    " if "LOGINDISABLED" in caps else "WARN  password login allowed without TLS: ") + f"IMAP 143 seen from ns1: {caps}")
+except Exception as e:
+    print(f"IMAP 143 from ns1: not reachable ({e.__class__.__name__})")
 PY
 
     sec "9. Resources"
