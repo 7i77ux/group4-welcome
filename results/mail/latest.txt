@@ -1,10 +1,10 @@
 
-== 1. DNS for mail (asked to ns1, 10.4.255.10) (2026-11-10 19:31, checks commit cf49848)
+== 1. DNS for mail (asked to ns1, 10.4.255.10) (2026-11-12 12:21, checks commit a0362f5)
 OK    MX: 10 mail.group4.umons. 
 OK    mail.group4.umons -> 10.4.255.11 
 OK    PTR 10.4.255.11 -> mail.group4.umons. 
-WARN  SPF: no 'v=spf1' TXT record (M6)
-WARN  DMARC: no record (M6)
+INFO  SPF: none (not used, D22)
+INFO  DMARC: none (not used, D22)
 
 == 2. Postfix settings
 INFO  version 3.10.13
@@ -36,6 +36,7 @@ INFO  version 2.4.1-4 (7d8c0e5759)
 INFO  dovecot_config_version = 2.4.0
 INFO  mail_driver = maildir
 INFO  mail_path = %{home}/Maildir
+OK    mail login limited to group mailusers (PAM), members: calogero
 INFO  no auth socket for Postfix (/var/spool/postfix/private/auth): needed for login on 587
 OK    dovecot: active, enabled at boot
 
@@ -60,15 +61,9 @@ INFO  mailboxes in /var/mail: root
 INFO  Maildir /home/user/Maildir: 1 new, 0 read
 OK    mail queue empty
 INFO  last mail errors in the logs (24 h):
-        warning: not owned by root: /var/spool/postfix/etc/resolv.conf
-        warning: not owned by root: /var/spool/postfix/etc/resolv.conf
-        warning: not owned by root: /var/spool/postfix/etc/resolv.conf
-        warning: not owned by root: /var/spool/postfix/etc/resolv.conf
-        warning: not owned by root: /var/spool/postfix/etc/resolv.conf
 
 == 6. Summary of the mail tasks
 OK    mynetworks entries well formed
-WARN  W26 log: 9 'non-null host address bits' warnings in 24 h
 OK    M1 IMAP over TLS on 993 listening
 OK    M1 port 143 closed
 WARN  M2 port 587 not listening (sending with login)
