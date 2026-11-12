@@ -5,7 +5,9 @@ It checks every state recorded in the documentation (decisions Dxx, weaknesses W
 steps 10.x) on the VM where it runs, and the other VM as the other groups see it.
 It changes nothing:
 - no configuration is written;
-- no login is attempted;
+- no login is attempted, except the optional mail login test (doveadm auth test) that
+  full.sh asks for on welcome, with the passwords typed by hand (never stored);
+- network probes only read: one NTP time request, DNS queries, TCP connections;
 - no mail is sent (the SMTP tests stop before DATA);
 - the account mother is only observed (D28).
 
@@ -25,14 +27,17 @@ import re
 import smtplib
 import socket
 import ssl
+import struct
 import subprocess
 import sys
 import time
+from email.utils import parsedate_to_datetime
 
 WELCOME, NS1, GW = "10.4.255.11", "10.4.255.10", "10.4.255.254"
 DOMAIN = "group4.umons"
 COUNT = {"OK": 0, "INFO": 0}
 LISTS = {"FAIL": [], "NEW": [], "OPEN": []}
+DOVEADM_FILE = ""
 
 
 # ---------- output ----------
@@ -118,6 +123,35 @@ def read(path):
 def dig(server, name, rtype="A", extra=""):
     out = sh(f"dig +short +time=2 +tries=1 {extra} @{server} {name} {rtype} 2>/dev/null")
     return [l for l in out.splitlines() if l and not l.startswith(";;")]
+
+
+def dig_status(server, name, extra=""):
+    """DNS status of one query (NOERROR, NXDOMAIN, SERVFAIL...), or 'no answer'."""
+    m = re.search(r"status: (\w+)", sh(f"dig +time=2 +tries=1 {extra} @{server} {name} A 2>/dev/null"))
+    return m.group(1) if m else "no answer"
+
+
+def ntp_query(host, timeout=2):
+    """One SNTP time request (client mode, read-only). Returns (offset s, stratum, address) or (None, reason, '')."""
+    try:
+        addr = socket.getaddrinfo(host, 123, socket.AF_INET, socket.SOCK_DGRAM)[0][4]
+    except OSError:
+        return None, "name does not resolve", ""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(timeout)
+    try:
+        t0 = time.time()
+        s.sendto(b"\x1b" + 47 * b"\0", addr)
+        data, _ = s.recvfrom(512)
+        t3 = time.time()
+    except OSError:
+        return None, "no reply", addr[0]
+    finally:
+        s.close()
+    if len(data) < 48 or data[1] == 0:
+        return None, "invalid reply (stratum 0)", addr[0]
+    sec_, frac = struct.unpack("!II", data[40:48])
+    return sec_ - 2208988800 + frac / 2 ** 32 - (t0 + t3) / 2, data[1], addr[0]
 
 
 def port_open(host, port, timeout=2):
@@ -444,10 +478,6 @@ def hardening(vm):
         ok("W9", f"SSH password login: {pa.group(1)}")
     if pr:
         check(pr.group(1) != "yes", "", f"SSH root login: {pr.group(1)}", "SSH root login with password allowed (PermitRootLogin yes)")
-    if sh("timedatectl show -p NTPSynchronized --value 2>/dev/null") == "yes":
-        ok("W28", "clock synchronized (NTP)")
-    else:
-        opn("W28", f"clock not synchronized (NTP); timesync: {sh('timedatectl show-timesync -p ServerName --value 2>/dev/null') or '?'}")
     if not installed("unattended-upgrades"):
         opn("W12", "no automatic security updates (unattended-upgrades not installed)")
     if not installed("fail2ban"):
@@ -461,6 +491,45 @@ def hardening(vm):
     info(f"packages with an update available (apt cache): {up or '?'}")
     if os.path.exists("/var/run/reboot-required"):
         info("a reboot is required by installed updates")
+
+
+def clock():
+    sec("5b. Clock and NTP (W28; question 7 for the teacher)")
+    if sh("timedatectl show -p NTPSynchronized --value 2>/dev/null") == "yes":
+        ok("W28", "clock synchronized (NTP)")
+    else:
+        opn("W28", "clock not synchronized (NTP)")
+    info(f"timedatectl: NTP service enabled = {sh('timedatectl show -p NTP --value 2>/dev/null') or '?'}, "
+         f"time zone {sh('timedatectl show -p Timezone --value 2>/dev/null') or '?'}")
+    for svc in ("systemd-timesyncd", "chrony", "ntpsec", "ntp"):
+        a, e = unit_state(svc)
+        if e and e != "not-found":
+            info(f"{svc}: {a or '?'}, {e} at boot")
+    cfg = {}
+    for k in ("SystemNTPServers", "FallbackNTPServers", "LinkNTPServers", "ServerName", "ServerAddress"):
+        cfg[k] = sh(f"timedatectl show-timesync -p {k} --value 2>/dev/null")
+        info(f"timesyncd {k}: {cfg[k] or '-'}")
+    for l in sh("journalctl -u systemd-timesyncd -n 3 -o short-iso --no-pager 2>/dev/null | tail -n +1").splitlines()[-3:]:
+        sub(l[:150])
+    candidates = [GW] + (cfg["SystemNTPServers"] + " " + cfg["LinkNTPServers"] + " " + cfg["FallbackNTPServers"]).split()
+    answering = []
+    for host in list(dict.fromkeys(candidates))[:6]:
+        off, st, addr = ntp_query(host)
+        if off is None:
+            info(f"NTP {host}{' (' + addr + ')' if addr and addr != host else ''}: {st}")
+        else:
+            answering.append(host)
+            info(f"NTP {host} ({addr}): reply, stratum {st}, offset of this clock {-off:+.3f} s")
+    if answering:
+        info(f"NTP servers that answer from this VM: {' '.join(answering)} (candidates for W28)")
+    else:
+        info("no NTP server answers from this VM (UDP 123 blocked?): ask the teacher which one to use (question 7)")
+    d = sh("curl -sI --max-time 8 https://deb.debian.org/ 2>/dev/null | grep -i '^date:' | cut -d' ' -f2-")
+    try:
+        diff = time.time() - parsedate_to_datetime(d.strip()).timestamp()
+        info(f"this clock vs the HTTPS Date of deb.debian.org: {diff:+.0f} s (precision about 1 s)")
+    except (TypeError, ValueError):
+        info("HTTPS Date of deb.debian.org: not available")
 
 
 def health():
@@ -675,7 +744,24 @@ def dovecot():
     mbox = sh("find /var/mail -type f -size +0 2>/dev/null")
     if mbox:
         info(f"old mailboxes in /var/mail (before Maildir): {' '.join(mbox.split())}")
-    info("login test with a password: by hand, 'sudo doveadm auth test calogero' (succeeded) and '... user' (failed)")
+    txt = read(DOVEADM_FILE) if DOVEADM_FILE else None
+    if not txt:
+        info("mail login test skipped (full.sh asks for it at the start: answer y)")
+        return
+    info("doveadm auth test output (passwords are never printed):")
+    for l in txt.replace("Password:", "").splitlines():
+        if l.strip() and not l.startswith("--"):
+            sub(l.strip()[:120])
+    for acct, should in (("calogero", True), ("user", False)):
+        m = re.search(rf"\b{acct} auth (succeeded|failed)", txt)
+        if not m:
+            info(f"mail login test of {acct}: no result")
+        elif should:
+            check(m.group(1) == "succeeded", "D24", "mail login of calogero: auth succeeded",
+                  "mail login of calogero FAILED (password typed wrong, or the mail login is broken)")
+        else:
+            check(m.group(1) == "failed", "D24", "mail login of user refused (not in mailusers), with its real password",
+                  "mail login of user SUCCEEDED: the template password opens the mail (PAM rule not working)")
 
 
 def tls():
@@ -755,7 +841,9 @@ def ns1_from_welcome():
             new(f"ns1 {p}/tcp open: not in the documentation")
     for g in ("group7", "group8"):
         r = sh(f"getent hosts welcome.{g}.umons | awk '{{print $1}}'")
-        info(f"provider welcome.{g}.umons -> {r or 'no answer'}")
+        n = f"welcome.{g}.umons"
+        info(f"provider {n} -> {r or 'no answer'} (system resolver); asked to ns1: {dig_status(NS1, n)}, "
+             f"to the gateway: {dig_status(GW, n)}")
 
 
 # ---------- ns1 ----------
@@ -847,10 +935,30 @@ def bind():
     for opt in ("allow-recursion", "allow-transfer", "version"):
         if not re.search(rf"^\s*{opt}\s", conf, re.M):
             opn("W8", f"option '{opt}' not written explicitly (defaults apply)")
-    dv = re.search(r"dnssec-validation\s+(\S+);", conf)
-    info(f"dnssec-validation {dv.group(1) if dv else 'default'}")
     dns_answers("127.0.0.1", "local")
     check(bool(dig("127.0.0.1", "deb.debian.org")), "10.4", "Internet names through the forwarder", "Internet names do not resolve (forwarder)")
+
+
+def umons_names():
+    sec("7b. DNS: names of the other groups (.umons) through ns1, and DNSSEC")
+    dv = re.search(r"dnssec-validation\s+(\S+);", sh("named-checkconf -p 2>/dev/null"))
+    info(f"dnssec-validation {dv.group(1) if dv else 'not written (default: auto)'}")
+    for n in ("welcome.group7.umons", "welcome.group8.umons", "safeupdate.umons"):
+        loc, cd, gw = dig_status("127.0.0.1", n), dig_status("127.0.0.1", n, "+cd"), dig_status(GW, n)
+        line = f"{n}: ns1 {loc}, ns1 without validation (+cd) {cd}, gateway {gw}"
+        if loc == "NOERROR":
+            ok("10.16", line)
+        elif loc == "SERVFAIL" and cd == "NOERROR":
+            new(line + ": the DNSSEC validation of ns1 refuses the lab TLD .umons (candidate fix: validate-except { \"umons\"; };)")
+        else:
+            new(line)
+    flags = sh("dig +dnssec +time=2 +tries=1 @127.0.0.1 deb.debian.org A 2>/dev/null | grep -o 'flags:[^;]*'")
+    info(f"validation for the Internet: deb.debian.org flags '{flags.replace('flags:', '').strip()}' (ad = validated)")
+    n = sh("journalctl -u named --since -24h --no-pager 2>/dev/null | grep -c 'broken trust chain'")
+    info(f"'broken trust chain' lines of named in the last 24 h: {n or 0}")
+    for l in sh("journalctl -u named --since -24h --no-pager 2>/dev/null | grep 'broken trust chain' "
+                "| grep -o \"resolving '[^/']*\" | sort | uniq -c | sort -rn | head -5").splitlines():
+        sub(l.strip())
 
 
 def ns1_leftovers():
@@ -906,6 +1014,8 @@ def main():
     vm = sys.argv[1]
     repo = sys.argv[2] if len(sys.argv) > 2 else os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     ip = WELCOME if vm == "welcome" else NS1
+    global DOVEADM_FILE
+    DOVEADM_FILE = sys.argv[3] if len(sys.argv) > 3 else ""
     print("Full regression test (read-only). OK = as documented; FAIL = differs from the documentation;")
     print("NEW = not in the documentation; OPEN = known open point (id); INFO = data.")
     identity_and_network(vm, ip, repo)
@@ -913,6 +1023,7 @@ def main():
     accounts(vm)
     investigation()
     hardening(vm)
+    clock()
     health()
     if vm == "welcome":
         web()
@@ -923,6 +1034,7 @@ def main():
         ns1_from_welcome()
     else:
         bind()
+        umons_names()
         ns1_leftovers()
         welcome_from_ns1()
     sec("Summary")
