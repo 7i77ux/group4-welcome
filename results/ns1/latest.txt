@@ -1,5 +1,5 @@
 
-== 1. Identity (2026-11-10 19:31, checks commit cf49848)
+== 1. Identity (2026-11-12 12:22, checks commit d8e30d5)
 OK    hostname: ns1
 OK    /etc/hosts: 127.0.1.1 ns1
 INFO  address on ens18: 10.4.255.10/16 noprefixroute
@@ -65,7 +65,7 @@ WARN  clock not synchronized (NTP)
 
 == 8. welcome seen from another VM (as the other groups see it; no mail is sent)
       ports of welcome: 22:open 25:open 53:closed 80:open 143:closed 443:closed 587:closed 993:open
-      WARN  temporary failure (server problem): RCPT to an external address (relay) -> 454 4.7.1 <relay-test@example.org>: Relay access denied
+      OK    relay refused: RCPT to an external address (relay) -> 454 4.7.1 <relay-test@example.org>: Relay access denied
       OK    RCPT postmaster@group4.umons -> 250 2.1.5 Ok
       OK    RCPT to an unknown local user -> 550 5.1.1 <no-such-user-check@group4.umons>: Recipient address rejected: U
       IMAP 143 from ns1: not reachable (ConnectionRefusedError)
@@ -75,11 +75,11 @@ INFO  user: uid 1000, home /home/user, shell /bin/bash, groups: user cdrom flopp
 INFO     password status / last change: P 2026-10-22
 WARN     user has administrator rights (sudo)
 INFO     last logins: user tty7 :0 Tue Nov 10 10:13 - still logged in;user tty7 :0 Tue Nov 10 09:43 - 10:12 (00:28);user tty7 :0 Tue Nov 10 08:59 - 09:43 (00:43);
-INFO     home modified 2026-11-10 18:23:08, files 2046, ssh keys: no, crontab: no, processes: 58
+INFO     home modified 2026-11-10 18:23:08, files 2276, ssh keys: no, crontab: no, processes: 58
 INFO  mother: uid 1001, home /home/mother, shell /bin/bash, groups: mother sudo users
 INFO     password status / last change: P 2026-10-22
 WARN     mother has administrator rights (sudo)
-INFO     last logins: mother pts/1 10.4.255.11 Tue Nov 10 19:29 - 19:29 (00:00);mother pts/1 10.4.255.11 Tue Nov 10 19:26 - 19:26 (00:00);mother pts/1 10.4.255.11 Tue Nov 10 18:31 - 18:31 (00:00);
+INFO     last logins: mother pts/1 10.4.255.11 Thu Nov 12 11:37 - 11:37 (00:00);mother pts/1 10.4.255.11 Thu Nov 12 11:35 - 11:35 (00:00);mother pts/1 10.4.255.11 Thu Nov 12 10:38 - 10:38 (00:00);
 INFO     home modified , files 0, ssh keys: no, crontab: no, processes: 0
 INFO  account creations in the logs (useradd):
         2026-10-22T12:06:17+02:00 useradd[1280]: name=mother, UID=1001, GID=1001, home=/home/mother, shell=/bin/sh, from=/dev/pts/1
@@ -88,5 +88,83 @@ INFO  account creations in the logs (useradd):
         2026-11-04T09:42:53+01:00 useradd[4498]: name=bind, UID=109, GID=112, home=/var/cache/bind, shell=/usr/sbin/nologin, from=/dev/pts/2
         2026-11-08T18:59:08+01:00 useradd[2995]: name=postfix, UID=110, GID=113, home=/var/spool/postfix, shell=/usr/sbin/nologin, from=none
 
+== Investigation (read-only): processes, SSH logins, sudo rules, scheduled jobs
+INFO  SSH logins of mother (last 5 in 7 days):
+        2026-11-12T09:37:42+01:00 sshd-session[33109]: Accepted password for mother from 10.4.255.11 port 49934 ssh2
+        2026-11-12T10:37:21+01:00 sshd-session[33675]: Accepted password for mother from 10.4.255.11 port 54572 ssh2
+        2026-11-12T10:38:56+01:00 sshd-session[33768]: Accepted password for mother from 10.4.255.11 port 53820 ssh2
+        2026-11-12T11:35:47+01:00 sshd-session[34337]: Accepted password for mother from 10.4.255.11 port 39734 ssh2
+        2026-11-12T11:37:42+01:00 sshd-session[34480]: Accepted password for mother from 10.4.255.11 port 48402 ssh2
+INFO  sudo rules (besides comments):
+        root	ALL=(ALL:ALL) ALL
+        %sudo	ALL=(ALL:ALL) ALL
+        @includedir /etc/sudoers.d
+INFO  cron jobs:
+        /etc/crontab: SHELL=/bin/sh
+        /etc/crontab: PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        /etc/crontab: 17 *	* * *	root	cd / && run-parts --report /etc/cron.hourly
+        /etc/crontab: 25 6	* * *	root	test -x /usr/sbin/anacron || { cd / && run-parts --report /etc/cron.daily; }
+        /etc/crontab: 47 6	* * 7	root	test -x /usr/sbin/anacron || { cd / && run-parts --report /etc/cron.weekly; }
+        /etc/crontab: 52 6	1 * *	root	test -x /usr/sbin/anacron || { cd / && run-parts --report /etc/cron.monthly; }
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice2.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/cron.d/anacron: SHELL=/bin/sh
+        /etc/cron.d/anacron: PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+        /etc/cron.d/anacron: 30 7-23 * * *   root	if [ -x /etc/init.d/anacron ] && ! [ -d /run/systemd/system ]; then exec /usr/sbin/invoke-rc.d anacr
+        /etc/cron.d/e2scrub_all: 30 3 * * 0 root test -e /run/systemd/system || SERVICE_MODE=1 /usr/libexec/e2fsprogs/e2scrub_all_cron
+        /etc/cron.d/e2scrub_all: 10 3 * * * root test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r
+INFO  systemd timers:
+        anacron.timer anacron.service
+        apt-daily.timer apt-daily.service
+        apt-daily-upgrade.timer apt-daily-upgrade.service
+        dpkg-db-backup.timer dpkg-db-backup.service
+        e2scrub_all.timer e2scrub_all.service
+        fstrim.timer fstrim.service
+        logrotate.timer logrotate.service
+        man-db.timer man-db.service
+        systemd-tmpfiles-clean.timer systemd-tmpfiles-clean.service
+INFO  outgoing SSH from this VM now:
+INFO  SSH server: password login yes, root login without-password, keys file  .ssh/authorized_keys .ssh/authorized_keys2
+
 == 9. Resources
-INFO  vCPU 2 | RAM 1973 MB, used 957 MB | disk / 14G, used 5.1G
+INFO  vCPU 2 | RAM 1973 MB, used 928 MB | disk / 14G, used 5.1G
