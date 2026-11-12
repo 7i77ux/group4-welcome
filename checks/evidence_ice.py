@@ -59,7 +59,8 @@ def redact(text):
 
 lines = [f"== Evidence of ice on {vm} ({time.strftime('%Y-%m-%d %H:%M')}): read-only, secrets redacted, ice not executed",
          f"INFO  /tmp/.test: {'present, ' + str(len(secrets)) + ' line(s) used as secrets to redact (never printed)' if secrets else 'absent or empty'}"]
-files = sorted(set(glob.glob(P("/usr/local/bin/ice*")) + glob.glob(P("/tmp/ice*")) + glob.glob(P("/root/ice*"))))
+files = sorted(set(glob.glob(P("/usr/local/bin/ice*")) + glob.glob(P("/tmp/ice*")) + glob.glob(P("/root/ice*"))
+                   + glob.glob(P("/tmp/next*")) + glob.glob(P("/tmp/poiuytre*"))))
 lines.append("\n== Metadata")
 for f in files:
     st = os.stat(f)
@@ -73,8 +74,27 @@ lines.append(f"INFO  /etc/crontab lines running ice: {sh('grep -c ice ' + P('/et
 for l in sh(f"grep -n ice {P('/etc/crontab')} 2>/dev/null | sort -t: -k2 -u").splitlines():
     lines.append(f"        {l}")
 if not root:
-    for l in sh("ps -eo pid,ppid,user,lstart,args | grep -E 'ice[0-9]*\\.py|sudo -S' | grep -v grep").splitlines():
+    for l in sh("ps -eo pid,ppid,user,lstart,args | grep -E '/usr/local/bin/ice|/tmp/next|sudo -S' | grep -v grep").splitlines():
         lines.append(f"INFO  process: {' '.join(l.split())}")
+if not root:
+    lines.append("\n== Orders: what ice started and what the command servers answer now (nothing is executed)")
+    ice_pids = sh("pgrep -f '/usr/local/bin/ice2?\\.py' | tr '\\n' ','").strip(",")
+    if ice_pids:
+        kids = sh(f"ps -o pid,ppid,user,lstart,args --ppid {ice_pids} 2>/dev/null | tail -n +2")
+        lines.append("INFO  processes started by ice now: " + ("" if kids else "none"))
+        lines += [f"        {' '.join(k.split())[:150]}" for k in kids.splitlines()]
+    hits = sh("journalctl -o short-iso --no-pager 2>/dev/null | grep -E 'next\\.py|poiuytre|safeupdate|10\\.222\\.0\\.86' | tail -10")
+    lines.append("INFO  journal lines about next.py, poiuytre or the command servers: " + ("" if hits else "none"))
+    lines += [f"        {h[:150]}" for h in hits.splitlines()]
+    lines.append(f"INFO  safeupdate.umons resolves to: {sh('getent hosts safeupdate.umons') or 'nothing'}")
+    lines.append("INFO  files in /tmp (name, size, date):")
+    lines += [f"        {l[:150]}" for l in sh("ls -la --time-style=+%Y-%m-%dT%H:%M /tmp 2>/dev/null | tail -n +2").splitlines()]
+    for url in ("https://safeupdate.umons/next", "https://10.222.0.86/next"):
+        tmp = "/root/next-observed-" + url.split("/")[2] + ".txt"
+        st = sh(f"curl -sk --max-time 10 -o {tmp} -w '%{{http_code}} %{{size_download}}' {url}")
+        lines.append(f"INFO  GET {url} (saved to {tmp}, NOT executed): HTTP status and bytes: {st or 'no answer'}")
+        if st.startswith("200") and os.path.exists(tmp):
+            files.append(tmp)
 for f in files:
     try:
         with open(f, encoding="utf-8", errors="replace") as fh:
