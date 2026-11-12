@@ -1,7 +1,7 @@
 Full regression test (read-only). OK = as documented; FAIL = differs from the documentation;
 NEW = not in the documentation; OPEN = known open point (id); INFO = data.
 
-== 1. Identity and network (welcome, 2026-11-12 12:27, checks commit 0a5e527)
+== 1. Identity and network (welcome, 2026-11-12 16:47, checks commit 140c1bb)
 OK    [D08] hostname welcome
 OK    [10.11] /etc/hosts: 127.0.1.1 welcome
 OK    [D02] 10.4.255.11/16 on ens18
@@ -62,37 +62,80 @@ INFO  their parent processes (who started them):
         1 root     /sbin/init
            2364 mother   /usr/lib/systemd/systemd --user
 INFO  systemd linger (user services kept running without login): no
-INFO  SSH logins of mother in 7 days: 72; methods: Accepted password; from: 10.4.255.10, 10.4.255.41, 10.4.255.46
-        2026-11-12T08:26:32+01:00 sshd-session[17117]: Accepted password for mother from 10.4.255.10 port 59206 ssh2
-        2026-11-12T09:26:54+01:00 sshd-session[17275]: Accepted password for mother from 10.4.255.10 port 48614 ssh2
-        2026-11-12T10:24:55+01:00 sshd-session[17435]: Accepted password for mother from 10.4.255.10 port 37414 ssh2
-        2026-11-12T11:24:14+01:00 sshd-session[17597]: Accepted password for mother from 10.4.255.10 port 59232 ssh2
-        2026-11-12T12:26:46+01:00 sshd-session[18863]: Accepted password for mother from 10.4.255.10 port 49254 ssh2
-INFO  commands run with sudo by mother in 7 days: 5 (last 5):
-        COMMAND=/bin/bash
-        COMMAND=/usr/bin/mv /tmp/ice.py /usr/local/bin/ice.py
-        COMMAND=/usr/bin/tee -a /etc/crontab
-        COMMAND=/etc/init.d/cron reload
-        COMMAND=/usr/bin/python3 /usr/local/bin/ice.py
+INFO  SSH logins of mother in the whole journal: 115; methods: Accepted password
+        from 10.4.255.47: 3 logins, first 2026-11-04T09:42, last 2026-11-04T10:41
+        from 10.4.255.10: 84 logins, first 2026-11-04T11:34, last 2026-11-12T16:36
+        from 10.4.255.46: 24 logins, first 2026-11-04T11:34, last 2026-11-10T10:30
+        from 10.4.255.41: 4 logins, first 2026-11-10T09:30, last 2026-11-10T10:33
+INFO  commands run with sudo by mother (whole journal): 16; first 5 and last 5:
+        2026-10-22T12:09 COMMAND=/usr/bin/ls
+        2026-11-04T09:42 COMMAND=/bin/bash
+        2026-11-04T09:42 COMMAND=/usr/bin/mv /tmp/ice2.py /usr/local/bin/ice2.py
+        2026-11-04T09:42 COMMAND=/usr/bin/tee -a /etc/crontab
+        2026-11-04T09:42 COMMAND=/etc/init.d/cron reload
+        ...
+        2026-11-10T10:29 COMMAND=/bin/bash
+        2026-11-10T10:29 COMMAND=/usr/bin/mv /tmp/ice.py /usr/local/bin/ice.py
+        2026-11-10T10:29 COMMAND=/usr/bin/tee -a /etc/crontab
+        2026-11-10T10:29 COMMAND=/etc/init.d/cron reload
+        2026-11-10T10:29 COMMAND=/usr/bin/python3 /usr/local/bin/ice.py
+INFO  files of ice (metadata only, contents not printed):
+        ls: cannot access '/tmp/ice*': No such file or directory
+        -rw-rw-r-- 1 mother mother    7 2026-11-10T10:29 /tmp/.test
+        /usr/local/bin/:
+        drwxr-xr-x  2 root   root   4096 2026-11-10T10:29 .
+        drwxr-xr-x 11 root   root   4096 2026-10-22T11:57 ..
+        -rw-rw-r--  1 mother mother 5494 2026-11-04T09:42 ice2.py
+        -rw-rw-r--  1 mother mother 5504 2026-11-10T10:29 ice.py
+        c72cf5f54d8806ed90ba4d62de621a467da00ef716153ef2d4485ee5a1509048  /usr/local/bin/ice.py
+        d18b295830034bc7311d4cc469e37c7a303ae5ecb1a1eb3f77fdf48b25acd34c  /usr/local/bin/ice2.py
+INFO  lines of /etc/crontab that run ice: 3
+INFO  processes running ice now: 
+        2437       1 mother   Tue Nov 10 10:29:11 2026 sh -c cat /tmp/.test | sudo -S python3 /usr/local/bin/ice.py
+           2440    2437 root     Tue Nov 10 10:29:11 2026 sudo -S python3 /usr/local/bin/ice.py
+           2445    2440 root     Tue Nov 10 10:29:11 2026 sudo -S python3 /usr/local/bin/ice.py
+           2446    2445 root     Tue Nov 10 10:29:11 2026 python3 /usr/local/bin/ice.py
+           2648    2640 root     Tue Nov 10 10:30:00 2026 /bin/sh -c python3 /usr/local/bin/ice2.py
+           2650    2648 root     Tue Nov 10 10:30:00 2026 python3 /usr/local/bin/ice2.py
+INFO  network sockets of python processes: none
 INFO  configuration files that mention mother: none
 INFO  outgoing SSH connections now: none
 
 == 5. Hardening and open weaknesses
 OPEN  [W9] SSH accepts password logins (D19)
 OK    SSH root login: without-password
-OPEN  [W28] clock not synchronized (NTP); timesync: 3.debian.pool.ntp.org
 OPEN  [W12] no automatic security updates (unattended-upgrades not installed)
 OPEN  [W10] no fail2ban (no automatic blocking)
 OPEN  [W2] no host firewall rules (nftables empty)
 INFO  packages with an update available (apt cache): 1
+
+== 5b. Clock and NTP (W28; question 7 for the teacher)
+OPEN  [W28] clock not synchronized (NTP)
+INFO  timedatectl: NTP service enabled = yes, time zone Europe/Brussels
+INFO  systemd-timesyncd: active, enabled at boot
+INFO  timesyncd SystemNTPServers: -
+INFO  timesyncd FallbackNTPServers: 0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
+INFO  timesyncd LinkNTPServers: -
+INFO  timesyncd ServerName: 3.debian.pool.ntp.org
+INFO  timesyncd ServerAddress: 162.159.200.1
+        2026-11-12T16:36:48+01:00 welcome systemd-timesyncd[325]: Timed out waiting for reply from 45.87.78.35:123 (3.debian.pool.ntp.org).
+        2026-11-12T16:36:59+01:00 welcome systemd-timesyncd[325]: Timed out waiting for reply from 45.138.55.61:123 (3.debian.pool.ntp.org).
+        2026-11-12T16:37:09+01:00 welcome systemd-timesyncd[325]: Timed out waiting for reply from 162.159.200.1:123 (3.debian.pool.ntp.org).
+INFO  NTP 10.4.255.254 (10.4.255.254): reply, stratum 12, offset of this clock +13.765 s
+INFO  NTP 0.debian.pool.ntp.org (94.142.246.192): no reply
+INFO  NTP 1.debian.pool.ntp.org (80.200.247.170): no reply
+INFO  NTP 2.debian.pool.ntp.org (45.138.55.60): no reply
+INFO  NTP 3.debian.pool.ntp.org (80.200.247.170): no reply
+INFO  NTP servers that answer from this VM: 10.4.255.254 (candidates for W28)
+INFO  this clock vs the HTTPS Date of deb.debian.org: -2 s (precision about 1 s)
 
 == 6. Health
 OK    no failed systemd unit
 OK    disk / used 40%
 INFO  RAM: 1973 MB, used 700 MB
 INFO  most frequent errors in the logs (24 h):
-        3 pam_systemd(lightdm-greeter:session): Failed to release session: Transport endpoint is not connected
-        3 gkr-pam: unable to locate daemon control file
+        6 pam_systemd(lightdm-greeter:session): Failed to release session: Transport endpoint is not connected
+        6 gkr-pam: unable to locate daemon control file
 
 == 7. Web (nginx)
 OK    [10.10] nginx active, enabled at boot
@@ -116,7 +159,7 @@ OPEN  [W11] no HTTPS (443) yet: waits for the course certificate
 
 == 8. Mail: Postfix
 OK    [D05] postfix active, enabled at boot
-FAIL  [10.41] postfix check: postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+NEW   postfix check warning: postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
 INFO  version 3.10.13
 OK    [W21] myhostname = mail.group4.umons
 OK    [10.13] mydestination includes group4.umons
@@ -134,7 +177,8 @@ OPEN  [W30] smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticat
 OPEN  [M2] sending with login on 587 not ready (waits for the course certificate, D23)
 OK    [W18] alias postmaster present
 INFO  aliases: postmaster root
-FAIL  [10.13] /etc/aliases changed after the last newaliases: run newaliases
+FAIL  [10.13] aliases database differs from /etc/aliases, run 'sudo newaliases': root (file: user, database: missing)
+INFO  /etc/aliases is newer than its database
 OK    mail queue empty
 INFO  certificate on 25 (STARTTLS): subject=CN=debian | issuer=CN=debian
 OK    [D26] local greeting: 220 mail.group4.umons ESMTP
@@ -160,7 +204,15 @@ INFO  /home/calogero/Maildir: 1 new, 0 read
 INFO  /home/user/Maildir: 1 new, 0 read
 OK    [D27] proof of reception from ns1 found in the mailbox of calogero (1794482547.V801Ia38feM683048.debian)
 INFO  old mailboxes in /var/mail (before Maildir): /var/mail/root
-INFO  login test with a password: by hand, 'sudo doveadm auth test calogero' (succeeded) and '... user' (failed)
+INFO  doveadm auth test output (passwords are never printed):
+        passdb: calogero auth succeeded
+        extra fields:
+        user=calogero
+        passdb: user auth failed
+        extra fields:
+        user=user
+OK    [D24] mail login of calogero: auth succeeded
+OK    [D24] mail login of user refused (not in mailusers), with its real password
 
 == 10. TLS key, request and certificate
 OK    [D09] key: mode 600, owner root
@@ -183,21 +235,19 @@ OK    [10.4] from welcome: mail.group4.umons. A 10.4.255.11
 OK    [10.4] from welcome: ns1.group4.umons. A 10.4.255.10
 OK    [10.4] from welcome: smtp.group4.umons. CNAME mail.group4.umons.
 OK    [10.4] from welcome: welcome.group4.umons. A 10.4.255.11
-FAIL  [W25] from welcome: PTR 10.4.255.10 -> no answer (expected only ns1.group4.umons.)
-FAIL  [W25] from welcome: PTR 10.4.255.11 -> no answer (expected only mail.group4.umons.)
+OK    [W25] from welcome: PTR 10.4.255.10 -> ns1.group4.umons.
+OK    [W25] from welcome: PTR 10.4.255.11 -> mail.group4.umons.
 OK    [10.4] from welcome: authoritative answer (aa)
 OK    [W8] zone transfer (AXFR) refused to welcome
 OK    [W8] BIND version hidden
 INFO  ns1 resolves Internet names for welcome (recursion): yes
 OK    [D03] ns1 53/tcp reachable
 OPEN  [W9] ns1 22/tcp reachable (SSH)
-INFO  provider welcome.group7.umons -> 10.7.255.10
-INFO  provider welcome.group8.umons -> 10.8.255.10
+INFO  provider welcome.group7.umons -> 10.7.255.10 (system resolver); asked to ns1: NXDOMAIN, to the gateway: NOERROR
+INFO  provider welcome.group8.umons -> 10.8.255.10 (system resolver); asked to ns1: NXDOMAIN, to the gateway: NOERROR
 
 == Summary
-83 OK, 4 FAIL, 0 NEW, 18 OPEN, 34 INFO
-FAIL  [10.41] postfix check: postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
-FAIL  [10.13] /etc/aliases changed after the last newaliases: run newaliases
-FAIL  [W25] from welcome: PTR 10.4.255.10 -> no answer (expected only ns1.group4.umons.)
-FAIL  [W25] from welcome: PTR 10.4.255.11 -> no answer (expected only mail.group4.umons.)
+87 OK, 1 FAIL, 1 NEW, 18 OPEN, 53 INFO
+FAIL  [10.13] aliases database differs from /etc/aliases, run 'sudo newaliases': root (file: user, database: missing)
+NEW   postfix check warning: postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
 OPEN ids: D15 D23 M2 W1 W10 W11 W12 W14 W2 W28 W29 W30 W9
