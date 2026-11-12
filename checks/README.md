@@ -18,6 +18,7 @@ The results are public while they are here: they will be removed at the end of t
 | ns1 (10.4.255.10) | `sudo sh checks/ns1.sh` | `/tmp/check-ns1.txt` |
 | welcome (10.4.255.11), mail service | `sudo sh checks/mail.sh` | `/tmp/check-mail.txt` |
 | ns1, proof of reception (sends ONE test mail to our own server, after confirmation) | `sudo sh checks/mailtest_ns1.sh` | `/tmp/check-mailtest.txt` |
+| welcome or ns1: evidence of the ice scripts (their text with secrets redacted, metadata; read-only, ice never run) | `sudo sh checks/evidence_ice.sh` | `/tmp/evidence-ice-<vm>.txt`, pushed to `results/evidence-<vm>/` |
 | welcome or ns1: full regression test of everything documented (this VM + the other VM seen from here) | `sudo sh checks/full.sh` | `/tmp/check-full-<vm>.txt`, pushed to `results/full-<vm>/` |
 
 Each line starts with `OK`, `WARN` (something to fix) or `INFO` (a value to read). The last line counts the warnings. To scroll the full output: `less /tmp/check-<vm>.txt`.
