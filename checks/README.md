@@ -18,5 +18,10 @@ The results are public while they are here: they will be removed at the end of t
 | ns1 (10.4.255.10) | `sudo sh checks/ns1.sh` | `/tmp/check-ns1.txt` |
 | welcome (10.4.255.11), mail service | `sudo sh checks/mail.sh` | `/tmp/check-mail.txt` |
 | ns1, proof of reception (sends ONE test mail to our own server, after confirmation) | `sudo sh checks/mailtest_ns1.sh` | `/tmp/check-mailtest.txt` |
+| welcome or ns1: full regression test of everything documented (this VM + the other VM seen from here) | `sudo sh checks/full.sh` | `/tmp/check-full-<vm>.txt`, pushed to `results/full-<vm>/` |
 
 Each line starts with `OK`, `WARN` (something to fix) or `INFO` (a value to read). The last line counts the warnings. To scroll the full output: `less /tmp/check-<vm>.txt`.
+
+`full.sh` (with `full.py`) uses other statuses: `OK` as documented, `FAIL` differs from the documentation (something broke, or the documentation is wrong), `NEW` not in the documentation (to look at), `OPEN` known open point with its id (expected for now), `INFO` data. The summary at the end lists every FAIL and NEW line and the OPEN ids. It observes the account `mother` without changing it (D28).
+
+If a push fails because of a conflict, `push-results.sh` now aborts the rebase and drops its own commit, so the clone stays usable; the output is kept in `/tmp/unpushed-<vm>-<time>.txt`. A clone that is still stuck from before: `cd ~/Desktop/group4-welcome && git rebase --abort; git fetch origin && git reset --hard origin/main`.
