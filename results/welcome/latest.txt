@@ -1,5 +1,5 @@
 
-== 1. Identity (2026-11-10 19:31, checks commit c443cb5)
+== 1. Identity (2026-11-12 12:21, checks commit a807c27)
 OK    hostname: welcome
 OK    /etc/hosts: 127.0.1.1 welcome
 INFO  address on ens18: 10.4.255.11/16 noprefixroute
@@ -27,7 +27,7 @@ INFO  dovecot installed
 
 == 5. Listening ports (proto, address:port, process)
       tcp  0.0.0.0:22                 sshd
-      tcp  0.0.0.0:25                 smtpd
+      tcp  0.0.0.0:25                 master
       tcp  0.0.0.0:5355               systemd-resolve
       tcp  0.0.0.0:80                 nginx
       tcp  0.0.0.0:993                dovecot
@@ -36,7 +36,7 @@ INFO  dovecot installed
       tcp  127.0.0.54:53              systemd-resolve
       tcp  [::1]:631                  cupsd
       tcp  [::]:22                    sshd
-      tcp  [::]:25                    smtpd
+      tcp  [::]:25                    master
       tcp  [::]:5355                  systemd-resolve
       tcp  [::]:80                    nginx
       tcp  [::]:993                   dovecot
@@ -77,11 +77,11 @@ INFO  user: uid 1000, home /home/user, shell /bin/bash, groups: user cdrom flopp
 INFO     password status / last change: P 2026-10-22
 WARN     user has administrator rights (sudo)
 INFO     last logins: user tty7 :0 Tue Nov 10 09:44 - still logged in;user tty7 :0 Tue Nov 10 08:59 - 09:40 (00:40);user tty7 :0 Mon Nov 9 15:18 - still logged in;
-INFO     home modified 2026-11-10 17:39:23, files 1353, ssh keys: no, crontab: no, processes: 45
+INFO     home modified 2026-11-10 17:39:23, files 1404, ssh keys: no, crontab: no, processes: 44
 INFO  mother: uid 1001, home /home/mother, shell /bin/bash, groups: mother sudo users
 INFO     password status / last change: P 2026-10-22
 WARN     mother has administrator rights (sudo)
-INFO     last logins: mother pts/2 10.4.255.10 Tue Nov 10 18:36 - 18:36 (00:00);mother pts/1 10.4.255.10 Tue Nov 10 17:35 - 17:35 (00:00);mother pts/1 10.4.255.10 Tue Nov 10 16:32 - 16:32 (00:00);
+INFO     last logins: mother pts/1 10.4.255.10 Thu Nov 12 11:24 - 11:24 (00:00);mother pts/1 10.4.255.10 Thu Nov 12 10:24 - 10:24 (00:00);mother pts/1 10.4.255.10 Thu Nov 12 09:26 - 09:26 (00:00);
 INFO     home modified , files 0, ssh keys: no, crontab: no, processes: 8
 INFO  calogero: uid 1003, home /home/calogero, shell /usr/sbin/nologin, groups: calogero users mailusers
 INFO     password status / last change: P 2026-11-10
@@ -97,5 +97,53 @@ INFO  account creations in the logs (useradd):
         2026-11-09T16:46:49+01:00 useradd[4432]: name=dovenull, UID=112, GID=116, home=/nonexistent, shell=/usr/sbin/nologin, from=/dev/pts/2
         2026-11-10T19:30:16+01:00 useradd[9845]: name=calogero, UID=1003, GID=1003, home=/home/calogero, shell=/usr/sbin/nologin, from=/dev/pts/1
 
+== Investigation (read-only): processes, SSH logins, sudo rules, scheduled jobs
+INFO  processes of mother:
+           2364 Tue Nov 10 10:29:10 2026 /usr/lib/systemd/systemd --user
+           2366 Tue Nov 10 10:29:11 2026 (sd-pam)
+           2387 Tue Nov 10 10:29:11 2026 /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+           2388 Tue Nov 10 10:29:11 2026 /usr/bin/pipewire
+           2389 Tue Nov 10 10:29:11 2026 /usr/bin/pipewire -c filter-chain.conf
+           2391 Tue Nov 10 10:29:11 2026 /usr/bin/wireplumber
+           2393 Tue Nov 10 10:29:11 2026 /usr/bin/pipewire-pulse
+           2437 Tue Nov 10 10:29:11 2026 sh -c cat /tmp/.test | sudo -S python3 /usr/local/bin/ice.py
+INFO  SSH logins of mother (last 5 in 7 days):
+        2026-11-12T07:27:57+01:00 sshd-session[16951]: Accepted password for mother from 10.4.255.10 port 53502 ssh2
+        2026-11-12T08:26:32+01:00 sshd-session[17117]: Accepted password for mother from 10.4.255.10 port 59206 ssh2
+        2026-11-12T09:26:54+01:00 sshd-session[17275]: Accepted password for mother from 10.4.255.10 port 48614 ssh2
+        2026-11-12T10:24:55+01:00 sshd-session[17435]: Accepted password for mother from 10.4.255.10 port 37414 ssh2
+        2026-11-12T11:24:14+01:00 sshd-session[17597]: Accepted password for mother from 10.4.255.10 port 59232 ssh2
+INFO  sudo rules (besides comments):
+        root	ALL=(ALL:ALL) ALL
+        %sudo	ALL=(ALL:ALL) ALL
+        @includedir /etc/sudoers.d
+INFO  cron jobs:
+        /etc/crontab: SHELL=/bin/sh
+        /etc/crontab: PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        /etc/crontab: 17 *	* * *	root	cd / && run-parts --report /etc/cron.hourly
+        /etc/crontab: 25 6	* * *	root	test -x /usr/sbin/anacron || { cd / && run-parts --report /etc/cron.daily; }
+        /etc/crontab: 47 6	* * 7	root	test -x /usr/sbin/anacron || { cd / && run-parts --report /etc/cron.weekly; }
+        /etc/crontab: 52 6	1 * *	root	test -x /usr/sbin/anacron || { cd / && run-parts --report /etc/cron.monthly; }
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice2.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/crontab: 30 * * * * root python3 /usr/local/bin/ice.py
+        /etc/cron.d/anacron: SHELL=/bin/sh
+        /etc/cron.d/anacron: PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+        /etc/cron.d/anacron: 30 7-23 * * *   root	if [ -x /etc/init.d/anacron ] && ! [ -d /run/systemd/system ]; then exec /usr/sbin/invoke-rc.d anacr
+        /etc/cron.d/e2scrub_all: 30 3 * * 0 root test -e /run/systemd/system || SERVICE_MODE=1 /usr/libexec/e2fsprogs/e2scrub_all_cron
+        /etc/cron.d/e2scrub_all: 10 3 * * * root test -e /run/systemd/system || SERVICE_MODE=1 /sbin/e2scrub_all -A -r
+INFO  systemd timers:
+        anacron.timer anacron.service
+        apt-daily.timer apt-daily.service
+        apt-daily-upgrade.timer apt-daily-upgrade.service
+        dpkg-db-backup.timer dpkg-db-backup.service
+        e2scrub_all.timer e2scrub_all.service
+        fstrim.timer fstrim.service
+        logrotate.timer logrotate.service
+        man-db.timer man-db.service
+        systemd-tmpfiles-clean.timer systemd-tmpfiles-clean.service
+INFO  outgoing SSH from this VM now:
+INFO  SSH server: password login yes, root login without-password, keys file  .ssh/authorized_keys .ssh/authorized_keys2
+
 == 9. Resources
-INFO  vCPU 2 | RAM 1973 MB, used 647 MB | disk / 14G, used 5.2G
+INFO  vCPU 2 | RAM 1973 MB, used 661 MB | disk / 14G, used 5.2G
