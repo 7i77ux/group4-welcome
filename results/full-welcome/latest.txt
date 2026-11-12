@@ -1,0 +1,203 @@
+Full regression test (read-only). OK = as documented; FAIL = differs from the documentation;
+NEW = not in the documentation; OPEN = known open point (id); INFO = data.
+
+== 1. Identity and network (welcome, 2026-11-12 12:27, checks commit 0a5e527)
+OK    [D08] hostname welcome
+OK    [10.11] /etc/hosts: 127.0.1.1 welcome
+OK    [D02] 10.4.255.11/16 on ens18
+INFO  NetworkManager profile 'Wired connection 1': method=manual addresses=10.4.255.11/16 gateway=10.4.255.254 dns=10.4.255.254 ignore-auto-dns=no
+OK    [10.28/10.34] address saved in the profile (survives a reboot)
+OK    [D02] gateway in the profile: 10.4.255.254
+OK    [0.3] DNS in the profile: 10.4.255.254
+OK    [W7] no ifupdown configuration for ens18 (one tool only)
+OK    [W7] networking.service active (not failed)
+OK    [D02] default route via 10.4.255.254
+INFO  resolv.conf: 127.0.0.53
+OK    [10.4] welcome.group4.umons -> 10.4.255.11 (system resolver)
+OK    [fn. 2] outgoing HTTPS to the Internet works (deb.debian.org -> 200)
+INFO  running since 2026-11-10 09:40:28 (last boot)
+INFO  results push: github-welcome:7i77ux/group4-welcome.git
+
+== 2. Listening services (non-local addresses), compared with the documentation
+INFO  local only: tcp/53 systemd-resolve, tcp/631 cupsd, udp/53 systemd-resolve
+OK    [0.3] tcp/25 listening: SMTP (Postfix)
+OK    [0.3] tcp/80 listening: web (nginx)
+OK    [0.3] tcp/993 listening: IMAP over TLS (Dovecot)
+OPEN  [W9] tcp/22 sshd: SSH open to every group (D19)
+OPEN  [W14] tcp/5355 systemd-resolve: LLMNR open on the network
+INFO  udp/5353 avahi-daemon (mDNS, kept: D18)
+OPEN  [W14] udp/5355 systemd-resolve: LLMNR open on the network
+INFO  udp/39840 avahi-daemon (mDNS, kept: D18)
+INFO  udp/46419 avahi-daemon (mDNS, kept: D18)
+
+== 3. Accounts
+INFO  accounts with uid >= 1000: calogero mother user
+OPEN  [W1] user/user (template password) is an administrator (D12)
+OPEN  [W29] account mother: administrator (mother sudo users), not touched for now (D28)
+OK    [D24] calogero: shell nologin (mail only)
+OK    [D24] calogero in group mailusers
+OK    [D20] /home/calogero/Maildir exists (cur, new, tmp)
+INFO  accounts created (useradd in the logs):
+        2026-10-22T12:06:17+02:00 mother
+        2026-10-22T12:06:31+02:00 mother
+        2026-10-22T12:08:11+02:00 mother
+        2026-11-04T09:42:14+01:00 bind
+        2026-11-08T19:32:20+01:00 postfix
+        2026-11-09T16:46:49+01:00 dovecot
+        2026-11-09T16:46:49+01:00 dovenull
+        2026-11-10T19:30:16+01:00 calogero
+
+== 4. Account mother: read-only observation (D28, nothing is changed)
+INFO  password status: mother P 2026-10-22 0 99999 7 -1
+INFO  processes of mother: 8
+        2364       1 Tue Nov 10 10:29:10 2026 /usr/lib/systemd/systemd --user
+           2366    2364 Tue Nov 10 10:29:11 2026 (sd-pam)
+           2387    2364 Tue Nov 10 10:29:11 2026 /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+           2388    2364 Tue Nov 10 10:29:11 2026 /usr/bin/pipewire
+           2389    2364 Tue Nov 10 10:29:11 2026 /usr/bin/pipewire -c filter-chain.conf
+           2391    2364 Tue Nov 10 10:29:11 2026 /usr/bin/wireplumber
+           2393    2364 Tue Nov 10 10:29:11 2026 /usr/bin/pipewire-pulse
+           2437       1 Tue Nov 10 10:29:11 2026 sh -c cat /tmp/.test | sudo -S python3 /usr/local/bin/ice.py
+INFO  their parent processes (who started them):
+        1 root     /sbin/init
+           2364 mother   /usr/lib/systemd/systemd --user
+INFO  systemd linger (user services kept running without login): no
+INFO  SSH logins of mother in 7 days: 72; methods: Accepted password; from: 10.4.255.10, 10.4.255.41, 10.4.255.46
+        2026-11-12T08:26:32+01:00 sshd-session[17117]: Accepted password for mother from 10.4.255.10 port 59206 ssh2
+        2026-11-12T09:26:54+01:00 sshd-session[17275]: Accepted password for mother from 10.4.255.10 port 48614 ssh2
+        2026-11-12T10:24:55+01:00 sshd-session[17435]: Accepted password for mother from 10.4.255.10 port 37414 ssh2
+        2026-11-12T11:24:14+01:00 sshd-session[17597]: Accepted password for mother from 10.4.255.10 port 59232 ssh2
+        2026-11-12T12:26:46+01:00 sshd-session[18863]: Accepted password for mother from 10.4.255.10 port 49254 ssh2
+INFO  commands run with sudo by mother in 7 days: 5 (last 5):
+        COMMAND=/bin/bash
+        COMMAND=/usr/bin/mv /tmp/ice.py /usr/local/bin/ice.py
+        COMMAND=/usr/bin/tee -a /etc/crontab
+        COMMAND=/etc/init.d/cron reload
+        COMMAND=/usr/bin/python3 /usr/local/bin/ice.py
+INFO  configuration files that mention mother: none
+INFO  outgoing SSH connections now: none
+
+== 5. Hardening and open weaknesses
+OPEN  [W9] SSH accepts password logins (D19)
+OK    SSH root login: without-password
+OPEN  [W28] clock not synchronized (NTP); timesync: 3.debian.pool.ntp.org
+OPEN  [W12] no automatic security updates (unattended-upgrades not installed)
+OPEN  [W10] no fail2ban (no automatic blocking)
+OPEN  [W2] no host firewall rules (nftables empty)
+INFO  packages with an update available (apt cache): 1
+
+== 6. Health
+OK    no failed systemd unit
+OK    disk / used 40%
+INFO  RAM: 1973 MB, used 700 MB
+INFO  most frequent errors in the logs (24 h):
+        3 pam_systemd(lightdm-greeter:session): Failed to release session: Transport endpoint is not connected
+        3 gkr-pam: unable to locate daemon control file
+
+== 7. Web (nginx)
+OK    [10.10] nginx active, enabled at boot
+OK    [10.10] nginx restarts after a crash (Restart=on-failure, after 5s)
+OK    [10.10] nginx -t: configuration valid
+OK    [10.10] sites enabled: welcome only
+OK    [10.10] site: listen 80 default_server
+OK    [10.10] site: server_name welcome.group4.umons
+OK    [10.10] site: root /var/www/welcome
+OK    [10.10] site: server_tokens off
+OK    [10.10] /var/www/welcome/index.html present (6373 bytes)
+OK    [10.10] http://welcome (local): HTTP 200
+OK    [W20] http://welcome (local): Server header 'nginx' (no version)
+OK    [10.10] http://welcome (local): title 'Group 4 Mail'
+OK    [10.10] http://welcome (local): served page = /var/www/welcome/index.html
+OPEN  [D15] the page says 'send and receive: Online' but customers cannot send (no 587)
+OK    [10.10] unknown path -> 404
+OK    [10.10] http://welcome.group4.umons/ (by name) -> 200
+OK    [10.10] apache2 not installed
+OPEN  [W11] no HTTPS (443) yet: waits for the course certificate
+
+== 8. Mail: Postfix
+OK    [D05] postfix active, enabled at boot
+FAIL  [10.41] postfix check: postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+INFO  version 3.10.13
+OK    [W21] myhostname = mail.group4.umons
+OK    [10.13] mydestination includes group4.umons
+OK    [10.13] /etc/mailname = group4.umons
+OK    [D21] mynetworks only local: 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+OK    [W26] mynetworks entries well formed
+OK    [W26] no 'non-null host address bits' warning in 24 h
+OK    [D20] home_mailbox = Maildir/
+OK    [D20] mailbox_command empty
+OK    [D26] disable_vrfy_command = yes
+OK    [D26] smtpd_helo_required = yes
+OK    [D26] smtpd_banner = $myhostname ESMTP
+OK    [D26] smtpd_client_connection_rate_limit = 30
+OPEN  [W30] smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination (refusal with 454)
+OPEN  [M2] sending with login on 587 not ready (waits for the course certificate, D23)
+OK    [W18] alias postmaster present
+INFO  aliases: postmaster root
+FAIL  [10.13] /etc/aliases changed after the last newaliases: run newaliases
+OK    mail queue empty
+INFO  certificate on 25 (STARTTLS): subject=CN=debian | issuer=CN=debian
+OK    [D26] local greeting: 220 mail.group4.umons ESMTP
+OK    [D26] local VRFY: 502
+OK    [D26] local MAIL before HELO: 503
+
+== 9. Mail: Dovecot and mailboxes
+OK    [M1] dovecot active, enabled at boot
+OK    [10.41] doveconf -n: configuration valid
+INFO  version 2.4.1-4 (7d8c0e5759)
+OK    [D20] mail_driver = maildir
+OK    [D20] mail_path = %{home}/Maildir
+OK    [D20] mail_inbox_path not /var/mail ('')
+OK    [D25] 99-group4.conf closes 143 (port = 0)
+OK    [D25] 143 closed
+OK    [D24] PAM: mail login only for the group mailusers (first rule)
+OK    [D24] group mailusers: calogero
+OPEN  [M2] no auth socket for Postfix yet (needed for login on 587)
+OK    [M1] IMAP 993 over TLS: * OK [CAPABILITY IMAP4rev1 LOGIN-REFERRALS ID ENABLE IDLE SA
+INFO  IMAP 993 capabilities: IMAP4REV1 LOGIN-REFERRALS ID ENABLE IDLE SASL-IR LITERAL+ AUTH=PLAIN
+OPEN  [D23] 993 still uses the Debian certificate: subject=CN=debian | issuer=CN=debian
+INFO  /home/calogero/Maildir: 1 new, 0 read
+INFO  /home/user/Maildir: 1 new, 0 read
+OK    [D27] proof of reception from ns1 found in the mailbox of calogero (1794482547.V801Ia38feM683048.debian)
+INFO  old mailboxes in /var/mail (before Maildir): /var/mail/root
+INFO  login test with a password: by hand, 'sudo doveadm auth test calogero' (succeeded) and '... user' (failed)
+
+== 10. TLS key, request and certificate
+OK    [D09] key: mode 600, owner root
+OK    [D09] request: signature valid
+OK    [D09] request subject=C=BE, ST=Hainaut, O=Group4, OU=CyberDefense, CN=welcome.group4.umons
+OK    [D09] request: SAN welcome + mail
+OK    [D09] request and key match
+OK    [10.15] copy for the teacher identical (/home/user/group4.csr)
+OPEN  [D23] signed certificate from the teacher not received yet
+
+== 11. Leftovers on welcome
+OK    [W23] no BIND on welcome (removed 10.31)
+INFO  backups of the fixes: /root/fixes-backup-20261110-1835 /root/fixes-backup-20261110-1842 /root/fixes-backup-20261110-1930
+
+== 12. ns1 seen from welcome (DNS as the other groups ask it)
+OK    [10.4] from welcome: group4.umons. MX 10 mail.group4.umons.
+OK    [10.4] from welcome: group4.umons. NS ns1.group4.umons.
+OK    [10.4] from welcome: imap.group4.umons. CNAME mail.group4.umons.
+OK    [10.4] from welcome: mail.group4.umons. A 10.4.255.11
+OK    [10.4] from welcome: ns1.group4.umons. A 10.4.255.10
+OK    [10.4] from welcome: smtp.group4.umons. CNAME mail.group4.umons.
+OK    [10.4] from welcome: welcome.group4.umons. A 10.4.255.11
+FAIL  [W25] from welcome: PTR 10.4.255.10 -> no answer (expected only ns1.group4.umons.)
+FAIL  [W25] from welcome: PTR 10.4.255.11 -> no answer (expected only mail.group4.umons.)
+OK    [10.4] from welcome: authoritative answer (aa)
+OK    [W8] zone transfer (AXFR) refused to welcome
+OK    [W8] BIND version hidden
+INFO  ns1 resolves Internet names for welcome (recursion): yes
+OK    [D03] ns1 53/tcp reachable
+OPEN  [W9] ns1 22/tcp reachable (SSH)
+INFO  provider welcome.group7.umons -> 10.7.255.10
+INFO  provider welcome.group8.umons -> 10.8.255.10
+
+== Summary
+83 OK, 4 FAIL, 0 NEW, 18 OPEN, 34 INFO
+FAIL  [10.41] postfix check: postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+FAIL  [10.13] /etc/aliases changed after the last newaliases: run newaliases
+FAIL  [W25] from welcome: PTR 10.4.255.10 -> no answer (expected only ns1.group4.umons.)
+FAIL  [W25] from welcome: PTR 10.4.255.11 -> no answer (expected only mail.group4.umons.)
+OPEN ids: D15 D23 M2 W1 W10 W11 W12 W14 W2 W28 W29 W30 W9
