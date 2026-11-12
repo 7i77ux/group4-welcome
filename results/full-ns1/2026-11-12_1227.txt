@@ -1,0 +1,149 @@
+Full regression test (read-only). OK = as documented; FAIL = differs from the documentation;
+NEW = not in the documentation; OPEN = known open point (id); INFO = data.
+
+== 1. Identity and network (ns1, 2026-11-12 12:27, checks commit 951edd6)
+OK    [D08] hostname ns1
+OK    [10.11] /etc/hosts: 127.0.1.1 ns1
+OK    [D02] 10.4.255.10/16 on ens18
+INFO  NetworkManager profile 'Wired connection 1': method=manual addresses=10.4.255.10/16 gateway=10.4.255.254 dns=127.0.0.1,10.4.255.254 ignore-auto-dns=yes
+OK    [10.28/10.34] address saved in the profile (survives a reboot)
+OK    [D02] gateway in the profile: 10.4.255.254
+OK    [10.34] DNS in the profile: 127.0.0.1,10.4.255.254
+OK    [10.34] DHCP DNS ignored (ignore-auto-dns yes)
+OK    [W7] no ifupdown configuration for ens18 (one tool only)
+OK    [W7] networking.service inactive (not failed)
+OK    [D02] default route via 10.4.255.254
+INFO  resolv.conf: 127.0.0.1 10.4.255.254
+OK    [10.34] ns1 asks its own BIND first
+OK    [10.4] welcome.group4.umons -> 10.4.255.11 (system resolver)
+OK    [fn. 2] outgoing HTTPS to the Internet works (deb.debian.org -> 200)
+INFO  running since 2026-11-10 10:12:56 (last boot)
+INFO  results push: github-welcome:7i77ux/group4-welcome.git
+
+== 2. Listening services (non-local addresses), compared with the documentation
+INFO  local only: tcp/53 named, tcp/631 cupsd, tcp/953 named, udp/53 named
+OK    [0.3] tcp/53 listening: DNS (BIND)
+OK    [0.3] udp/53 listening: DNS (BIND)
+OPEN  [W9] tcp/22 sshd: SSH open to every group (D19)
+INFO  udp/5353 avahi-daemon (mDNS, kept: D18)
+INFO  udp/44700 avahi-daemon (mDNS, kept: D18)
+INFO  udp/45396 avahi-daemon (mDNS, kept: D18)
+
+== 3. Accounts
+INFO  accounts with uid >= 1000: mother user
+OPEN  [W1] user/user (template password) is an administrator (D12)
+OPEN  [W29] account mother: administrator (mother sudo users), not touched for now (D28)
+INFO  accounts created (useradd in the logs):
+        2026-10-22T12:06:17+02:00 mother
+        2026-10-22T12:06:31+02:00 mother
+        2026-10-22T12:08:11+02:00 mother
+        2026-11-04T09:42:53+01:00 bind
+        2026-11-08T18:59:08+01:00 postfix
+
+== 4. Account mother: read-only observation (D28, nothing is changed)
+INFO  password status: mother P 2026-10-22 0 99999 7 -1
+INFO  processes of mother: none now
+INFO  systemd linger (user services kept running without login): no session
+INFO  SSH logins of mother in 7 days: 122; methods: Accepted password; from: 10.4.255.11, 10.4.255.41, 10.4.255.46
+        2026-11-12T09:37:42+01:00 sshd-session[33109]: Accepted password for mother from 10.4.255.11 port 49934 ssh2
+        2026-11-12T10:37:21+01:00 sshd-session[33675]: Accepted password for mother from 10.4.255.11 port 54572 ssh2
+        2026-11-12T10:38:56+01:00 sshd-session[33768]: Accepted password for mother from 10.4.255.11 port 53820 ssh2
+        2026-11-12T11:35:47+01:00 sshd-session[34337]: Accepted password for mother from 10.4.255.11 port 39734 ssh2
+        2026-11-12T11:37:42+01:00 sshd-session[34480]: Accepted password for mother from 10.4.255.11 port 48402 ssh2
+INFO  commands run with sudo by mother in 7 days: 270 (last 5):
+        COMMAND=/bin/bash
+        COMMAND=/usr/bin/mv /tmp/ice.py /usr/local/bin/ice.py
+        COMMAND=/usr/bin/tee -a /etc/crontab
+        COMMAND=/etc/init.d/cron reload
+        COMMAND=/usr/bin/python3 /usr/local/bin/ice.py
+INFO  configuration files that mention mother: none
+INFO  outgoing SSH connections now: none
+
+== 5. Hardening and open weaknesses
+OPEN  [W9] SSH accepts password logins (D19)
+OK    SSH root login: without-password
+OPEN  [W28] clock not synchronized (NTP); timesync: 3.debian.pool.ntp.org
+OPEN  [W12] no automatic security updates (unattended-upgrades not installed)
+OPEN  [W10] no fail2ban (no automatic blocking)
+OPEN  [W2] no host firewall rules (nftables empty)
+INFO  packages with an update available (apt cache): 39
+
+== 6. Health
+OK    no failed systemd unit
+OK    disk / used 39%
+INFO  RAM: 1973 MB, used 964 MB
+INFO  most frequent errors in the logs (24 h):
+        4 pam_systemd(lightdm-greeter:session): Failed to release session: Transport endpoint is not connected
+        4 gkr-pam: unable to locate daemon control file
+        1 mod.protocol-native: 0x55a2a2ad3630: connection_data: client 0x55a2a2ba3780 error -5 (Input/output error)
+        1 client @0x7f01afeedc00 127.0.0.1#55696 (group4.umons): zone transfer 'group4.umons/AXFR/IN' denied
+        1 client @0x7f01afeedc00 10.4.255.11#35850 (group4.umons): zone transfer 'group4.umons/AXFR/IN' denied
+
+== 7. DNS: BIND
+OK    [D03] named active, enabled at boot
+OK    [10.4] named-checkconf: no errors
+OK    [10.4] zone group4.umons loads (serial 2026111012)
+OK    [10.4] zone 255.4.10.in-addr.arpa loads (serial 2026111001)
+OK    [D03] rndc: server is up and running
+INFO  zone group4.umons: file /etc/bind/group4.umons, 7 records besides the SOA
+OK    [10.4] group4.umons: records exactly as documented
+OK    [10.4] group4.umons: serial 2026111012 in the file = serial served
+OK    [D06] time fields unchanged: TTL 2d, refresh 12h, retry 15m, expire 4d, minimum 2h
+INFO  zone 255.4.10.in-addr.arpa: file /etc/bind/db.10.4.255, 3 records besides the SOA
+OK    [10.4] 255.4.10.in-addr.arpa: records exactly as documented
+OK    [10.4] 255.4.10.in-addr.arpa: serial 2026111001 in the file = serial served
+INFO  255.4.10.in-addr.arpa: SOA TTL 172800, refresh 43200, retry 900, expire 345600, minimum 7200
+OK    [10.4] forwarder 10.4.255.254
+OPEN  [W8] option 'allow-recursion' not written explicitly (defaults apply)
+OPEN  [W8] option 'allow-transfer' not written explicitly (defaults apply)
+OPEN  [W8] option 'version' not written explicitly (defaults apply)
+INFO  dnssec-validation default
+OK    [10.4] local: group4.umons. MX 10 mail.group4.umons.
+OK    [10.4] local: group4.umons. NS ns1.group4.umons.
+OK    [10.4] local: imap.group4.umons. CNAME mail.group4.umons.
+OK    [10.4] local: mail.group4.umons. A 10.4.255.11
+OK    [10.4] local: ns1.group4.umons. A 10.4.255.10
+OK    [10.4] local: smtp.group4.umons. CNAME mail.group4.umons.
+OK    [10.4] local: welcome.group4.umons. A 10.4.255.11
+FAIL  [W25] local: PTR 10.4.255.10 -> no answer (expected only ns1.group4.umons.)
+FAIL  [W25] local: PTR 10.4.255.11 -> no answer (expected only mail.group4.umons.)
+OK    [10.4] local: authoritative answer (aa)
+OK    [10.4] Internet names through the forwarder
+
+== 8. Leftovers on ns1
+OK    [10.11] apache2 not installed
+OK    [10.11] nginx not installed
+OK    [10.11] pandoc not installed
+OK    [10.11] /var/www/welcome absent
+
+== 9. welcome seen from ns1 (as the other groups see it; no mail is sent, no login)
+INFO  ports of welcome: 22:open 25:open 53:closed 80:open 143:closed 443:closed 587:closed 993:open
+OK    [D05] 25 open (SMTP)
+OK    [10.10] 80 open (web)
+OK    [M1] 993 open (IMAP over TLS)
+OK    [W23] 53 closed (no DNS on welcome)
+OK    [D25] 143 closed
+OPEN  [W9] 22 open on welcome (SSH)
+OPEN  [M2] 587 closed: customers cannot send yet
+OPEN  [W11] 443 closed: no HTTPS yet
+OK    [D26] SMTP from ns1: greeting: 220 mail.group4.umons ESMTP
+OK    [D26] SMTP from ns1: MAIL before HELO refused: 503
+OK    [M1] SMTP from ns1: STARTTLS offered
+OK    [D26] SMTP from ns1: VRFY disabled: 502
+OPEN  [W30] SMTP from ns1: relay refused, but with the temporary code 454 (abusers retry)
+OK    [D21] SMTP from ns1: RCPT postmaster@group4.umons: 250 (reception works)
+OK    [10.41] SMTP from ns1: RCPT to an unknown user refused: 550
+OK    [M1] IMAP 993 from ns1: * OK [CAPABILITY IMAP4rev1 LOGIN-REFERRALS ID ENAB
+OK    [M1] IMAP 993: login possible over TLS
+OK    [10.10] http://10.4.255.11/ (by address): HTTP 200
+OK    [W20] http://10.4.255.11/ (by address): Server header 'nginx' (no version)
+OK    [10.10] http://10.4.255.11/ (by address): title 'Group 4 Mail'
+OK    [10.10] http://welcome.group4.umons/ from ns1: HTTP 200
+OK    [W20] http://welcome.group4.umons/ from ns1: Server header 'nginx' (no version)
+OK    [10.10] http://welcome.group4.umons/ from ns1: title 'Group 4 Mail'
+
+== Summary
+61 OK, 2 FAIL, 0 NEW, 15 OPEN, 25 INFO
+FAIL  [W25] local: PTR 10.4.255.10 -> no answer (expected only ns1.group4.umons.)
+FAIL  [W25] local: PTR 10.4.255.11 -> no answer (expected only mail.group4.umons.)
+OPEN ids: M2 W1 W10 W11 W12 W2 W28 W29 W30 W8 W9
