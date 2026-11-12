@@ -391,23 +391,42 @@ def investigation():
     else:
         info("processes of mother: none now")
     info(f"systemd linger (user services kept running without login): {sh('loginctl show-user mother -p Linger --value 2>/dev/null') or 'no session'}")
-    logins = sh("journalctl --since -7d -o short-iso --no-pager 2>/dev/null | grep -E 'sshd.*(Accepted|Failed) [a-z-]+ for mother from'")
+    logins = sh("journalctl -o short-iso --no-pager 2>/dev/null | grep -E 'sshd.*(Accepted|Failed) [a-z-]+ for mother from'")
     if logins:
         lines = logins.splitlines()
         methods = sorted({re.search(r"(Accepted|Failed) ([a-z-]+)", l).group(0) for l in lines})
-        sources = sorted({re.search(r"from (\S+)", l).group(1) for l in lines})
-        info(f"SSH logins of mother in 7 days: {len(lines)}; methods: {', '.join(methods)}; from: {', '.join(sources)}")
-        for l in lines[-5:]:
-            sub(re.sub(r"^(\S+) \S+ ", r"\1 ", l)[:150])
+        info(f"SSH logins of mother in the whole journal: {len(lines)}; methods: {', '.join(methods)}")
+        per = {}
+        for l in lines:
+            src, when = re.search(r"from (\S+)", l).group(1), l.split()[0][:16]
+            per.setdefault(src, []).append(when)
+        for src, w in sorted(per.items(), key=lambda x: x[1][0]):
+            sub(f"from {src}: {len(w)} logins, first {w[0]}, last {w[-1]}")
     else:
-        info("SSH logins of mother in 7 days: none in the journal")
-    sudo_cmds = sh("journalctl --since -7d -o short-iso --no-pager _COMM=sudo 2>/dev/null | grep -E 'sudo\\[[0-9]+\\]: +mother :'")
+        info("SSH logins of mother: none in the journal")
+    sudo_cmds = sh("journalctl -o short-iso --no-pager _COMM=sudo 2>/dev/null | grep -E 'sudo\\[[0-9]+\\]: +mother :'")
     if sudo_cmds:
-        info(f"commands run with sudo by mother in 7 days: {len(sudo_cmds.splitlines())} (last 5):")
-        for l in sudo_cmds.splitlines()[-5:]:
-            sub(re.sub(r".*COMMAND=", "COMMAND=", l)[:150])
+        lines = sudo_cmds.splitlines()
+        info(f"commands run with sudo by mother (whole journal): {len(lines)}; first 5 and last 5:")
+        for l in (lines[:5] + ["..."] + lines[-5:]) if len(lines) > 10 else lines:
+            sub(l if l == "..." else f"{l.split()[0][:16]} " + re.sub(r".*COMMAND=", "COMMAND=", l)[:130])
     else:
-        info("commands run with sudo by mother in 7 days: none in the journal")
+        info("commands run with sudo by mother: none in the journal")
+    info("files of ice (metadata only, contents not printed):")
+    for l in sh("ls -la --time-style=+%Y-%m-%dT%H:%M /usr/local/bin/ /tmp/.test /tmp/ice* 2>&1 | grep -vE '^total|^$'").splitlines():
+        sub(l[:150])
+    for l in sh("sha256sum /usr/local/bin/ice*.py 2>/dev/null").splitlines():
+        sub(l[:150])
+    n = sh("grep -c 'ice' /etc/crontab 2>/dev/null")
+    info(f"lines of /etc/crontab that run ice: {n or 0}")
+    procs_ice = sh("ps -eo pid,ppid,user,lstart,args 2>/dev/null | grep -E 'ice[0-9]*\\.py|sudo -S' | grep -v grep")
+    info("processes running ice now: " + ("" if procs_ice else "none"))
+    for l in procs_ice.splitlines():
+        sub(l[:150])
+    net = sh("ss -Htunap 2>/dev/null | grep -i python")
+    info("network sockets of python processes: " + ("" if net else "none"))
+    for l in net.splitlines():
+        sub(" ".join(l.split())[:150])
     refs = sh("grep -rlI mother /etc/cron* /var/spool/cron /etc/systemd /etc/sudoers /etc/sudoers.d /etc/ssh /etc/profile.d 2>/dev/null")
     info(f"configuration files that mention mother: {' '.join(refs.split()) or 'none'}")
     outgoing = sh("ss -Htnp state established '( dport = :22 )' 2>/dev/null")
@@ -521,7 +540,13 @@ def postfix():
     def pc(k):
         return sh(f"postconf -h {k} 2>/dev/null")
     o, er, rc = run("postfix check")
-    check(rc == 0 and not (o or er), "10.41", "postfix check: no warnings", f"postfix check: {(o or er).splitlines()[0] if (o or er) else rc}")
+    if rc != 0:
+        fail("10.41", f"postfix check failed: {(o or er).splitlines()[0] if (o or er) else rc}")
+    elif o or er:
+        for l in (o + "\n" + er).strip().splitlines():
+            new(f"postfix check warning: {l[:120]}")
+    else:
+        ok("10.41", "postfix check: no warnings")
     info(f"version {pc('mail_version')}")
     check(pc("myhostname") == f"mail.{DOMAIN}", "W21", f"myhostname = {pc('myhostname')}", f"myhostname = {pc('myhostname')} (expected mail.{DOMAIN})")
     check(DOMAIN in re.split(r"[\s,]+", pc("mydestination")), "10.13", f"mydestination includes {DOMAIN}", f"mydestination = {pc('mydestination')}")
@@ -561,9 +586,16 @@ def postfix():
     if ":" in am:
         kind, path = am.split(":", 1)
         db = {"hash": path + ".db", "lmdb": path + ".lmdb", "cdb": path + ".cdb"}.get(kind)
-    if db and os.path.exists(db) and os.path.exists("/etc/aliases"):
-        check(os.path.getmtime(db) >= os.path.getmtime("/etc/aliases"), "10.13", "aliases database up to date",
-              "/etc/aliases changed after the last newaliases: run newaliases")
+    if am:
+        wrong = []
+        for name, val in re.findall(r"^([A-Za-z0-9._-]+):\s*(.+?)\s*$", aliases, re.M):
+            got = sh(f"postalias -q {name} {am} 2>/dev/null")
+            if " ".join(got.replace(",", " ").split()) != " ".join(val.replace(",", " ").split()):
+                wrong.append(f"{name} (file: {val}, database: {got or 'missing'})")
+        check(not wrong, "10.13", f"aliases database answers like /etc/aliases ({am})",
+              "aliases database differs from /etc/aliases, run 'sudo newaliases': " + "; ".join(wrong))
+        if db and os.path.exists(db) and os.path.getmtime(db) < os.path.getmtime("/etc/aliases"):
+            info("/etc/aliases is newer than its database (same content: only the date changed)" if not wrong else "/etc/aliases is newer than its database")
     q = sh("postqueue -p 2>/dev/null | tail -1")
     if "is empty" in q:
         ok("", "mail queue empty")
@@ -749,7 +781,7 @@ def dns_answers(server, where):
         got = dig(server, name, rtype)
         check(got == [value], "10.4", f"{where}: {name} {rtype} {value}", f"{where}: {name} {rtype} -> {' '.join(got) or 'no answer'} (expected {value})")
     for ip, name in ((NS1, "ns1.group4.umons."), (WELCOME, "mail.group4.umons.")):
-        got = dig(server, ip, "", "-x")
+        got = [l for l in sh(f"dig +short +time=2 +tries=1 @{server} -x {ip} 2>/dev/null").splitlines() if l and not l.startswith(";;")]
         check(got == [name], "W25", f"{where}: PTR {ip} -> {name}", f"{where}: PTR {ip} -> {' '.join(got) or 'no answer'} (expected only {name})")
     flags = sh(f"dig +time=2 +tries=1 @{server} {DOMAIN} SOA 2>/dev/null | grep -o 'flags:[^;]*'")
     check(" aa" in flags, "10.4", f"{where}: authoritative answer (aa)", f"{where}: no aa flag ({flags}): zone not loaded?")
