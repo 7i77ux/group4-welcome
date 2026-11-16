@@ -43,7 +43,13 @@ restore() {
     [ -f "$BK/default-suricata.before" ] && cp -a "$BK/default-suricata.before" "$DEF"
     echo "   configuration restored from $BK"
 }
-afp_if() { sed -n '/^af-packet:/,/^[^[:space:]#]/p' "$Y" | grep -E '^[[:space:]]*- interface:' | grep -v default | head -1 | awk '{print $3}'; }
+# line number of the first '- interface:' under af-packet that is not 'default' (any spacing, quotes or comment)
+afp_line() {
+    awk '/^af-packet:/ {f = 1; next} f && /^[^[:space:]#]/ {f = 0}
+         f && /^[[:space:]]*-[[:space:]]*interface:/ {v = $0; sub(/.*interface:[[:space:]]*/, "", v); sub(/[[:space:]#].*/, "", v); gsub(/["\047]/, "", v)
+                                                     if (v != "default") {print NR; exit}}' "$Y"
+}
+afp_if() { n=$(afp_line); [ -n "$n" ] && sed -n "${n}p" "$Y" | sed -E 's/.*interface:[[:space:]]*//; s/[[:space:]#].*//' | tr -d "\"'"; }
 
 echo
 cur_if=$(afp_if)
@@ -55,12 +61,20 @@ echo "        with a card that does not exist Suricata does not start ('No such 
 if [ "$cur_if" = "$IFACE" ] && { [ -z "$def_if" ] || [ "$def_if" = "$IFACE" ]; }; then
     echo "   already done"
 elif ask "   Apply?"; then
-    sed -i -E "/^af-packet:/,/^[^[:space:]#]/ s|^([[:space:]]*- interface:[[:space:]]*)([^d[:space:]#][^[:space:]]*)[[:space:]]*\$|\1$IFACE|" "$Y"
+    ln=$(afp_line)
+    if [ -n "$ln" ]; then
+        echo "   line $ln before: $(sed -n "${ln}p" "$Y" | cat -A | cut -c1-100)"
+        sed -i -E "${ln}s/(interface:[[:space:]]*)[^[:space:]#]+/\1$IFACE/" "$Y"
+    fi
     [ -n "$def_if" ] && sed -i -E "s|^IFACE=.*|IFACE=$IFACE|" "$DEF"
-    if [ "$(afp_if)" = "$IFACE" ]; then
-        echo "   done: af-packet $IFACE${def_if:+, IFACE=$IFACE}"
+    if [ -n "$ln" ] && [ "$(afp_if)" = "$IFACE" ]; then
+        echo "   done: line $ln is now: $(sed -n "${ln}p" "$Y" | sed 's/^[[:space:]]*//')${def_if:+; IFACE=$IFACE}"
     else
-        restore; echo "   ERROR: no '- interface:' line found under af-packet: edit $Y by hand (10.17)"; exit 1
+        restore
+        echo "   ERROR: the card could not be changed. Lines under af-packet (cat -A shows hidden characters):"
+        sed -n '/^af-packet:/,/^[^[:space:]#]/p' "$Y" | grep -n 'interface' | head -5 | cat -A | cut -c1-100 | sed 's/^/      /'
+        echo "   Edit $Y by hand: DOCUMENTATION.md 10.17, repair a."
+        exit 1
     fi
 fi
 
