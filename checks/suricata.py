@@ -212,17 +212,20 @@ fast = read(LOG + "/fast.log", tail_bytes=2_000_000)
 if TEST_ALERT and not ROOT:
     before = (fast or "").count(f"[1:{TEST_SID}:")
     page = sh("curl -s --max-time 10 http://testmynids.org/uid/index.html", timeout=15)
-    if "uid=0(root)" in page:
+    page_ok = "uid=0(root)" in page
+    if page_ok:
         info("test page downloaded and it contains uid=0(root) (what the rule looks for)")
     else:
-        fail(f"test page NOT received as expected (no outgoing HTTP?): {page[:80] or 'empty answer'}")
+        info("testmynids.org does not return the test text any more (seen 2026-11-16: an HTML page), so rule "
+             "2100498 cannot fire; test from ns1 instead: DOCUMENTATION.md 10.17 step 5")
     for _ in range(8):
         time.sleep(2)
         fast = read(LOG + "/fast.log", tail_bytes=2_000_000)
         if (fast or "").count(f"[1:{TEST_SID}:") > before:
             break
-    check((fast or "").count(f"[1:{TEST_SID}:") > before, "test alert raised just now (curl testmynids.org)",
-          "no test alert after curl testmynids.org: engine still loading, no outgoing HTTP, or wrong card")
+    if page_ok:
+        check((fast or "").count(f"[1:{TEST_SID}:") > before, "test alert raised just now (curl testmynids.org)",
+              "no test alert after curl testmynids.org: engine still loading, or wrong card")
 if fast is None:
     fail("/var/log/suricata/fast.log missing (step 4-5)")
 else:
@@ -230,8 +233,11 @@ else:
     tests = [l for l in lines if f"[1:{TEST_SID}:" in l]
     if tests:
         ok(f"test alert {TEST_SID} seen {len(tests)} time(s), last: {tests[-1][:26].strip()}")
-    elif not TEST_ALERT:
-        warn(f"test alert {TEST_SID} never seen: do step 5 (curl http://testmynids.org/uid/index.html)")
+    start = re.search(r"(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d) \w+: \w+: This is Suricata version", slog or "")
+    since = [l for l in lines if start and re.match(r"(\d\d)/(\d\d)/(\d{4})-(\d\d:\d\d:\d\d)", l)
+             and "{2}-{0}-{1} {3}".format(*re.match(r"(\d\d)/(\d\d)/(\d{4})-(\d\d:\d\d:\d\d)", l).groups()) >= start.group(1)]
+    check(since, f"Suricata raises alerts on live traffic: {len(since)} since the last start (test scenario)",
+          "no alert since the last start: do the test of step 5 (from ns1)")
     info(f"alerts in fast.log: {len(lines)}; the last ones:")
     for l in lines[-3:]:
         sub(l.strip()[:150])
