@@ -1,0 +1,26 @@
+== Mail exchange with the other providers (2026-11-16 19:48), run on welcome
+
+== 1. Our side, as the other providers see it (resolver of the gateway 10.4.255.254)
+OK    MX of group4.umons: 10 mail.group4.umons.
+OK    mail.group4.umons -> 10.4.255.11
+INFO  reverse name of 10.4.255.11 through the gateway: none (some servers check it)
+OK    Postfix active
+OK    our port 25: 220 mail.group4.umons ESMTP
+INFO  myhostname mail.group4.umons, TLS to other servers: smtp_tls_security_level=may
+INFO  mail queue: Mail queue is empty
+
+== 2. The other groups with a mail server (MX of groupX.umons, port 25 greeting only)
+INFO  no other group publishes an MX record yet
+
+== 3. Test mails (one per chosen group, sent by our Postfix)
+INFO  no other provider answers on port 25: nothing to send
+
+== 4. Delivery results (Postfix log)
+INFO  no test mail sent in this run
+
+== 5. Mails received by calogero from other domains (replies), headers only
+INFO  no mail from another provider yet (run this check again later)
+
+== Summary
+4 OK, 0 FAIL, 7 INFO; other providers found: 0 (port 25 answering: 0); test mails sent now: 0; mails received from other providers: 0
+Requirement met when at least one mail was delivered to another provider (step 4: delivered) and at least one mail from another provider arrived (step 5).
