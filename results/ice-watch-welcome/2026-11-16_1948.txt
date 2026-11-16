@@ -1,0 +1,61 @@
+INFO    ice and mother on welcome, 2026-11-16 19:48; compared with 2026-11-12 (SAME / CHANGED)
+
+== 1. Programs in /usr/local/bin and /tmp
+SAME    /usr/local/bin/ice.py: 5504 bytes, modified 2026-11-10 10:29, sha256 c72cf5f54d8806ed… = ice.py of 2026-11-10
+SAME    /usr/local/bin/ice2.py: 5494 bytes, modified 2026-11-04 09:42, sha256 d18b295830034bc7… = ice2.py of 2026-11-04
+
+== 2. Scheduled jobs (cron, systemd timers)
+SAME    /etc/crontab: 3 known ice line(s) (2 different)
+INFO    /etc/cron.d/anacron (modified 2025-05-19 17:21)
+
+== 3. Processes of mother and of ice
+SAME    2364 mother Tue Nov 10 10:29:10 2026 /usr/lib/systemd/systemd --user
+SAME    2366 mother Tue Nov 10 10:29:11 2026 (sd-pam)
+SAME    2387 mother Tue Nov 10 10:29:11 2026 /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
+SAME    2388 mother Tue Nov 10 10:29:11 2026 /usr/bin/pipewire
+SAME    2389 mother Tue Nov 10 10:29:11 2026 /usr/bin/pipewire -c filter-chain.conf
+SAME    2391 mother Tue Nov 10 10:29:11 2026 /usr/bin/wireplumber
+SAME    2393 mother Tue Nov 10 10:29:11 2026 /usr/bin/pipewire-pulse
+SAME    2437 mother Tue Nov 10 10:29:11 2026 sh -c cat /tmp/.test | sudo -S python3 /usr/local/bin/ice.py
+SAME    2440 root Tue Nov 10 10:29:11 2026 sudo -S python3 /usr/local/bin/ice.py
+SAME    2445 root Tue Nov 10 10:29:11 2026 sudo -S python3 /usr/local/bin/ice.py
+SAME    2446 root Tue Nov 10 10:29:11 2026 python3 /usr/local/bin/ice.py
+SAME    2648 root Tue Nov 10 10:30:00 2026 /bin/sh -c python3 /usr/local/bin/ice2.py
+SAME    2650 root Tue Nov 10 10:30:00 2026 python3 /usr/local/bin/ice2.py
+SAME    44195 root Mon Nov 16 19:31:15 2026 [poiuytre] <defunct>
+SAME    44196 root Mon Nov 16 19:31:15 2026 [poiuytre] <defunct>
+SAME    44197 root Mon Nov 16 19:31:15 2026 [poiuytre] <defunct>
+SAME    45631 root Mon Nov 16 19:46:54 2026 /usr/bin/expect -f /tmp/poiuytree <REDACTED> 10.4.255.1 mother
+SAME    45632 root Mon Nov 16 19:46:54 2026 [poiuytree] <defunct>
+SAME    45633 root Mon Nov 16 19:46:54 2026 /usr/bin/expect -f /tmp/poiuytree <REDACTED> 10.4.255.254 mother
+SAME    45634 root Mon Nov 16 19:46:54 2026 ssh -o StrictHostKeyChecking no mother@10.4.255.1
+SAME    45635 root Mon Nov 16 19:46:54 2026 ssh -o StrictHostKeyChecking no mother@10.4.255.254
+
+== 4. SSH logins of mother (last 24 hours)
+SAME    from 10.4.255.10: 46 login(s), method password, last 2026-11-16 19:39
+SAME    from 10.4.255.41: 28 login(s), method password, last 2026-11-16 11:42
+SAME    from 10.4.255.46: 7 login(s), method password, last 2026-11-16 13:33
+
+== 5. Commands run with sudo by mother or by root through ice (last 7 days)
+SAME    COMMAND=/bin/bash  x1, last 2026-11-10 10:29
+SAME    COMMAND=/usr/bin/mv /tmp/ice.py /usr/local/bin/ice.py  x1, last 2026-11-10 10:29
+SAME    COMMAND=/usr/bin/tee -a /etc/crontab  x1, last 2026-11-10 10:29
+SAME    COMMAND=/etc/init.d/cron reload  x1, last 2026-11-10 10:29
+SAME    COMMAND=/usr/bin/python3 /usr/local/bin/ice.py  x1, last 2026-11-10 10:29
+SAME    COMMAND=/usr/bin/chmod 755 /tmp/poiuytre  <REDACTED> last 2026-11-16 19:31
+SAME    COMMAND=/usr/bin/chmod 755 /tmp/poiuytree  <REDACTED> last 2026-11-16 19:46
+
+== 6. Accounts, SSH keys, sudo rules
+SAME    account mother present; password status: P 2026-10-22
+
+== 7. Orders of the command servers (GET /next, saved, NOT executed)
+SAME    https://safeupdate.umons/next: 404 (no order)
+SAME    https://10.222.0.86/next: 404 (no order)
+SAME    /tmp/next.py absent: no order executed
+
+== 8. Connections of the ice processes now
+SAME    tcp SYN-SENT 0 1 10.4.255.11:43068 10.4.255.1:22
+SAME    tcp SYN-SENT 0 1 10.4.255.11:46332 10.4.255.254:22
+
+== Summary
+0 CHANGED compared with 2026-11-12: same pattern as before.
