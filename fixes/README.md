@@ -6,7 +6,8 @@ Before running one: take a PVE snapshot of the VM.
 
 | VM | Command | Fixes |
 |---|---|---|
-| welcome (10.4.255.11) | `sudo sh fixes/fix_welcome.sh` | hostname `welcome`; Postfix `myhostname = mail.group4.umons`; remove the leftover BIND; `mynetworks` only local (closes the relay, repairs incoming mail); Maildir; account `calogero` + mail login only for group `mailusers`; IMAP only on 993; Postfix protections |
+| welcome (10.4.255.11) | `sudo sh fixes/fix_welcome.sh` | hostname `welcome`; Postfix `myhostname = mail.group4.umons`; remove the leftover BIND; `mynetworks` only local (closes the relay, repairs incoming mail); Maildir; account `calogero` + mail login only for group `mailusers`; IMAP only on 993; Postfix protections; relay refused with 554 instead of 454 (W30) |
+| welcome (10.4.255.11) | `sudo sh fixes/suricata_welcome.sh` | Suricata as IDS (alerts only, D10): Debian packages `suricata` and `suricata-update`; `HOME_NET` = 10.4.0.0/16, capture on ens18; ET Open rules; start at boot; test alert (rule 2100498). Alerts in `/var/log/suricata/fast.log` and `eve.json` |
 | ns1 (10.4.255.10) | `sudo sh fixes/fix_ns1.sh` | one tool for the network (NetworkManager, gateway and DNS 127.0.0.1 in the profile, ens18 removed from `/etc/network/interfaces`); one PTR for 10.4.255.11 (`mail.group4.umons.`), serial raised |
 
 Each script refuses to run on another VM.

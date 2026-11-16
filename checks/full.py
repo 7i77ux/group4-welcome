@@ -482,6 +482,19 @@ def hardening(vm):
         opn("W12", "no automatic security updates (unattended-upgrades not installed)")
     if not installed("fail2ban"):
         opn("W10", "no fail2ban (no automatic blocking)")
+    if installed("suricata"):
+        a, e = unit_state("suricata")
+        check(a == "active" and e == "enabled", "D10", f"Suricata {a}, {e} at boot", f"Suricata {a}, {e or '?'} at boot")
+        hn = re.search(r"^\s*HOME_NET:\s*(\S+)", read("/etc/suricata/suricata.yaml") or "", re.M)
+        nrules = sh("grep -c '^alert' /var/lib/suricata/rules/suricata.rules 2>/dev/null") or "?"
+        info(f"Suricata: HOME_NET {hn.group(1) if hn else '?'}, {nrules} rules in /var/lib/suricata/rules/suricata.rules")
+        nal = sh("wc -l < /var/log/suricata/fast.log 2>/dev/null") or "0"
+        info(f"Suricata alerts in fast.log: {nal}; most frequent:")
+        for l in sh("sed -E 's/^.*\\[\\*\\*\\] (.*) \\[\\*\\*\\].*$/\\1/' /var/log/suricata/fast.log 2>/dev/null "
+                    "| sort | uniq -c | sort -rn | head -5").splitlines():
+            sub(l.strip()[:140])
+    elif vm == "welcome":
+        opn("W10", "no Suricata yet (IDS planned on welcome, D10)")
     rules = sh("nft list ruleset 2>/dev/null | grep -c 'hook input'")
     if rules in ("", "0"):
         opn("W2", "no host firewall rules (nftables empty)")
