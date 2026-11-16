@@ -32,3 +32,7 @@ sudo sh make-csr.sh
 ```
 
 The key is created in `/etc/ssl/group4/group4.key` (root only) and never leaves the VM. Send only `~/group4.csr` to the teacher, and ask to keep the `subjectAltName` (`welcome.group4.umons`, `mail.group4.umons`). The script refuses to overwrite an existing key.
+
+## Menu of the activities
+
+On ns1 or welcome, as user: `cd ~/Desktop/group4-welcome && sh action.sh`. It lists the activities of that VM (update, checks, changes) with the date of the last result of each check, runs the one you choose (asking the sudo password), and `r` runs the recommended order, asking before each step.
