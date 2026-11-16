@@ -1,0 +1,68 @@
+== How often ice attacks, seen from welcome (2026-11-16 19:52), read-only
+Design (code of ice): one round every 3400 s + random 0-400 s = 56.7-63.3 minutes, plus the time of the round.
+
+== 1. Incoming SSH logins of mother on this VM, per source
+
+-- from 10.4.255.10 (ns1): 205
+   first 2026-11-04 11:34, last 2026-11-16 19:39
+   interval (minutes, gaps over 3 h excluded): min 0.0, median 58.6, mean 49.4, max 63.3 (201 intervals)
+   per day: 11-04 18, 11-08 1, 11-09 8, 11-10 16, 11-11 24, 11-12 24, 11-13 24, 11-14 24, 11-15 26, 11-16 40
+   minute of the hour: from :17 to :46, median :33
+   gaps over 3 hours (3): 11-04 19:44 -> 11-08 19:30 (96 h); 11-08 19:30 -> 11-09 15:30 (20 h); 11-09 18:33 -> 11-10 09:30 (15 h)
+
+-- from 10.4.255.41 (UNKNOWN host): 32
+   first 2026-11-10 09:30, last 2026-11-16 11:42
+   interval (minutes, gaps over 3 h excluded): min 0.0, median 21.7, mean 28.5, max 58.4 (30 intervals)
+   per day: 11-10 4, 11-15 4, 11-16 24
+   minute of the hour: from :23 to :45, median :30
+   gaps over 3 hours (1): 11-10 10:33 -> 11-15 22:29 (132 h)
+
+-- from 10.4.255.46 (UNKNOWN host): 31
+   first 2026-11-04 11:34, last 2026-11-16 13:33
+   interval (minutes, gaps over 3 h excluded): min 0.0, median 27.2, mean 24.2, max 58.9 (26 intervals)
+   per day: 11-04 18, 11-09 2, 11-10 4, 11-15 3, 11-16 4
+   minute of the hour: from :24 to :57, median :30
+   gaps over 3 hours (4): 11-04 19:57 -> 11-09 16:29 (117 h); 11-09 16:30 -> 11-10 09:30 (17 h); 11-10 10:30 -> 11-15 22:30 (132 h); 11-15 22:30 -> 11-16 12:26 (14 h)
+
+-- from 10.4.255.47 (UNKNOWN host): 3
+   first 2026-11-04 09:42, last 2026-11-04 10:41
+   interval (minutes, gaps over 3 h excluded): min 7.8, median 29.6, mean 29.6, max 51.3 (2 intervals)
+   per day: 11-04 3
+   minute of the hour: from :33 to :42, median :41
+
+-- all sources together: 271
+   first 2026-11-04 09:42, last 2026-11-16 19:39
+   interval (minutes, gaps over 3 h excluded): min 0.0, median 56.7, mean 37.6, max 63.3 (267 intervals)
+   per day: 11-04 39, 11-08 1, 11-09 10, 11-10 24, 11-11 24, 11-12 24, 11-13 24, 11-14 24, 11-15 33, 11-16 68
+   minute of the hour: from :17 to :57, median :33
+   gaps over 3 hours (3): 11-04 19:57 -> 11-08 19:30 (96 h); 11-08 19:30 -> 11-09 15:30 (20 h); 11-09 18:33 -> 11-10 09:30 (15 h)
+
+   failed logins or invalid user for mother: 0
+
+== 2. Rounds of the copies of ice running on this VM (sudo chmod 755 of the expect script)
+
+-- rounds of ice.py (/tmp/poiuytre): 170
+   first 2026-11-04 10:33, last 2026-11-16 19:31
+   interval (minutes, gaps over 3 h excluded): min 56.7, median 60.1, mean 60.1, max 63.3 (166 intervals)
+   per day: 11-04 10, 11-08 1, 11-09 4, 11-10 15, 11-11 24, 11-12 24, 11-13 24, 11-14 24, 11-15 24, 11-16 20
+   minute of the hour: from :24 to :42, median :33
+   gaps over 3 hours (3): 11-04 19:42 -> 11-08 19:30 (96 h); 11-08 19:30 -> 11-09 15:30 (20 h); 11-09 18:29 -> 11-10 09:30 (15 h)
+
+-- rounds of ice2.py (/tmp/poiuytree): 171
+   first 2026-11-04 09:43, last 2026-11-16 19:46
+   interval (minutes, gaps over 3 h excluded): min 56.8, median 60.2, mean 60.1, max 63.3 (167 intervals)
+   per day: 11-04 11, 11-08 1, 11-09 4, 11-10 15, 11-11 24, 11-12 24, 11-13 24, 11-14 24, 11-15 24, 11-16 20
+   minute of the hour: from :24 to :53, median :39
+   gaps over 3 hours (3): 11-04 19:44 -> 11-08 19:30 (96 h); 11-08 19:30 -> 11-09 15:30 (20 h); 11-09 18:31 -> 11-10 09:30 (15 h)
+
+== 3. Installations on this VM (sudo mv of ice to /usr/local/bin)
+   2026-11-04 09:42:38  /tmp/ice2.py -> /usr/local/bin/ice2.py
+   2026-11-04 10:33:55  /tmp/ice.py -> /usr/local/bin/ice.py
+   2026-11-10 10:29:12  /tmp/ice.py -> /usr/local/bin/ice.py
+
+== 4. Who is on the temporary DHCP addresses now (one ping each, MAC from the neighbour table)
+   Proxmox VMs have MAC addresses starting with BC:24:11: compare with PVE > VM > Hardware > Network Device.
+   10.4.255.41: no answer, MAC bc:24:11:cd:27:c1 <- logged in as mother
+   10.4.255.46: no answer, MAC bc:24:11:60:a5:ef <- logged in as mother
+   10.4.255.47: no answer, MAC bc:24:11:bb:c7:30 <- logged in as mother
+   our VMs: ns1 BC:24:11:78:D3:A6, welcome BC:24:11:59:B9:3A
