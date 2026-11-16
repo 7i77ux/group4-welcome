@@ -1,7 +1,7 @@
-Suricata check on welcome (2026-11-16 19:29), read-only. Steps = DOCUMENTATION.md 10.17.
+Suricata check on welcome (2026-11-16 19:30), read-only. Steps = DOCUMENTATION.md 10.17.
 
 == 0. Resources
-INFO  RAM 1973 MB, available 1354 MB
+INFO  RAM 1973 MB, available 1335 MB
 
 == 1. Installation (step 1)
 OK    package suricata 1:7.0.10-1+deb13u4
@@ -42,8 +42,8 @@ FAIL  no test alert after curl testmynids.org: engine still loading, no outgoing
 INFO  alerts in fast.log: 0; most frequent:
 
 == 6. EVE JSON (step 6)
-INFO  eve.json: 0 KB, last write 36041 s ago
-WARN  eve.json not written for 36041 s: is Suricata running?
+INFO  eve.json: 0 KB, last write 36084 s ago
+WARN  eve.json not written for 36084 s: is Suricata running?
 
 == 7. Housekeeping
 OK    logrotate rule for the Suricata logs
@@ -56,4 +56,4 @@ FAIL  suricata.log: no 'engine started' after the last start (rules still loadin
 FAIL  no test alert after curl testmynids.org: engine still loading, no outgoing HTTP, or wrong card
 WARN  no copy in /root/suricata.yaml.orig: make it before editing (step 2), to be able to undo
 WARN  4 error line(s) in suricata.log since the last start:
-WARN  eve.json not written for 36041 s: is Suricata running?
+WARN  eve.json not written for 36084 s: is Suricata running?
