@@ -91,7 +91,7 @@ def redact(text):
     for s in secrets:
         text = re.sub(rf"(?<![A-Za-z0-9_]){re.escape(s)}(?![A-Za-z0-9_])", "<REDACTED>", text)
     text = re.sub(r"(echo\s+(?:-e\s+|-n\s+)?)(['\"]?)[^|'\"]+?\2(\s*\|\s*sudo\s+-S)", r"\1<REDACTED>\3", text)
-    text = re.sub(r"(/tmp/poiuytree?\s+)\S+", r"\1<REDACTED>", text)  # expect scripts get the password as 1st argument
+    text = re.sub(r"(-f /tmp/poiuytree?\s+)\S+", r"\1<REDACTED>", text)  # expect scripts get the password as 1st argument
     return text
 
 

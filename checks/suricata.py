@@ -211,7 +211,11 @@ sec("5. Alerting (step 5)")
 fast = read(LOG + "/fast.log", tail_bytes=2_000_000)
 if TEST_ALERT and not ROOT:
     before = (fast or "").count(f"[1:{TEST_SID}:")
-    run("curl -s -o /dev/null --max-time 10 http://testmynids.org/uid/index.html", timeout=15)
+    page = sh("curl -s --max-time 10 http://testmynids.org/uid/index.html", timeout=15)
+    if "uid=0(root)" in page:
+        info("test page downloaded and it contains uid=0(root) (what the rule looks for)")
+    else:
+        fail(f"test page NOT received as expected (no outgoing HTTP?): {page[:80] or 'empty answer'}")
     for _ in range(8):
         time.sleep(2)
         fast = read(LOG + "/fast.log", tail_bytes=2_000_000)
@@ -228,7 +232,12 @@ else:
         ok(f"test alert {TEST_SID} seen {len(tests)} time(s), last: {tests[-1][:26].strip()}")
     elif not TEST_ALERT:
         warn(f"test alert {TEST_SID} never seen: do step 5 (curl http://testmynids.org/uid/index.html)")
-    info(f"alerts in fast.log: {len(lines)}")
+    info(f"alerts in fast.log: {len(lines)}; the last ones:")
+    for l in lines[-3:]:
+        sub(l.strip()[:150])
+    if any("invalid checksum" in l for l in lines):
+        fail("alerts 'invalid checksum': the virtual card leaves the checksums to the hardware, so Suricata drops "
+             "those packets. Disable the checksum checks, like '-k none' in the course guide (10.17, repair)")
 
 sec("Summary")
 print(f"{COUNT['OK']} OK, {len(LISTS['FAIL'])} FAIL, {len(LISTS['WARN'])} WARN, {COUNT['INFO']} INFO")
