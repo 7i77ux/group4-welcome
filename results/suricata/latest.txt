@@ -1,4 +1,4 @@
-Suricata check on welcome (2026-11-16 19:51), read-only. Steps = DOCUMENTATION.md 10.17.
+Suricata check on welcome (2026-11-16 19:55), read-only. Steps = DOCUMENTATION.md 10.17.
 
 == 1. Installation (step 1)
 OK    package suricata 1:7.0.10-1+deb13u4
@@ -28,25 +28,16 @@ INFO  started: Mon 2026-11-16 19:37:08 CET
 INFO  process 44759: /usr/bin/suricata -D --af-packet -c /etc/suricata/suricata.yaml --pidfile /run/suricata.pid
 OK    suricata.log: engine started (last start)
 OK    suricata.log names ens18
-OK    packets captured: 2022 (stats.log)
+OK    packets captured: 2336 (stats.log)
 
 == 5. Alerting (step 5)
-FAIL  test page NOT received as expected (no outgoing HTTP?): <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewp
-FAIL  no test alert after curl testmynids.org: engine still loading, no outgoing HTTP, or wrong card
-INFO  alerts in fast.log: 4; the last ones:
-        11/16/2026-19:40:27.264983  [**] [1:2017515:8] ET INFO User-Agent (python-requests) Inbound to Webserver [**] [Classification: Misc activity] [Priorit
+INFO  testmynids.org does not return the test text any more (seen 2026-11-16: an HTML page), so rule 2100498 cannot fire; test from ns1 instead: DOCUMENTATION.md 10.17 step 5
+OK    Suricata raises alerts on live traffic: 5 since the last start (test scenario)
+INFO  alerts in fast.log: 5; the last ones:
         11/16/2026-19:45:47.386170  [**] [1:2017515:8] ET INFO User-Agent (python-requests) Inbound to Webserver [**] [Classification: Misc activity] [Priorit
         11/16/2026-19:50:47.534133  [**] [1:2017515:8] ET INFO User-Agent (python-requests) Inbound to Webserver [**] [Classification: Misc activity] [Priorit
+        11/16/2026-19:55:47.571184  [**] [1:2017515:8] ET INFO User-Agent (python-requests) Inbound to Webserver [**] [Classification: Misc activity] [Priorit
 
 == Summary
-17 OK, 2 FAIL, 0 WARN, 6 INFO
-FAIL  test page NOT received as expected (no outgoing HTTP?): <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewp
-FAIL  no test alert after curl testmynids.org: engine still loading, no outgoing HTTP, or wrong card
+18 OK, 0 FAIL, 0 WARN, 7 INFO
+Suricata is installed and configured as in DOCUMENTATION.md 10.17.
