@@ -4,7 +4,7 @@
 # Errors of /var/log/suricata/suricata.log that it solves:
 #   "af-packet: enp1s0: failed to find interface type: No such device" -> wrong network card (fix 1)
 #   "No rule files match the pattern /var/lib/suricata/rules/suricata.rules",
-#   "0 signatures processed" -> rules folder or rules missing (fixes 4 and 5)
+#   "0 signatures processed" -> rules folder or rules missing (fixes 3 and 4)
 # The network card is the one of the default route (ens18 today), not a fixed name.
 # Manual steps: DOCUMENTATION.md 10.17, "Repair by hand". At the end it runs checks/suricata.sh.
 # Run on welcome:  cd ~/Desktop/group4-welcome && git pull && sudo sh fixes/fix_suricata.sh
@@ -54,7 +54,7 @@ afp_if() { n=$(afp_line); [ -n "$n" ] && sed -n "${n}p" "$Y" | sed -E 's/.*inter
 echo
 cur_if=$(afp_if)
 def_if=$(sed -n 's/^IFACE=//p' "$DEF" 2>/dev/null | tr -d "\"'")
-echo "== Fix 1/7: network card ($IFACE)"
+echo "== Fix 1/6: network card ($IFACE)"
 echo "   now: af-packet '${cur_if:-none}'${def_if:+, $DEF IFACE=$def_if}"
 echo "   Why: Suricata listens on the card named here. 'enp1s0' is only the example of the quickstart;"
 echo "        with a card that does not exist Suricata does not start ('No such device')."
@@ -79,24 +79,8 @@ elif ask "   Apply?"; then
 fi
 
 echo
-lm=$(sed -n 's/^LISTENMODE=//p' "$DEF" 2>/dev/null | tr -d "\"'")
-cm=$(sed -n '/^af-packet:/,/^[^[:space:]#]/p' "$Y" | grep -E '^[[:space:]]*copy-mode:' | head -1 | awk '{print $2}')
-echo "== Fix 2/7: watch only (IDS, D10)"
-echo "   now: ${lm:+$DEF LISTENMODE=$lm, }af-packet copy-mode '${cm:-none}'"
-echo "   Why: nfqueue or copy-mode ips/tap put Suricata in the path of the traffic (IPS): without the"
-echo "        matching firewall rules it sees nothing, and a wrong rule could block customer mail."
-if { [ -z "$lm" ] || [ "$lm" = af-packet ]; } && [ -z "$cm" ]; then
-    echo "   already done"
-elif [ -n "$cm" ]; then
-    echo "   WARN: 'copy-mode: $cm' under af-packet: comment that line by hand (#) in $Y (10.17, repair b)"
-elif ask "   Set LISTENMODE=af-packet?"; then
-    sed -i -E "s|^LISTENMODE=.*|LISTENMODE=af-packet|" "$DEF"
-    echo "   done: $(grep '^LISTENMODE=' "$DEF")"
-fi
-
-echo
 hn=$(grep -E '^[[:space:]]*HOME_NET:' "$Y" | head -1 | sed -E 's/^[[:space:]]*HOME_NET:[[:space:]]*//')
-echo "== Fix 3/7: our network (HOME_NET)"
+echo "== Fix 2/6: our network (HOME_NET)"
 echo "   now: HOME_NET: $hn"
 echo "   Why: the rules 'from outside to us' need to know what is ours: 10.4.0.0/16. The other groups"
 echo "        are 10.X.0.0/16: with the default 10.0.0.0/8 they would count as ours."
@@ -110,7 +94,7 @@ fi
 echo
 rp=$(sed -n 's/^default-rule-path:[[:space:]]*//p' "$Y" | head -1 | tr -d "\"'")
 rf=$(sed -n '/^rule-files:/,/^[^[:space:]#]/p' "$Y" | grep -E '^[[:space:]]*-[[:space:]]' | awk '{print $2}' | tr '\n' ' ')
-echo "== Fix 4/7: rules folder"
+echo "== Fix 3/6: rules folder"
 echo "   now: default-rule-path '${rp:-none}', rule-files: ${rf:-none}"
 echo "   Why: suricata-update writes the rules to $RULES/suricata.rules: Suricata must read them"
 echo "        there ('No rule files match the pattern' otherwise)."
@@ -136,7 +120,7 @@ echo
 n=$(cnt '^alert' "$RULES/suricata.rules")
 age=""
 [ -f "$RULES/suricata.rules" ] && age=$(( ($(date +%s) - $(stat -c %Y "$RULES/suricata.rules")) / 86400 ))
-echo "== Fix 5/7: rules (ET Open)"
+echo "== Fix 4/6: rules (ET Open)"
 echo "   now: $n active rules in $RULES/suricata.rules${age:+, $age day(s) old}"
 echo "   Why: without rules Suricata starts but detects nothing ('0 signatures processed')."
 if [ "$n" -gt 1000 ] && [ "${age:-99}" -le 7 ]; then
@@ -152,7 +136,7 @@ elif ask "   Download them now with suricata-update?"; then
 fi
 
 echo
-echo "== Fix 6/7: test of the configuration, then start (now and at every boot)"
+echo "== Fix 5/6: test of the configuration, then start (now and at every boot)"
 tmp=$(mktemp -d)
 out=$(suricata -T -v -c "$Y" -l "$tmp" 2>&1)
 rm -rf "$tmp"
@@ -186,7 +170,7 @@ if ask "   Restart Suricata now?"; then
 fi
 
 echo
-echo "== Fix 7/7: test alert (rule 2100498, harmless page made for this)"
+echo "== Fix 6/6: test alert (rule 2100498, harmless page made for this)"
 if ask "   Download http://testmynids.org/uid/index.html and look for the alert?"; then
     before=$(cnt 2100498 "$LOG/fast.log")
     curl -s -o /dev/null --max-time 10 http://testmynids.org/uid/index.html

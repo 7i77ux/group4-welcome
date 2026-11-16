@@ -3,14 +3,14 @@
 
 It checks the steps one by one and, for every problem, names the step to redo. Nothing is changed:
 the configuration test (suricata -T) writes its logs in a temporary folder that is then removed.
-With --test-alert it also downloads http://testmynids.org/uid/index.html (a harmless page made to
-trigger the ET Open rule 2100498) and waits for the alert.
+Only what the course guide asks: quickstart 2.1, 2.2 and 2.4, the rules (without them Suricata
+detects nothing), the IDS choice and one test scenario. With --test-alert it also downloads
+http://testmynids.org/uid/index.html (a harmless page made to trigger the rule 2100498).
 
 Usage (through checks/suricata.sh): suricata.py [--test-alert] [root prefix, only for tests]
 Statuses: OK as expected; FAIL to fix (step of 10.17 given); WARN to look at; INFO data.
 """
 
-import json
 import os
 import re
 import shutil
@@ -29,7 +29,6 @@ def P(path):
 
 
 Y = P("/etc/suricata/suricata.yaml")
-ORIG = P("/root/suricata.yaml.orig")
 RULES = "/var/lib/suricata/rules"
 LOG = P("/var/log/suricata")
 IFACE, NET = "ens18", "[10.4.0.0/16]"
@@ -99,14 +98,6 @@ def block(text, key):
 # ---------------------------------------------------------------------------
 print(f"Suricata check on welcome ({time.strftime('%Y-%m-%d %H:%M')}), read-only. Steps = DOCUMENTATION.md 10.17.")
 
-sec("0. Resources")
-mem = dict(re.findall(r"^(\w+):\s+(\d+) kB", read(P("/proc/meminfo")) or "", re.M))
-if mem:
-    tot, av = int(mem.get("MemTotal", 0)) // 1024, int(mem.get("MemAvailable", 0)) // 1024
-    info(f"RAM {tot} MB, available {av} MB")
-    if av < 300:
-        warn(f"only {av} MB of RAM available: Suricata or the mail service may be killed (give welcome 3 GB)")
-
 sec("1. Installation (step 1)")
 ver = pkg("suricata")
 if not check(ver, f"package suricata {ver}", "package suricata not installed: step 1"):
@@ -114,7 +105,7 @@ if not check(ver, f"package suricata {ver}", "package suricata not installed: st
     sys.exit(0)
 check(pkg("suricata-update"), f"package suricata-update {pkg('suricata-update')}",
       "package suricata-update not installed: step 1 (sudo apt install -y suricata-update)")
-check(pkg("jq"), "jq installed (to read eve.json)", "jq not installed: step 1 (sudo apt install -y jq)", warn)
+check(pkg("jq"), "jq installed (quickstart 2.1)", "jq not installed: step 1 (sudo apt install -y jq)", warn)
 info(f"{sh('suricata -V 2>/dev/null') or 'suricata -V: no answer'}")
 
 sec("2. Basic setup (step 2): /etc/suricata/suricata.yaml")
@@ -122,13 +113,6 @@ text = read(Y)
 if text is None:
     fail("/etc/suricata/suricata.yaml not readable")
     text = ""
-check(os.path.exists(ORIG), "copy of the original configuration in /root/suricata.yaml.orig",
-      "no copy in /root/suricata.yaml.orig: make it before editing (step 2), to be able to undo", warn)
-if os.path.exists(ORIG) and text:
-    diff = [l for l in sh(f"diff '{ORIG}' '{Y}' 2>/dev/null").splitlines() if l[:1] in "<>"]
-    info(f"lines changed compared with the original: {len(diff)}")
-    for l in diff[:12]:
-        sub(l[:120])
 hn = re.search(r'^\s*HOME_NET:\s*"?([^"\n]*?)"?\s*$', text, re.M)
 hn = hn.group(1) if hn else None
 if hn == NET:
@@ -137,9 +121,6 @@ elif hn and "10.0.0.0/8" in hn:
     fail(f'HOME_NET "{hn}" is still the default: the other groups (10.X) count as ours, use "{NET}" (step 2)')
 else:
     fail(f'HOME_NET "{hn}": expected "{NET}" (step 2)')
-en = re.search(r'^\s*EXTERNAL_NET:\s*"?([^"\n]*?)"?\s*$', text, re.M)
-check(en and en.group(1) == "!$HOME_NET", 'EXTERNAL_NET "!$HOME_NET" (everything that is not ours)',
-      f'EXTERNAL_NET "{en.group(1) if en else None}": expected "!$HOME_NET"', warn)
 afp = block(text, "af-packet")
 ifs = re.findall(r"^\s*-\s*interface:\s*(\S+)", afp, re.M)
 real = [i for i in ifs if i != "default"]
@@ -174,12 +155,9 @@ if rtext is None:
     fail(f"{RULES}/suricata.rules missing: run sudo suricata-update (step 3)")
 else:
     n = len(re.findall(r"^alert ", rtext, re.M))
-    age = (time.time() - os.path.getmtime(rfile)) / 86400
     check(n > 1000, f"{n} active rules in {RULES}/suricata.rules",
           f"only {n} active rules in {RULES}/suricata.rules: run sudo suricata-update (step 3)")
     info(f"rules updated on {time.strftime('%Y-%m-%d %H:%M', time.localtime(os.path.getmtime(rfile)))}")
-    if age > 7:
-        warn(f"rules older than {int(age)} days: update them with sudo suricata-update")
     check(TEST_SID in rtext, f"test rule {TEST_SID} present", f"test rule {TEST_SID} not in the rules", warn)
 if not ROOT:
     tmp = tempfile.mkdtemp(prefix="suricata-check-")
@@ -206,9 +184,6 @@ info(f"started: {sh('systemctl show -p ActiveEnterTimestamp --value suricata 2>/
 pid = sh("pidof -s suricata 2>/dev/null")  # pgrep -f would also match the shell running it
 if pid:
     info(f"process {pid}: {sh(f'ps -o args= -p {pid}')[:150]}")
-    rss = sh(f"ps -o rss= -p {pid}")
-    if rss.isdigit():
-        info(f"memory used by Suricata: {int(rss) // 1024} MB")
 slog = read(LOG + "/suricata.log", tail_bytes=400_000)
 if slog is None:
     fail("/var/log/suricata/suricata.log missing: Suricata never started (step 4)")
@@ -226,12 +201,9 @@ else:
         ok(f"suricata.log names {IFACE}")
 stats = read(LOG + "/stats.log", tail_bytes=300_000) or ""
 kp = re.findall(r"^capture\.kernel_packets\s*\|\s*\S+\s*\|\s*(\d+)", stats, re.M)
-kd = re.findall(r"^capture\.kernel_drops\s*\|\s*\S+\s*\|\s*(\d+)", stats, re.M)
 if kp:
-    p, d = int(kp[-1]), int(kd[-1]) if kd else 0
+    p = int(kp[-1])
     check(p > 0, f"packets captured: {p} (stats.log)", "0 packets captured: Suricata listens on the wrong card? (step 2)")
-    if p and d / p > 0.05:
-        warn(f"{d} packets dropped ({100 * d / p:.1f} %): Suricata cannot keep up (CPU or RAM)")
 else:
     info("stats.log: no capture counters yet (it is written every 8 seconds)")
 
@@ -256,38 +228,7 @@ else:
         ok(f"test alert {TEST_SID} seen {len(tests)} time(s), last: {tests[-1][:26].strip()}")
     elif not TEST_ALERT:
         warn(f"test alert {TEST_SID} never seen: do step 5 (curl http://testmynids.org/uid/index.html)")
-    info(f"alerts in fast.log: {len(lines)}; most frequent:")
-    sigs = {}
-    for l in lines:
-        m = re.search(r"\[\*\*\] (\[\d+:\d+:\d+\] .*?) \[\*\*\]", l)
-        if m:
-            sigs[m.group(1)] = sigs.get(m.group(1), 0) + 1
-    for s, c in sorted(sigs.items(), key=lambda x: -x[1])[:5]:
-        sub(f"{c:>5}  {s[:130]}")
-
-sec("6. EVE JSON (step 6)")
-evp = LOG + "/eve.json"
-if not os.path.exists(evp):
-    fail("/var/log/suricata/eve.json missing (step 4)")
-else:
-    age = time.time() - os.path.getmtime(evp)
-    info(f"eve.json: {os.path.getsize(evp) // 1024} KB, last write {int(age)} s ago")
-    check(age < 120, "eve.json is being written", f"eve.json not written for {int(age)} s: is Suricata running?", warn)
-    types = {}
-    for l in (read(evp, tail_bytes=1_000_000) or "").splitlines()[1:]:
-        try:
-            t = json.loads(l).get("event_type", "?")
-        except ValueError:
-            continue
-        types[t] = types.get(t, 0) + 1
-    if types:
-        info("event types in the last part of eve.json: " + ", ".join(f"{k} {v}" for k, v in sorted(types.items(), key=lambda x: -x[1])))
-
-sec("7. Housekeeping")
-check(os.path.exists(P("/etc/logrotate.d/suricata")), "logrotate rule for the Suricata logs",
-      "no /etc/logrotate.d/suricata: the logs can fill the disk", warn)
-du = sh(f"du -sh {LOG} 2>/dev/null | cut -f1")
-info(f"size of /var/log/suricata: {du or '?'}; disk / used {sh('df --output=pcent / | tail -1').strip() or '?'}")
+    info(f"alerts in fast.log: {len(lines)}")
 
 sec("Summary")
 print(f"{COUNT['OK']} OK, {len(LISTS['FAIL'])} FAIL, {len(LISTS['WARN'])} WARN, {COUNT['INFO']} INFO")

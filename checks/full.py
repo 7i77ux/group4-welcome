@@ -489,10 +489,7 @@ def hardening(vm):
         nrules = sh("grep -c '^alert' /var/lib/suricata/rules/suricata.rules 2>/dev/null") or "?"
         info(f"Suricata: HOME_NET {hn.group(1) if hn else '?'}, {nrules} rules in /var/lib/suricata/rules/suricata.rules")
         nal = sh("wc -l < /var/log/suricata/fast.log 2>/dev/null") or "0"
-        info(f"Suricata alerts in fast.log: {nal}; most frequent:")
-        for l in sh("sed -E 's/^.*\\[\\*\\*\\] (.*) \\[\\*\\*\\].*$/\\1/' /var/log/suricata/fast.log 2>/dev/null "
-                    "| sort | uniq -c | sort -rn | head -5").splitlines():
-            sub(l.strip()[:140])
+        info(f"Suricata alerts in fast.log: {nal}")
     elif vm == "welcome":
         opn("W10", "no Suricata yet (IDS planned on welcome, D10)")
     rules = sh("nft list ruleset 2>/dev/null | grep -c 'hook input'")

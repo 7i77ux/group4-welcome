@@ -26,13 +26,7 @@ LOG=/var/log/suricata
 
 echo "== Suricata on welcome (IDS, alerts only; D10, S5)"
 echo "   now: package $(dpkg-query -W -f='${Status} ${Version}' suricata 2>/dev/null || echo 'not installed'), service $(systemctl is-active suricata 2>/dev/null)"
-echo "   RAM: $(free -m | awk '/^Mem:/{print $2" MB, available "$7" MB"}') (Suricata with the ET Open rules needs about 0.5-1 GB)"
 ask "Did you take a PVE snapshot of welcome?" || { echo "Take it first: PVE > welcome > Snapshots > Take Snapshot."; exit 1; }
-avail=$(free -m | awk '/^Mem:/{print $7}')
-if [ "$avail" -lt 900 ]; then
-    echo "   WARN: only $avail MB available. Better: give welcome 3 GB on the PVE first (Hardware > Memory, then reboot)."
-    ask "   Continue anyway?" || exit 1
-fi
 
 echo
 echo "== Step 1/4: install suricata and suricata-update (guide step 2.1)"
@@ -147,7 +141,7 @@ if ask "   Start Suricata?"; then
 fi
 
 echo
-echo "== Alerts: tail -f $LOG/fast.log (short) or $LOG/eve.json (complete, for the SIEM later)"
+echo "== Alerts: sudo tail -f $LOG/fast.log"
 echo "== Backups in $BK"
 echo "== Running checks/full.sh (full regression test)"
 sh "$REPO/checks/full.sh"
