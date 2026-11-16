@@ -1,7 +1,7 @@
 Full regression test (read-only). OK = as documented; FAIL = differs from the documentation;
 NEW = not in the documentation; OPEN = known open point (id); INFO = data.
 
-== 1. Identity and network (welcome, 2026-11-16 19:39, checks commit 58cfc8f)
+== 1. Identity and network (welcome, 2026-11-16 19:48, checks commit 71ed359)
 OK    [D08] hostname welcome
 OK    [10.11] /etc/hosts: 127.0.1.1 welcome
 OK    [D02] 10.4.255.11/16 on ens18
@@ -108,7 +108,7 @@ OPEN  [W12] no automatic security updates (unattended-upgrades not installed)
 OPEN  [W10] no fail2ban (no automatic blocking)
 OK    [D10] Suricata active, enabled at boot
 INFO  Suricata: HOME_NET "[10.4.0.0/16]", 53476 rules in /var/lib/suricata/rules/suricata.rules
-INFO  Suricata alerts in fast.log: 1
+INFO  Suricata alerts in fast.log: 3
 OPEN  [W2] no host firewall rules (nftables empty)
 INFO  packages with an update available (apt cache): 3
 
@@ -126,16 +126,16 @@ INFO  timesyncd ServerAddress: 185.51.192.63
         2026-11-16T19:33:26+01:00 welcome systemd-timesyncd[325]: Timed out waiting for reply from 185.51.192.63:123 (3.debian.pool.ntp.org).
 INFO  NTP 10.4.255.254 (10.4.255.254): reply, stratum 12, offset of this clock +13.766 s
 INFO  NTP 0.debian.pool.ntp.org (80.201.21.177): no reply
-INFO  NTP 1.debian.pool.ntp.org (185.51.192.61): no reply
-INFO  NTP 2.debian.pool.ntp.org (162.159.200.1): no reply
-INFO  NTP 3.debian.pool.ntp.org (45.87.77.15): no reply
+INFO  NTP 1.debian.pool.ntp.org (45.87.76.3): no reply
+INFO  NTP 2.debian.pool.ntp.org (45.138.55.62): no reply
+INFO  NTP 3.debian.pool.ntp.org (156.106.214.48): no reply
 INFO  NTP servers that answer from this VM: 10.4.255.254 (candidates for W28)
 INFO  this clock vs the HTTPS Date of deb.debian.org: -7 s (precision about 1 s)
 
 == 6. Health
 OK    no failed systemd unit
 OK    disk / used 41%
-INFO  RAM: 1973 MB, used 1158 MB
+INFO  RAM: 1973 MB, used 1162 MB
 INFO  most frequent errors in the logs (24 h):
         7 pam_systemd(lightdm-greeter:session): Failed to release session: Transport endpoint is not connected
         7 gkr-pam: unable to locate daemon control file
