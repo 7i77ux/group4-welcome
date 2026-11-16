@@ -1,7 +1,7 @@
 Full regression test (read-only). OK = as documented; FAIL = differs from the documentation;
 NEW = not in the documentation; OPEN = known open point (id); INFO = data.
 
-== 1. Identity and network (welcome, 2026-11-16 09:26, checks commit ceb1f6e)
+== 1. Identity and network (welcome, 2026-11-16 19:39, checks commit 58cfc8f)
 OK    [D08] hostname welcome
 OK    [10.11] /etc/hosts: 127.0.1.1 welcome
 OK    [D02] 10.4.255.11/16 on ens18
@@ -62,11 +62,11 @@ INFO  their parent processes (who started them):
         1 root     /sbin/init
            2364 mother   /usr/lib/systemd/systemd --user
 INFO  systemd linger (user services kept running without login): no
-INFO  SSH logins of mother in the whole journal: 240; methods: Accepted password
+INFO  SSH logins of mother in the whole journal: 271; methods: Accepted password
         from 10.4.255.47: 3 logins, first 2026-11-04T09:42, last 2026-11-04T10:41
-        from 10.4.255.10: 183 logins, first 2026-11-04T11:34, last 2026-11-16T08:37
-        from 10.4.255.46: 27 logins, first 2026-11-04T11:34, last 2026-11-15T22:30
-        from 10.4.255.41: 27 logins, first 2026-11-10T09:30, last 2026-11-16T09:23
+        from 10.4.255.10: 205 logins, first 2026-11-04T11:34, last 2026-11-16T19:39
+        from 10.4.255.46: 31 logins, first 2026-11-04T11:34, last 2026-11-16T13:33
+        from 10.4.255.41: 32 logins, first 2026-11-10T09:30, last 2026-11-16T11:42
 INFO  commands run with sudo by mother (whole journal): 16; first 5 and last 5:
         2026-10-22T12:09 COMMAND=/usr/bin/ls
         2026-11-04T09:42 COMMAND=/bin/bash
@@ -106,9 +106,11 @@ OPEN  [W9] SSH accepts password logins (D19)
 OK    SSH root login: without-password
 OPEN  [W12] no automatic security updates (unattended-upgrades not installed)
 OPEN  [W10] no fail2ban (no automatic blocking)
-OPEN  [W10] no Suricata yet (IDS planned on welcome, D10)
+OK    [D10] Suricata active, enabled at boot
+INFO  Suricata: HOME_NET "[10.4.0.0/16]", 53476 rules in /var/lib/suricata/rules/suricata.rules
+INFO  Suricata alerts in fast.log: 1
 OPEN  [W2] no host firewall rules (nftables empty)
-INFO  packages with an update available (apt cache): 1
+INFO  packages with an update available (apt cache): 3
 
 == 5b. Clock and NTP (W28; question 7 for the teacher)
 OPEN  [W28] clock not synchronized (NTP)
@@ -118,25 +120,28 @@ INFO  timesyncd SystemNTPServers: -
 INFO  timesyncd FallbackNTPServers: 0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
 INFO  timesyncd LinkNTPServers: -
 INFO  timesyncd ServerName: 3.debian.pool.ntp.org
-INFO  timesyncd ServerAddress: 185.51.192.61
-        2026-11-16T09:06:17+01:00 welcome systemd-timesyncd[325]: Timed out waiting for reply from 45.87.76.3:123 (3.debian.pool.ntp.org).
-        2026-11-16T09:06:27+01:00 welcome systemd-timesyncd[325]: Timed out waiting for reply from 185.51.192.62:123 (3.debian.pool.ntp.org).
-        2026-11-16T09:06:37+01:00 welcome systemd-timesyncd[325]: Timed out waiting for reply from 185.51.192.61:123 (3.debian.pool.ntp.org).
+INFO  timesyncd ServerAddress: 185.51.192.63
+        2026-11-16T19:33:06+01:00 welcome systemd-timesyncd[325]: Timed out waiting for reply from 109.68.160.220:123 (3.debian.pool.ntp.org).
+        2026-11-16T19:33:16+01:00 welcome systemd-timesyncd[325]: Timed out waiting for reply from 178.215.228.24:123 (3.debian.pool.ntp.org).
+        2026-11-16T19:33:26+01:00 welcome systemd-timesyncd[325]: Timed out waiting for reply from 185.51.192.63:123 (3.debian.pool.ntp.org).
 INFO  NTP 10.4.255.254 (10.4.255.254): reply, stratum 12, offset of this clock +13.766 s
-INFO  NTP 0.debian.pool.ntp.org (45.138.55.60): no reply
-INFO  NTP 1.debian.pool.ntp.org (94.142.246.192): no reply
-INFO  NTP 2.debian.pool.ntp.org (109.68.160.220): no reply
-INFO  NTP 3.debian.pool.ntp.org (185.153.43.4): no reply
+INFO  NTP 0.debian.pool.ntp.org (80.201.21.177): no reply
+INFO  NTP 1.debian.pool.ntp.org (185.51.192.61): no reply
+INFO  NTP 2.debian.pool.ntp.org (162.159.200.1): no reply
+INFO  NTP 3.debian.pool.ntp.org (45.87.77.15): no reply
 INFO  NTP servers that answer from this VM: 10.4.255.254 (candidates for W28)
-INFO  this clock vs the HTTPS Date of deb.debian.org: -6 s (precision about 1 s)
+INFO  this clock vs the HTTPS Date of deb.debian.org: -7 s (precision about 1 s)
 
 == 6. Health
 OK    no failed systemd unit
-OK    disk / used 40%
-INFO  RAM: 1973 MB, used 682 MB
+OK    disk / used 41%
+INFO  RAM: 1973 MB, used 1158 MB
 INFO  most frequent errors in the logs (24 h):
-        3 pam_systemd(lightdm-greeter:session): Failed to release session: Transport endpoint is not connected
-        3 gkr-pam: unable to locate daemon control file
+        7 pam_systemd(lightdm-greeter:session): Failed to release session: Transport endpoint is not connected
+        7 gkr-pam: unable to locate daemon control file
+        5 /usr/lib/systemd/system-generators/systemd-ssh-generator failed with exit status 1.
+        5 Failed to query local AF_VSOCK CID: Cannot assign requested address
+        1 Failed to start suricata.service - Suricata IDS/IDP daemon.
 
 == 7. Web (nginx)
 OK    [10.10] nginx active, enabled at boot
@@ -226,7 +231,7 @@ OPEN  [D23] signed certificate from the teacher not received yet
 
 == 11. Leftovers on welcome
 OK    [W23] no BIND on welcome (removed 10.31)
-INFO  backups of the fixes: /root/fixes-backup-20261110-1835 /root/fixes-backup-20261110-1842 /root/fixes-backup-20261110-1930 /root/fixes-backup-20261116-0925
+INFO  backups of the fixes: /root/fixes-backup-20261110-1835 /root/fixes-backup-20261110-1842 /root/fixes-backup-20261110-1930 /root/fixes-backup-20261116-0925 /root/fixes-backup-20261116-0929 /root/fixes-backup-20261116-1923 /root/fixes-backup-20261116-1925 /root/fixes-backup-20261116-1928 /root/fixes-backup-20261116-1935
 
 == 12. ns1 seen from welcome (DNS as the other groups ask it)
 OK    [10.4] from welcome: group4.umons. MX 10 mail.group4.umons.
@@ -248,7 +253,7 @@ INFO  provider welcome.group7.umons -> 10.7.255.10 (system resolver); asked to n
 INFO  provider welcome.group8.umons -> 10.8.255.10 (system resolver); asked to ns1: NXDOMAIN, to the gateway: NOERROR
 
 == Summary
-88 OK, 1 FAIL, 1 NEW, 18 OPEN, 53 INFO
+89 OK, 1 FAIL, 1 NEW, 17 OPEN, 55 INFO
 FAIL  [10.13] aliases database differs from /etc/aliases, run 'sudo newaliases': root (file: user, database: missing)
 NEW   postfix check warning: postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
 OPEN ids: D15 D23 M2 W1 W10 W11 W12 W14 W2 W28 W29 W9
