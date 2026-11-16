@@ -1,7 +1,7 @@
 #!/bin/sh
 # Fixes for the welcome VM (10.4.255.11). For each fix: current state, reason,
 # confirmation [y/N], backup of the files it changes, change, check.
-# At the end it runs checks/welcome.sh, which pushes the result.
+# At the end it runs checks/full.sh, which pushes the result.
 # Take a PVE snapshot of welcome first.
 # Run:  cd ~/Desktop/group4-welcome && git pull && sudo sh fixes/fix_welcome.sh
 set -u
@@ -15,7 +15,7 @@ ask() { printf '%s [y/N] ' "$1"; read -r a; [ "$a" = y ] || [ "$a" = Y ]; }
 ask "Did you take a PVE snapshot of welcome?" || { echo "Take it first: PVE > welcome > Snapshots > Take Snapshot."; exit 1; }
 
 echo
-echo "== Fix 1/8: hostname 'welcome' (now: $(hostname))"
+echo "== Fix 1/9: hostname 'welcome' (now: $(hostname))"
 echo "   Why: with the name 'debian' it is easy to work on the wrong VM (W19)."
 if [ "$(hostname)" = welcome ] && grep -Eq '^127\.0\.1\.1[[:space:]]+welcome([[:space:]]|$)' /etc/hosts; then
     echo "   already done"
@@ -31,7 +31,7 @@ elif ask "   Apply?"; then
 fi
 
 echo
-echo "== Fix 2/8: Postfix myhostname (now: $(postconf -h myhostname))"
+echo "== Fix 2/9: Postfix myhostname (now: $(postconf -h myhostname))"
 echo "   Why: it is the name announced to the other mail servers (greeting, HELO);"
 echo "        it must exist in DNS and match the MX: mail.group4.umons."
 if [ "$(postconf -h myhostname)" = mail.group4.umons ]; then
@@ -49,7 +49,7 @@ elif ask "   Apply?"; then
 fi
 
 echo
-echo "== Fix 3/8: remove BIND from welcome (W23)"
+echo "== Fix 3/9: remove BIND from welcome (W23)"
 if ! dpkg -l bind9 2>/dev/null | grep -q '^ii'; then
     echo "   already removed"
 else
@@ -77,7 +77,7 @@ fi
 echo
 LOCAL='127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128'
 cur=$(postconf -h mynetworks)
-echo "== Fix 4/8: mynetworks only local (W3, W26)"
+echo "== Fix 4/9: mynetworks only local (W3, W26)"
 echo "   now: $cur"
 echo "   Why: entries like 10.1.255.0/16 have host bits set: Postfix cannot evaluate them and"
 echo "        answers '451 Temporary lookup failure' to every remote sender (seen from ns1 at"
@@ -100,7 +100,7 @@ elif ask "   Apply?"; then
 fi
 
 echo
-echo "== Fix 5/8: one mailbox format, Maildir (W27, D20)"
+echo "== Fix 5/9: one mailbox format, Maildir (W27, D20)"
 hm=$(postconf -h home_mailbox); mc=$(postconf -h mailbox_command)
 inbox=$(doveconf -h mail_inbox_path 2>/dev/null)
 echo "   now: Postfix home_mailbox='$hm' mailbox_command='$mc' | Dovecot mail_driver=$(doveconf -h mail_driver 2>/dev/null) mail_path=$(doveconf -h mail_path 2>/dev/null) mail_inbox_path='$inbox'"
@@ -131,7 +131,7 @@ fi
 
 echo
 ACCOUNTS="calogero"
-echo "== Fix 6/8: dedicated mail accounts ($ACCOUNTS), mail login only for the group mailusers (W1, D24)"
+echo "== Fix 6/9: dedicated mail accounts ($ACCOUNTS), mail login only for the group mailusers (W1, D24)"
 echo "   now: group mailusers: $(getent group mailusers | cut -d: -f4)"
 echo "        PAM rule in /etc/pam.d/dovecot: $(grep -c 'pam_succeed_if.so user ingroup mailusers' /etc/pam.d/dovecot 2>/dev/null)"
 echo "   Why: the template password of 'user' must not open the mail; a mail account gets"
@@ -168,7 +168,7 @@ elif ask "   Apply? (you will type a password for each new account)"; then
 fi
 
 echo
-echo "== Fix 7/8: IMAP only on 993, port 143 closed (W24, D25)"
+echo "== Fix 7/9: IMAP only on 993, port 143 closed (W24, D25)"
 echo "   now: listening on 143: $(ss -Htln | awk '{print $4}' | grep -cE '[:.]143$') socket(s)"
 echo "   Why: on 143 a client may send the password before switching to TLS; 993 is TLS from the first byte."
 DROP=/etc/dovecot/conf.d/99-group4.conf
@@ -194,7 +194,7 @@ EOF
 fi
 
 echo
-echo "== Fix 8/8: Postfix protections (D26)"
+echo "== Fix 8/9: Postfix protections (D26)"
 echo "   now: VRFY disabled=$(postconf -h disable_vrfy_command), HELO required=$(postconf -h smtpd_helo_required), banner='$(postconf -h smtpd_banner)', connections per client per minute=$(postconf -h smtpd_client_connection_rate_limit)"
 echo "   Why: VRFY lists valid users; the banner names the software; crude spam and scan tools"
 echo "        send no HELO; without a limit one client can open hundreds of connections."
@@ -214,6 +214,29 @@ elif ask "   Apply?"; then
 fi
 
 echo
+WANT='permit_mynetworks permit_sasl_authenticated reject_unauth_destination'
+rr=$(postconf -h smtpd_relay_restrictions | tr ',' ' ' | tr -s ' ')
+echo "== Fix 9/9: relay attempts refused with 554 instead of 454 (W30)"
+echo "   now: smtpd_relay_restrictions = $rr"
+echo "   Why: 454 means 'temporary, try again later': senders keep the message and retry for"
+echo "        days (useless connections, noise in the logs). 554 means 'never': they stop at once."
+echo "        Mail for @group4.umons is not relay: it is not affected."
+if echo " $rr " | grep -q ' reject_unauth_destination ' && ! echo " $rr " | grep -q ' defer_unauth_destination '; then
+    echo "   already done"
+elif ask "   Apply?"; then
+    cp -a /etc/postfix/main.cf "$BK/main.cf.fix9"
+    postconf -e "smtpd_relay_restrictions = $WANT"
+    if postfix check; then
+        systemctl reload postfix
+        echo "   done: smtpd_relay_restrictions = $(postconf -h smtpd_relay_restrictions)"
+        echo "   check from ns1: sudo sh checks/full.sh (welcome seen from ns1: relay -> 554)"
+    else
+        cp -a "$BK/main.cf.fix9" /etc/postfix/main.cf
+        echo "   ERROR: postfix check failed, main.cf restored"
+    fi
+fi
+
+echo
 echo "== Backups in $BK"
-echo "== Running checks/welcome.sh"
-sh "$REPO/checks/welcome.sh"
+echo "== Running checks/full.sh (full regression test)"
+sh "$REPO/checks/full.sh"
