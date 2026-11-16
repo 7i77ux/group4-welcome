@@ -193,7 +193,8 @@ if not ROOT:
         ok("suricata -T: configuration valid")
     else:
         fail("suricata -T: configuration NOT valid (fix the setting named below, step 2-3):")
-        for l in [l for l in both.splitlines() if re.search(r"<E>|<Error>|\bError\b|error", l)][:5]:
+        errl = [l for l in both.splitlines() if re.search(r"<E>|<Error>|\bError\b|error", l)]
+        for l in (errl or [l for l in both.splitlines() if l.strip()][-5:])[:5]:
             sub(l.strip()[:150])
 
 sec("4. Running Suricata (step 4)")
@@ -202,7 +203,7 @@ ena = sh("systemctl is-enabled suricata 2>/dev/null")
 check(act == "active", "service active", f"service {act or '?'}: sudo systemctl enable --now suricata (step 4)")
 check(ena == "enabled", "service enabled at boot", f"service {ena or '?'} at boot: sudo systemctl enable suricata (step 4)")
 info(f"started: {sh('systemctl show -p ActiveEnterTimestamp --value suricata 2>/dev/null') or '?'}")
-pid = sh("pgrep -o -f '/usr/bin/suricata' 2>/dev/null")
+pid = sh("pidof -s suricata 2>/dev/null")  # pgrep -f would also match the shell running it
 if pid:
     info(f"process {pid}: {sh(f'ps -o args= -p {pid}')[:150]}")
     rss = sh(f"ps -o rss= -p {pid}")
