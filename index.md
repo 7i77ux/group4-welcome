@@ -24,36 +24,25 @@ header-includes: |
   ```
 ---
 
-> **SMTP is online. IMAP (reading mail) is coming soon.** Updates are posted on this page.
-
-We are **Group 4**, the mail provider of the `group4.umons` domain. We give email addresses to our own staff and to the companies that choose us as their provider. Our mail works with every other provider in the network: you can write to and receive from any `groupX.umons` address.
+We are **Group 4**, the mail provider of the `group4.umons` domain.
 
 ## Services
 
 | Service | Address | Status |
 |---|---|---|
 | Website | `welcome.group4.umons` | Online |
-| Email: send and receive (SMTP) | `mail.group4.umons` | Online |
-| Email: read your mailbox (IMAP) | `mail.group4.umons` | Coming soon |
-| Webmail (read and write mail from the browser) | `mail.group4.umons` | Coming soon |
-| Instant messaging | | Not offered yet |
-
-<!-- Activate when the webmail is online:
-- [Open webmail](http://mail.group4.umons)
-- [Write a new email](http://mail.group4.umons/?_task=mail&_action=compose)
-- [Read received emails](http://mail.group4.umons/?_task=mail&_mbox=INBOX)
--->
-
-## Become a customer
+| Email: receive mail (SMTP, port 25) | `mail.group4.umons` | Online |
+| Email: read your mailbox (IMAP over TLS, port 993) | `mail.group4.umons` | Online |
 
 ## Mail client settings
 
-## Notices
-
-## Security
-
-## Contacts
+| | |
+|---|---|
+| Incoming server (IMAP) | `mail.group4.umons` |
+| Port | 993, SSL/TLS |
+| User name | your account name |
+| Password | the one we gave you |
 
 ---
 
-Group 4 · `group4.umons` · Last update: 2026-11-10
+Group 4 · `group4.umons` · Last update: 2026-11-16
