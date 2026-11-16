@@ -1,0 +1,60 @@
+Suricata check on welcome (2026-11-16 19:24), read-only. Steps = DOCUMENTATION.md 10.17.
+
+== 0. Resources
+INFO  RAM 1973 MB, available 1317 MB
+
+== 1. Installation (step 1)
+OK    package suricata 1:7.0.10-1+deb13u4
+OK    package suricata-update 1.3.4-1+deb13u1
+OK    jq installed (to read eve.json)
+INFO  This is Suricata version 7.0.10 RELEASE
+
+== 2. Basic setup (step 2): /etc/suricata/suricata.yaml
+WARN  no copy in /root/suricata.yaml.orig: make it before editing (step 2), to be able to undo
+OK    HOME_NET "[10.4.0.0/16]" (our network)
+OK    EXTERNAL_NET "!$HOME_NET" (everything that is not ours)
+FAIL  af-packet interfaces: enp1s0 default; the first one must be ens18 (step 2)
+OK    af-packet without copy-mode: alerts only, nothing is blocked (IDS, D10)
+OK    /etc/default/suricata IFACE=ens18
+OK    default-rule-path /var/lib/suricata/rules
+OK    rule-files: suricata.rules
+
+== 3. Signatures (step 3)
+FAIL  /var/lib/suricata/rules/suricata.rules missing: run sudo suricata-update (step 3)
+FAIL  suricata -T: configuration NOT valid (fix the setting named below, step 2-3):
+
+== 4. Running Suricata (step 4)
+FAIL  service failed: sudo systemctl enable --now suricata (step 4)
+OK    service enabled at boot
+INFO  started: Mon 2026-11-16 09:48:10 CET
+INFO  process 43671: 
+FAIL  suricata.log: no 'engine started' after the last start (rules still loading, or an error below)
+WARN  4 error line(s) in suricata.log since the last start:
+        [40688 - W#01-enp1s0] 2026-11-16 09:48:10 Error: af-packet: enp1s0: failed to find interface: No such device
+        [40688 - W#01-enp1s0] 2026-11-16 09:48:10 Error: af-packet: enp1s0: failed to init socket for interface
+        [40684 - Suricata-Main] 2026-11-16 09:48:10 Error: threads: thread "W#01-enp1s0" failed to start: flags 0423
+INFO  stats.log: no capture counters yet (it is written every 8 seconds)
+
+== 5. Alerting (step 5)
+FAIL  no test alert after curl testmynids.org: engine still loading, no outgoing HTTP, or wrong card
+INFO  alerts in fast.log: 0; most frequent:
+
+== 6. EVE JSON (step 6)
+INFO  eve.json: 0 KB, last write 35682 s ago
+WARN  eve.json not written for 35682 s: is Suricata running?
+
+== 7. Housekeeping
+OK    logrotate rule for the Suricata logs
+INFO  size of /var/log/suricata: 20K; disk / used 40%
+
+== Summary
+11 OK, 6 FAIL, 3 WARN, 8 INFO
+FAIL  af-packet interfaces: enp1s0 default; the first one must be ens18 (step 2)
+FAIL  /var/lib/suricata/rules/suricata.rules missing: run sudo suricata-update (step 3)
+FAIL  suricata -T: configuration NOT valid (fix the setting named below, step 2-3):
+FAIL  service failed: sudo systemctl enable --now suricata (step 4)
+FAIL  suricata.log: no 'engine started' after the last start (rules still loading, or an error below)
+FAIL  no test alert after curl testmynids.org: engine still loading, no outgoing HTTP, or wrong card
+WARN  no copy in /root/suricata.yaml.orig: make it before editing (step 2), to be able to undo
+WARN  4 error line(s) in suricata.log since the last start:
+WARN  eve.json not written for 35682 s: is Suricata running?
