@@ -1,4 +1,4 @@
-Suricata check on welcome (2026-11-16 19:36), read-only. Steps = DOCUMENTATION.md 10.17.
+Suricata check on welcome (2026-11-16 19:37), read-only. Steps = DOCUMENTATION.md 10.17.
 
 == 1. Installation (step 1)
 OK    package suricata 1:7.0.10-1+deb13u4
@@ -24,11 +24,11 @@ OK    suricata -T: configuration valid
 == 4. Running Suricata (step 4)
 OK    service active
 OK    service enabled at boot
-INFO  started: Mon 2026-11-16 19:35:32 CET
-INFO  process 44615: /usr/bin/suricata -D --af-packet -c /etc/suricata/suricata.yaml --pidfile /run/suricata.pid
+INFO  started: Mon 2026-11-16 19:37:08 CET
+INFO  process 44759: /usr/bin/suricata -D --af-packet -c /etc/suricata/suricata.yaml --pidfile /run/suricata.pid
 OK    suricata.log: engine started (last start)
 OK    suricata.log names ens18
-OK    packets captured: 18 (stats.log)
+OK    packets captured: 144 (stats.log)
 
 == 5. Alerting (step 5)
 FAIL  no test alert after curl testmynids.org: engine still loading, no outgoing HTTP, or wrong card
