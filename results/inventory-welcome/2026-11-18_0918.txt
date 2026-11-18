@@ -1,0 +1,188 @@
+== Inventory of welcome (2026-11-18 09:18), read-only, passwords masked
+
+== 1. Network of this VM
+-- addresses: ip -br -4 addr
+   lo               UNKNOWN        127.0.0.1/8 
+   ens18            UP             10.4.2.11/24
+-- routes: ip -4 route
+   default via 10.4.2.1 dev ens18 proto static metric 100 
+   10.4.2.0/24 dev ens18 proto kernel scope link src 10.4.2.11 metric 100
+-- NetworkManager profile of ens18: c=$(nmcli -g GENERAL.CONNECTION device show ens18 2>/dev/null); echo "profile: $c"; nmcli -g ipv4.method,ipv4.addresses,ipv4.gateway,ipv4.dns,ipv4.ignore-auto-dns connection show "$c" 2>/dev/null
+   profile: Wired connection 1
+   manual
+   10.4.2.11/24
+   10.4.2.1
+   10.4.2.10
+   no
+-- /etc/network/interfaces (without comments): grep -vE '^\s*(#|$)' /etc/network/interfaces /etc/network/interfaces.d/* 2>/dev/null
+   /etc/network/interfaces:source /etc/network/interfaces.d/*
+   /etc/network/interfaces:auto lo
+   /etc/network/interfaces:iface lo inet loopback
+-- resolv.conf: grep -E '^(nameserver|search)' /etc/resolv.conf
+   nameserver 127.0.0.53
+   search .
+   ping 10.4.2.1: answers
+   ping 10.4.255.1: answers
+   ping 10.4.255.254: answers
+   outgoing HTTPS (deb.debian.org): 200
+   GitHub SSH (github.com:22, used to push the results): open
+
+== 2. Our names as the other groups see them (resolver of the course 10.4.255.254) and through ns1
+   group4.umons MX: course resolver -> 10 mail.group4.umons. | ns1 10.4.2.10 -> 10 mail.group4.umons. | ns1 10.4.255.10 -> ;; communications error to 10.4.255.10#53: timed out ;; no servers could be reached
+   group4.umons NS: course resolver -> ns1.group4.umons. | ns1 10.4.2.10 -> ns1.group4.umons. | ns1 10.4.255.10 -> ;; communications error to 10.4.255.10#53: timed out ;; no servers could be reached
+   welcome.group4.umons A: course resolver -> 10.4.255.11 | ns1 10.4.2.10 -> 10.4.255.1 | ns1 10.4.255.10 -> ;; communications error to 10.4.255.10#53: timed out ;; no servers could be reached
+   mail.group4.umons A: course resolver -> 10.4.255.11 | ns1 10.4.2.10 -> 10.4.255.1 | ns1 10.4.255.10 -> ;; communications error to 10.4.255.10#53: timed out ;; no servers could be reached
+   ns1.group4.umons A: course resolver -> 10.4.255.1 | ns1 10.4.2.10 -> 10.4.255.1 | ns1 10.4.255.10 -> ;; communications error to 10.4.255.10#53: timed out ;; no servers could be reached
+   reverse 10.4.255.1: course resolver -> nothing | ns1 10.4.2.10 -> nothing
+   reverse 10.4.2.11: course resolver -> nothing | ns1 10.4.2.10 -> mail.group4.umons.
+   reverse 10.4.255.11: course resolver -> nothing | ns1 10.4.2.10 -> nothing
+   reverse 10.4.2.10: course resolver -> nothing | ns1 10.4.2.10 -> ns1.group4.umons.
+   10.4.255.1: 53 closed/filtered (TimeoutError), 25 closed/filtered (TimeoutError), 80 closed/filtered (TimeoutError), 993 closed/filtered (TimeoutError), 22 closed/filtered (TimeoutError)
+   10.4.2.11: 53 closed/filtered (ConnectionRefusedError), 25 open, 80 open, 993 open, 22 open
+   10.4.2.10: 53 open, 25 closed/filtered (ConnectionRefusedError), 80 closed/filtered (ConnectionRefusedError), 993 closed/filtered (ConnectionRefusedError), 22 open
+
+== 3. Listening services of this VM
+-- ss -tlnup: ss -Htlnup | awk '{print $1, $5, $7}' | sed -E 's/users:\(\("([^"]+)".*/\1/' | sort -u
+   tcp 0.0.0.0:22 sshd
+   tcp 0.0.0.0:25 smtpd
+   tcp 0.0.0.0:5355 systemd-resolve
+   tcp 0.0.0.0:80 nginx
+   tcp 0.0.0.0:993 dovecot
+   tcp 127.0.0.1:631 cupsd
+   tcp 127.0.0.53%lo:53 systemd-resolve
+   tcp 127.0.0.54:53 systemd-resolve
+   tcp [::1]:631 cupsd
+   tcp [::]:22 sshd
+   tcp [::]:25 smtpd
+   tcp [::]:5355 systemd-resolve
+   tcp [::]:80 nginx
+   tcp [::]:993 dovecot
+   udp 0.0.0.0:49764 avahi-daemon
+   udp 0.0.0.0:5353 avahi-daemon
+   udp 0.0.0.0:5355 systemd-resolve
+   udp 127.0.0.53%lo:53 systemd-resolve
+   udp 127.0.0.54:53 systemd-resolve
+   udp [::]:36382 avahi-daemon
+   udp [::]:5353 avahi-daemon
+   udp [::]:5355 systemd-resolve
+-- services: for s in named bind9 nginx apache2 postfix dovecot mariadb mysql php8.4-fpm php8.3-fpm suricata ssh; do a=$(systemctl is-active $s 2>/dev/null); [ "$a" = inactive ] && continue; echo "$s $a $(systemctl is-enabled $s 2>/dev/null)"; done
+   nginx active enabled
+   postfix active enabled
+   dovecot active enabled
+   suricata active enabled
+   ssh active enabled
+
+== 4. Mail (welcome)
+-- postconf -n: postconf -n
+   alias_database = hash:/etc/aliases
+   alias_maps = hash:/etc/aliases
+   biff = no
+   compatibility_level = 3.9
+   cyrus_sasl_config_path = /etc/postfix/sasl
+   disable_vrfy_command = yes
+   home_mailbox = Maildir/
+   inet_interfaces = all
+   inet_protocols = all
+   mailbox_command =
+   mailbox_size_limit = 0
+   mydestination = $myhostname, group4.umons, debian, localhost.localdomain, localhost
+   myhostname = mail.group4.umons
+   mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+   mynetworks_style = host
+   myorigin = /etc/mailname
+   recipient_delimiter = +
+   relayhost =
+   smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+   smtp_tls_security_level = may
+   smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+   smtpd_banner = $myhostname ESMTP
+   smtpd_client_connection_rate_limit = 30
+   smtpd_helo_required = yes
+   smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated reject_unauth_destination
+   smtpd_tls_cert_file = /etc/ssl/certs/ssl-cert-snakeoil.pem
+   smtpd_tls_key_file = /etc/ssl/private/ssl-cert-snakeoil.key
+   smtpd_tls_security_level = may
+-- postfix check: postfix check 2>&1 | head -5
+   postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+-- doveconf -n (main lines): doveconf -n 2>&1 | grep -E 'passdb|userdb|driver|args|query|connect|mail_driver|mail_path|mail_home|mail_location|mail_uid|mail_gid|first_valid|auth_mechanisms|ssl_server|ssl_cert|listen|protocols|sql|mysql|error|Error|^ *}' | head -60
+   mail_driver = maildir
+   mail_home = /home/%{user | username}
+   mail_path = %{home}/Maildir
+   protocols {
+   }
+   passdb pam {
+   }
+   userdb passwd {
+   }
+     }
+     }
+     }
+     }
+     }
+   }
+     inet_listener imap {
+     }
+     inet_listener imaps {
+     }
+   }
+     inet_listener pop3 {
+     }
+     inet_listener pop3s {
+     }
+   }
+     inet_listener submission {
+     }
+     inet_listener submissions {
+     }
+   }
+     unix_listener lmtp {
+     }
+   }
+   }
+   }
+   }
+     unix_listener auth-userdb {
+     }
+   }
+   }
+     unix_listener dict {
+     }
+   }
+   ssl_server {
+   }
+-- dovecot status: systemctl is-active dovecot; journalctl -u dovecot -p err --since -24h -o cat --no-pager | tail -5
+   active
+-- account vmail: getent passwd vmail; getent group vmail
+   (nothing)
+-- /var/vmail (mailboxes: new / cur mails): for d in /var/vmail/*/*/; do [ -d "$d" ] && echo "$d new $(ls "$d/new" 2>/dev/null | wc -l) cur $(ls "$d/cur" 2>/dev/null | wc -l)"; done
+   (nothing)
+-- old Maildir of calogero: ls -d /home/calogero/Maildir 2>/dev/null && echo "new $(ls /home/calogero/Maildir/new | wc -l) cur $(ls /home/calogero/Maildir/cur | wc -l)"
+   /home/calogero/Maildir
+   new 1 cur 0
+-- MariaDB: virtual users (addresses only): mysql -N -e 'SELECT email FROM mailserver.virtual_users' 2>&1 | head -20
+   /bin/sh: 1: mysql: not found
+-- Postfix finds calogero in the database: postmap -q calogero@group4.umons mysql:/etc/postfix/mysql-virtual-mailbox-maps.cf 2>&1
+   postmap: warning: unsupported dictionary type: mysql. Is the postfix-mysql package installed?
+   postmap: fatal: unsupported dictionary type: mysql
+-- files with the database password (owner, mode): ls -l /etc/postfix/mysql-*.cf /etc/dovecot/dovecot-sql.conf.ext 2>&1
+   ls: cannot access '/etc/postfix/mysql-*.cf': No such file or directory
+   ls: cannot access '/etc/dovecot/dovecot-sql.conf.ext': No such file or directory
+-- PAM rule of D24 (mailusers): grep -n mailusers /etc/pam.d/dovecot 2>&1
+   2:auth    required    pam_succeed_if.so user ingroup mailusers quiet
+-- aliases: grep -vE '^\s*(#|$)' /etc/aliases
+   postmaster:    	root
+   root:		user
+
+== 5. Web (welcome)
+-- nginx sites: for f in /etc/nginx/sites-enabled/*; do echo "$f -> $(readlink -f $f)"; grep -hE 'listen|server_name|root|fastcgi_pass' $f | sed 's/^ */      /'; done
+   /etc/nginx/sites-enabled/welcome -> /etc/nginx/sites-available/welcome
+         listen 80 default_server;
+         listen [::]:80 default_server;
+         server_name welcome.group4.umons;
+         root /var/www/welcome;
+-- /var/www: ls -la /var/www
+   total 16
+   drwxr-xr-x  4 root root 4096 Nov 10 11:41 .
+   drwxr-xr-x 12 root root 4096 Nov  4 12:04 ..
+   drwxr-xr-x  2 root root 4096 Nov  4 12:04 html
+   drwxr-xr-x  2 root root 4096 Nov 10 11:41 welcome
