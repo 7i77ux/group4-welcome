@@ -140,7 +140,9 @@ echo "        to IMAP (and later to 587): 'user' and 'mother' are excluded."
 todo=""
 for a in $ACCOUNTS; do id "$a" >/dev/null 2>&1 && id -nG "$a" | grep -qw mailusers || todo=1; done
 grep -q 'pam_succeed_if.so user ingroup mailusers' /etc/pam.d/dovecot 2>/dev/null || todo=1
-if [ -z "$todo" ]; then
+if postconf -h virtual_mailbox_domains 2>/dev/null | grep -q group4.umons; then
+    echo "   not used: the mail accounts are in the database since fixes/mail_virtual.sh (fixes/mail_users.sh)"
+elif [ -z "$todo" ]; then
     echo "   already done"
 elif ask "   Apply? (you will type a password for each new account)"; then
     cp -a /etc/pam.d/dovecot "$BK/pam.d-dovecot"

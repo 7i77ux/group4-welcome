@@ -739,18 +739,42 @@ def dovecot():
     g4 = read("/etc/dovecot/conf.d/99-group4.conf") or ""
     check(re.search(r"port\s*=\s*0", g4), "D25", "99-group4.conf closes 143 (port = 0)", "99-group4.conf: no 'port = 0' for imap")
     check(not port_open("127.0.0.1", 143), "D25", "143 closed", "143 open: IMAP without TLS")
+    virtual = "group4.umons" in sh("postconf -h virtual_mailbox_domains 2>/dev/null")
+    if virtual:
+        conf = o
+        check("passdb sql" in conf and "passdb pam" not in conf, "4.3", "login from the database only (passdb sql, no PAM)",
+              f"logins: {' '.join(re.findall(r'passdb \w+', conf)) or 'none'} (expected passdb sql only)")
+        mh = dc("mail_home")
+        check(mh.startswith("/var/vmail/"), "4.3", f"mail_home {mh}", f"mail_home '{mh}', expected /var/vmail/...")
+        check(sh("id -u vmail 2>/dev/null") == "5000", "4.3", "user vmail (uid 5000) owns the mailboxes", "no user vmail with uid 5000")
+        a2, e2 = unit_state("mariadb")
+        check(a2 == "active" and e2 == "enabled", "4.3", f"mariadb {a2}, {e2} at boot", f"mariadb {a2}, {e2 or '?'} at boot")
+        listen = sh("ss -Htln | awk '$4 ~ /:3306$/ {print $4}'").split()
+        check(listen and all(x.startswith(("127.0.0.1", "[::1]")) for x in listen), "4.3", "MariaDB listens on localhost only",
+              f"MariaDB listens on {' '.join(listen) or 'nothing'}")
+        users = sh("mysql -N mailserver -e 'SELECT CONCAT(email, IF(active, \"\", \" (waiting)\")) FROM virtual_users' 2>/dev/null")
+        info(f"mail accounts: {' '.join(users.split()) or 'none'}")
+        al = sh("postmap -q postmaster@group4.umons mysql:/etc/postfix/mysql-virtual-alias-maps.cf 2>&1")
+        check(al.endswith("@group4.umons"), "4.3", f"postmaster@group4.umons -> {al}", f"postmaster alias: {al or 'missing'}")
+        for f in ("/etc/postfix/mysql-virtual-mailbox-maps.cf", "/etc/postfix/mysql-virtual-alias-maps.cf", "/etc/dovecot/conf.d/99-group4-virtual.conf"):
+            st = sh(f"stat -c '%a %U:%G' {f} 2>/dev/null")
+            check(st.split()[0:1] and st.split()[0] in ("640", "600"), "4.3", f"{f}: {st} (database password not readable by others)",
+                  f"{f}: {st or 'missing'}")
     pam = [re.sub(r"\s+", " ", l.strip()) for l in (read("/etc/pam.d/dovecot") or "").splitlines()
            if l.strip() and not l.strip().startswith("#")]
     rule = "auth required pam_succeed_if.so user ingroup mailusers quiet"
-    if pam and pam[0] == rule:
+    if virtual:
+        info("PAM rule of D24 not used any more: logins come from the database")
+    elif pam and pam[0] == rule:
         ok("D24", "PAM: mail login only for the group mailusers (first rule)")
     elif rule in pam:
         fail("D24", "PAM rule for mailusers present but not first: earlier rules may decide before it")
     else:
         fail("D24", "no PAM rule: every Linux account can log in to the mail (also user/user)")
-    members = sh("getent group mailusers | cut -d: -f4")
-    check(members.split(",") == ["calogero"], "D24", f"group mailusers: {members}",
-          f"group mailusers: '{members}' (expected calogero only; user must not be there)")
+    if not virtual:
+        members = sh("getent group mailusers | cut -d: -f4")
+        check(members.split(",") == ["calogero"], "D24", f"group mailusers: {members}",
+              f"group mailusers: '{members}' (expected calogero only; user must not be there)")
     if os.path.exists("/var/spool/postfix/private/auth"):
         info("auth socket for Postfix present (login on 587)")
     else:
@@ -766,11 +790,13 @@ def dovecot():
         ok("D23", f"course certificate on 993: {c}")
     else:
         opn("D23", f"993 still uses the Debian certificate: {c}")
-    for md in sorted(p for p in (f"/home/{h}/Maildir" for h in os.listdir("/home")) if os.path.isdir(p)):
+    import glob as _glob
+    for md in sorted([p for p in (f"/home/{h}/Maildir" for h in os.listdir("/home")) if os.path.isdir(p)] + _glob.glob("/var/vmail/*/*/Maildir")):
         n_new = len(os.listdir(f"{md}/new")) if os.path.isdir(f"{md}/new") else 0
         n_cur = len(os.listdir(f"{md}/cur")) if os.path.isdir(f"{md}/cur") else 0
         info(f"{md}: {n_new} new, {n_cur} read")
-    proof = sh("grep -rls 'delivery-test@ns1.group4.umons' /home/calogero/Maildir/new /home/calogero/Maildir/cur 2>/dev/null | head -1")
+    proof = sh("grep -rls 'delivery-test@ns1.group4.umons' /home/calogero/Maildir/new /home/calogero/Maildir/cur "
+               "/var/vmail/group4.umons/calogero/Maildir/new /var/vmail/group4.umons/calogero/Maildir/cur 2>/dev/null | head -1")
     if proof:
         ok("D27", f"proof of reception from ns1 found in the mailbox of calogero ({os.path.basename(proof)[:40]})")
     else:
@@ -787,14 +813,14 @@ def dovecot():
         if l.strip() and not l.startswith("--"):
             sub(l.strip()[:120])
     for acct, should in (("calogero", True), ("user", False)):
-        m = re.search(rf"\b{acct} auth (succeeded|failed)", txt)
+        m = re.search(rf"\b{acct}(@group4\.umons)? auth (succeeded|failed)", txt)
         if not m:
             info(f"mail login test of {acct}: no result")
         elif should:
-            check(m.group(1) == "succeeded", "D24", "mail login of calogero: auth succeeded",
+            check(m.group(2) == "succeeded", "D24", "mail login of calogero: auth succeeded",
                   "mail login of calogero FAILED (password typed wrong, or the mail login is broken)")
         else:
-            check(m.group(1) == "failed", "D24", "mail login of user refused (not in mailusers), with its real password",
+            check(m.group(2) == "failed", "D24", "mail login of user refused (not a mail account), with its real password",
                   "mail login of user SUCCEEDED: the template password opens the mail (PAM rule not working)")
 
 

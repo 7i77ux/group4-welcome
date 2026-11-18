@@ -22,6 +22,8 @@ s|ns1|sudo sh fixes/fix_dns_serial.sh|-|CHANGE: raise the serial of our two zone
 6|both|sudo sh checks/evidence_ice.sh|evidence-VM|Evidence of ice: its code with secrets redacted, orders of the servers (not executed)
 7|welcome|sudo sh deploy.sh|-|CHANGE: publish the welcome page from index.md
 8|welcome|sudo sh fixes/fix_welcome.sh|-|CHANGE: fixes 1-10 of welcome (each asks y/N; "already done" when nothing to do)
+m|welcome|sudo sh fixes/mail_virtual.sh|-|CHANGE: virtual mailboxes in MariaDB (NOTES New 4.3 with the five fixes); tests, way back if they fail
+u|welcome|sudo sh fixes/mail_users.sh list|-|Mail accounts of the virtual mailboxes (list); to add or approve: sudo sh fixes/mail_users.sh add|activate <name>
 9|welcome|sudo sh fixes/fix_suricata.sh|-|CHANGE: repair Suricata (card, HOME_NET, rules, test, start, test alert)
 11|both|sudo sh checks/save_volatile.sh|volatile-VM|CHANGE: before a reboot, save the evidence of /tmp in /root/evidence (root only)'
 

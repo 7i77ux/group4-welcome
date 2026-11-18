@@ -24,7 +24,9 @@ if [ "$VM" = welcome ] && [ -t 0 ] && command -v doveadm >/dev/null; then
     if [ "$a" = y ] || [ "$a" = Y ]; then
         DV=$(mktemp /tmp/full-doveadm.XXXXXX)
         chmod 600 "$DV"
-        for u in calogero user; do
+        CAL=calogero
+        postconf -h virtual_mailbox_domains 2>/dev/null | grep -q group4.umons && CAL=calogero@group4.umons   # virtual mailboxes: full address
+        for u in $CAL user; do
             echo "-- password of $u:"
             doveadm auth test "$u" 2>&1 | tee -a "$DV"
         done
