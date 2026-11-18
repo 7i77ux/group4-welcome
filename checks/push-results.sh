@@ -26,9 +26,9 @@ cp "$OUTFILE" "$RES/results/$VMDIR/latest.txt"
 [ "$(id -u)" = 0 ] && chown -R "$U" "$RES/results"
 
 # git runs as the user, who owns the deploy key
-# If the pull with rebase fails (conflict), abort it and drop this commit: the clone stays
-# usable for the next 'git pull', and the output is kept in /tmp (see below).
-cmd="cd '$RES' && git add 'results/$VMDIR' && git commit -q -m 'results: $VMDIR checks $TS' && { git pull -q --rebase || { git rebase --abort; git reset -q --hard HEAD~1; false; }; } && git push -q"
+# --autostash: files changed by hand in the clone are set aside during the pull and put back after;
+# on failure the results commit is undone WITHOUT touching any file (no reset --hard: it would erase them).
+cmd="cd '$RES' && git add 'results/$VMDIR' && git commit -q -m 'results: $VMDIR checks $TS' && { git pull -q --rebase --autostash || { [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ] && git rebase --abort; git reset -q HEAD~1; false; }; } && git push -q"
 if [ "$(id -u)" = 0 ]; then sudo -H -u "$U" sh -c "$cmd"; else sh -c "$cmd"; fi
 if [ $? -eq 0 ]; then
     echo "Pushed: results/$VMDIR/$TS.txt"
