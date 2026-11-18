@@ -163,8 +163,10 @@ CALDIR="$VMAIL/$DOMAIN/calogero/Maildir"
 if [ "$(sql "SELECT active FROM virtual_users WHERE email='$CAL'")" = 1 ] && [ -d "$CALDIR" ]; then
     echo "   already done"
 elif ask "   Create it? (you will type its new password twice; choose a long one, W31)"; then
-    hash=$(doveadm pw -s SHA512-CRYPT) || { echo "   ERROR: password not set"; exit 1; }
-    case "$hash" in "{SHA512-CRYPT}"*) ;; *) echo "   ERROR: unexpected hash"; exit 1;; esac
+    # openssl, not doveadm: doveadm stops while the Dovecot configuration does not load (fixed at step 5)
+    echo "   Password of $CAL (at least 12 characters), typed twice:"
+    h=$(openssl passwd -6) || { echo "   ERROR: password not set"; exit 1; }
+    case "$h" in '$6$'*) hash="{SHA512-CRYPT}$h" ;; *) echo "   ERROR: unexpected hash"; exit 1;; esac
     sql "INSERT INTO virtual_users (email, password, active) VALUES ('$CAL', '$hash', 1) ON DUPLICATE KEY UPDATE password = VALUES(password), active = 1"
     mkdir -p "$VMAIL/$DOMAIN/calogero"
     if [ -d /home/calogero/Maildir ] && [ ! -d "$CALDIR" ]; then

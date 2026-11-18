@@ -36,8 +36,8 @@ addr() {  # name or name@group4.umons -> checked address (no other characters: s
 exists() { [ -n "$(sql "SELECT email FROM virtual_users WHERE email='$1'")" ]; }
 newhash() {
     echo "Password for $1 (at least 12 characters; typed twice):" >&2
-    h=$(doveadm pw -s SHA512-CRYPT) || { echo "ERROR: password not set" >&2; exit 1; }
-    case "$h" in "{SHA512-CRYPT}"*) echo "$h" ;; *) echo "ERROR: unexpected hash" >&2; exit 1 ;; esac
+    h=$(openssl passwd -6) || { echo "ERROR: password not set" >&2; exit 1; }   # same scheme as doveadm pw -s SHA512-CRYPT
+    case "$h" in '$6$'*) echo "{SHA512-CRYPT}$h" ;; *) echo "ERROR: unexpected hash" >&2; exit 1 ;; esac
 }
 
 cmd=${1:-}
