@@ -20,7 +20,7 @@ import socket
 import subprocess
 import time
 
-GW, ME, DOMAIN = "10.4.255.254", "10.4.255.11", "group4.umons"
+GW, ME, PUBLIC, DOMAIN = "10.4.255.254", "10.4.2.11", "10.4.255.1", "group4.umons"   # ME = welcome in the DMZ, PUBLIC = pfSense (NAT)
 SENDER = f"calogero@{DOMAIN}"
 MAILDIR = "/home/calogero/Maildir"
 COUNT = {"OK": 0, "FAIL": 0, "INFO": 0}
@@ -61,13 +61,14 @@ mx = dig(DOMAIN, "MX")
 (out("OK", f"MX of {DOMAIN}: {' '.join(mx)}") if any("mail.group4.umons" in m for m in mx)
  else out("FAIL", f"MX of {DOMAIN}: {' '.join(mx) or 'none'} (expected 10 mail.group4.umons.)"))
 a = dig(f"mail.{DOMAIN}")
-out("OK", f"mail.{DOMAIN} -> {' '.join(a)}") if a == [ME] else out("FAIL", f"mail.{DOMAIN} -> {' '.join(a) or 'nothing'} (expected {ME})")
-ptr = [l for l in sh(f"dig +short +time=2 +tries=1 @{GW} -x {ME}").splitlines() if l and not l.startswith(";")]
-out("INFO", f"reverse name of {ME} through the gateway: {' '.join(ptr) or 'none'} (some servers check it)")
+out("OK", f"mail.{DOMAIN} -> {' '.join(a)}") if a == [PUBLIC] else out("FAIL", f"mail.{DOMAIN} -> {' '.join(a) or 'nothing'} (expected {PUBLIC}, the public address of pfSense)")
+ptr = [l for l in sh(f"dig +short +time=2 +tries=1 @{GW} -x {PUBLIC}").splitlines() if l and not l.startswith(";")]
+out("INFO", f"reverse name of {PUBLIC} (our address seen from outside) through the course resolver: {' '.join(ptr) or 'none'} (some servers check it)")
 act = sh("systemctl is-active postfix")
 out("OK", "Postfix active") if act == "active" else out("FAIL", f"Postfix {act}")
 g = greeting(ME)
-out("OK", f"our port 25: {g}") if g.startswith("220") else out("FAIL", f"our port 25: {g}")
+out("OK", f"our port 25 ({ME}): {g}") if g.startswith("220") else out("FAIL", f"our port 25 ({ME}): {g}")
+out("INFO", f"port 25 of the public address {PUBLIC} from here: {greeting(PUBLIC)[:60]} (from inside it needs NAT reflection)")
 out("INFO", f"myhostname {sh('postconf -h myhostname')}, TLS to other servers: smtp_tls_security_level={sh('postconf -h smtp_tls_security_level') or 'none'}")
 q = sh("postqueue -p | tail -1")
 out("INFO", f"mail queue: {q or '?'}")

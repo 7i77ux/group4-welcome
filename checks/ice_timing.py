@@ -21,7 +21,8 @@ import time
 from datetime import datetime
 
 vm = sys.argv[1] if len(sys.argv) > 1 else "?"
-OURS = {"10.4.255.10": "ns1", "10.4.255.11": "welcome", "10.4.255.254": "gateway"}
+OURS = {"10.4.255.10": "ns1 (before the DMZ)", "10.4.255.11": "welcome (before the DMZ)", "10.4.255.254": "gateway of the course",
+        "10.4.2.10": "ns1", "10.4.2.11": "welcome", "10.4.2.1": "pfSense (DMZ)", "10.4.255.1": "pfSense (WAN)"}
 
 
 def sh(cmd, timeout=60):

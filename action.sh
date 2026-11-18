@@ -22,7 +22,6 @@ i|both|sudo sh checks/inventory.sh|inventory-VM|Inventory of the new structure (
 7|welcome|sudo sh deploy.sh|-|CHANGE: publish the welcome page from index.md
 8|welcome|sudo sh fixes/fix_welcome.sh|-|CHANGE: fixes 1-9 of welcome (each asks y/N; "already done" when nothing to do)
 9|welcome|sudo sh fixes/fix_suricata.sh|-|CHANGE: repair Suricata (card, HOME_NET, rules, test, start, test alert)
-10|ns1|sudo sh fixes/fix_ns1.sh|-|CHANGE: fixes of ns1 (network by NetworkManager, one PTR)
 11|both|sudo sh checks/save_volatile.sh|volatile-VM|CHANGE: before a reboot, save the evidence of /tmp in /root/evidence (root only)'
 
 # recommended order for each VM (key r)

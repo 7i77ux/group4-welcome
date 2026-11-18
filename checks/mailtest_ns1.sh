@@ -8,7 +8,7 @@
 { [ "$(hostname)" = ns1 ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.10/'; } || { echo "ERROR: run this test on ns1." >&2; exit 1; }
 OUT=/tmp/check-mailtest.txt
 TO="${1:-calogero@group4.umons}"
-printf 'Send ONE test mail from ns1 to %s through welcome (10.4.255.11:25)? [y/N] ' "$TO"; read -r a
+printf 'Send ONE test mail from ns1 to %s through welcome (10.4.2.11:25)? [y/N] ' "$TO"; read -r a
 [ "$a" = y ] || [ "$a" = Y ] || { echo "Nothing sent."; exit 0; }
 python3 -I - "$TO" <<'PY' 2>&1 | tee "$OUT"
 import smtplib, sys, datetime
@@ -21,7 +21,7 @@ m["Subject"] = f"group4 delivery test from ns1 {now}"
 m.set_content(f"Proof of reception (D27): sent from ns1 to welcome:25 at {now}.")
 print(f"== Delivery test {now}: ns1 -> welcome:25 -> {to}")
 try:
-    s = smtplib.SMTP("10.4.255.11", 25, timeout=10)
+    s = smtplib.SMTP("10.4.2.11", 25, timeout=10)
     s.set_debuglevel(0)
     print("greeting / EHLO:", s.ehlo("ns1.group4.umons")[0])
     refused = s.send_message(m)

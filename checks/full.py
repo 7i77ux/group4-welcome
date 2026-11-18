@@ -33,7 +33,9 @@ import sys
 import time
 from email.utils import parsedate_to_datetime
 
-WELCOME, NS1, GW = "10.4.255.11", "10.4.255.10", "10.4.255.254"
+# Since 2026-11-17 (NOTES 8): ns1 and welcome in the DMZ behind pfSense, public address 10.4.255.1 (NAT)
+WELCOME, NS1, GW = "10.4.2.11", "10.4.2.10", "10.4.2.1"   # GW = pfSense in the DMZ
+PUBLIC, COURSE_DNS, PREFIX = "10.4.255.1", "10.4.255.254", 24   # COURSE_DNS = resolver and gateway of the course
 DOMAIN = "group4.umons"
 COUNT = {"OK": 0, "INFO": 0}
 LISTS = {"FAIL": [], "NEW": [], "OPEN": []}
@@ -279,8 +281,8 @@ def identity_and_network(vm, ip, repo):
     check(re.search(rf"^127\.0\.1\.1\s+{vm}(\s|$)", hosts, re.M), "10.11",
           f"/etc/hosts: 127.0.1.1 {vm}", f"/etc/hosts has no '127.0.1.1 {vm}' line (sudo prints 'unable to resolve host')")
     addrs = sh("ip -4 -o addr show dev ens18 2>/dev/null | awk '{print $4}'").split()
-    check(f"{ip}/16" in addrs, "D02", f"{ip}/16 on ens18", f"ens18 has {' '.join(addrs) or 'no address'}, expected {ip}/16")
-    extra = [a for a in addrs if a != f"{ip}/16"]
+    check(f"{ip}/{PREFIX}" in addrs, "D02", f"{ip}/{PREFIX} on ens18", f"ens18 has {' '.join(addrs) or 'no address'}, expected {ip}/{PREFIX}")
+    extra = [a for a in addrs if a != f"{ip}/{PREFIX}"]
     if extra:
         new(f"other addresses on ens18: {' '.join(extra)} (DHCP leftover?)")
     conn = sh("nmcli -g GENERAL.CONNECTION device show ens18 2>/dev/null")
@@ -289,14 +291,16 @@ def identity_and_network(vm, ip, repo):
             return sh(f"nmcli -g {k} connection show '{conn}' 2>/dev/null")
         m, a, g, d, ign = f("ipv4.method"), f("ipv4.addresses"), f("ipv4.gateway"), f("ipv4.dns"), f("ipv4.ignore-auto-dns")
         info(f"NetworkManager profile '{conn}': method={m} addresses={a} gateway={g} dns={d} ignore-auto-dns={ign}")
-        check(m == "manual" and f"{ip}/16" in a, "10.28/10.34", "address saved in the profile (survives a reboot)",
+        check(m == "manual" and f"{ip}/{PREFIX}" in a, "10.28/10.34", "address saved in the profile (survives a reboot)",
               f"profile method '{m}', addresses '{a}': the address is lost at reboot")
         check(g == GW, "D02", f"gateway in the profile: {g}", f"gateway in the profile '{g}', expected {GW}")
         if vm == "ns1":
-            check(d.replace(" ", "") == "127.0.0.1,10.4.255.254", "10.34", f"DNS in the profile: {d}", f"DNS in the profile '{d}', expected 127.0.0.1,10.4.255.254")
+            check(d.replace(" ", "") == f"127.0.0.1,{COURSE_DNS}", "10.34", f"DNS in the profile: {d}", f"DNS in the profile '{d}', expected 127.0.0.1,{COURSE_DNS}")
             check(ign == "yes", "10.34", "DHCP DNS ignored (ignore-auto-dns yes)", f"ignore-auto-dns '{ign}'")
         else:
-            check(GW in d, "0.3", f"DNS in the profile: {d}", f"DNS in the profile '{d}', expected {GW}")
+            info(f"DNS in the profile: {d}")
+            if NS1 in d:
+                opn("W34", "welcome asks ns1 for names: the .umons names of the other groups do not resolve (DNSSEC), so mail to other providers fails")
     else:
         fail("W7", "ens18 is not managed by NetworkManager")
     stanza = sh("grep -hE '^[[:space:]]*(auto|allow-hotplug|iface)[[:space:]]+ens18' /etc/network/interfaces /etc/network/interfaces.d/* 2>/dev/null")
@@ -310,13 +314,33 @@ def identity_and_network(vm, ip, repo):
     if vm == "ns1":
         check(resolv.startswith("127.0.0.1"), "10.34", "ns1 asks its own BIND first", f"resolv.conf '{resolv}': ns1 does not ask its own BIND first")
     r = sh(f"getent hosts welcome.{DOMAIN} | awk '{{print $1}}'")
-    check(r == WELCOME, "10.4", f"welcome.{DOMAIN} -> {r} (system resolver)", f"welcome.{DOMAIN} -> {r or 'no answer'} (system resolver)")
+    check(r == PUBLIC, "10.4", f"welcome.{DOMAIN} -> {r} (system resolver)", f"welcome.{DOMAIN} -> {r or 'no answer'} (system resolver)")
     code = sh("curl -s -o /dev/null -w '%{http_code}' --max-time 8 https://deb.debian.org/")
     check(code not in ("", "000"), "fn. 2", f"outgoing HTTPS to the Internet works (deb.debian.org -> {code})",
           "no outgoing HTTPS to the Internet (apt and git pull will fail)")
     info(f"running since {sh('uptime -s')} (last boot)")
     pushurl = sh(f"git -c safe.directory='*' -C '{repo}' config --get remote.origin.pushurl")
     info(f"results push: {pushurl or 'not configured (setup-results.sh)'}")
+
+
+def public_view():
+    sec("1b. As the other groups see us (resolver of the course, public address of pfSense)")
+    for name, rtype in ((DOMAIN, "MX"), (f"welcome.{DOMAIN}", "A"), (f"mail.{DOMAIN}", "A"), (f"ns1.{DOMAIN}", "A")):
+        ans = sh(f"dig +noall +answer +time=2 +tries=1 @{COURSE_DNS} {name} {rtype} 2>/dev/null")
+        rows = [l.split() for l in ans.splitlines() if len(l.split()) >= 5]
+        vals = [" ".join(r[4:]) for r in rows]
+        ttl = rows[0][1] if rows else "?"
+        if rtype == "MX":
+            check(any("mail.group4.umons" in v for v in vals), "16.x", f"{name} MX {' '.join(vals)}", f"{name} MX: {' '.join(vals) or 'no answer'}")
+        elif vals == [PUBLIC]:
+            ok("16.x", f"{name} -> {PUBLIC} (pfSense) for the other groups")
+        else:
+            h = int(ttl) / 3600 if ttl.isdigit() else 0
+            fail("16.x", f"{name} -> {' '.join(vals) or 'no answer'} for the other groups, expected {PUBLIC}: "
+                         f"old answer kept in memory by the course resolver for {h:.1f} more hours (TTL 2 days, D06)")
+    for p_ in (53, 25, 80, 993):
+        info(f"public address {PUBLIC}:{p_} from this VM: {'open' if port_open(PUBLIC, p_, 3) else 'no answer'} "
+             f"(from inside the DMZ it needs NAT reflection; the real test is from outside)")
 
 
 def listeners(vm):
@@ -521,7 +545,7 @@ def clock():
         info(f"timesyncd {k}: {cfg[k] or '-'}")
     for l in sh("journalctl -u systemd-timesyncd -n 3 -o short-iso --no-pager 2>/dev/null | tail -n +1").splitlines()[-3:]:
         sub(l[:150])
-    candidates = [GW] + (cfg["SystemNTPServers"] + " " + cfg["LinkNTPServers"] + " " + cfg["FallbackNTPServers"]).split()
+    candidates = [GW, COURSE_DNS] + (cfg["SystemNTPServers"] + " " + cfg["LinkNTPServers"] + " " + cfg["FallbackNTPServers"]).split()
     answering = []
     for host in list(dict.fromkeys(candidates))[:6]:
         off, st, addr = ntp_query(host)
@@ -853,7 +877,7 @@ def ns1_from_welcome():
         r = sh(f"getent hosts welcome.{g}.umons | awk '{{print $1}}'")
         n = f"welcome.{g}.umons"
         info(f"provider {n} -> {r or 'no answer'} (system resolver); asked to ns1: {dig_status(NS1, n)}, "
-             f"to the gateway: {dig_status(GW, n)}")
+             f"to the course resolver: {dig_status(COURSE_DNS, n)}")
 
 
 # ---------- ns1 ----------
@@ -861,16 +885,16 @@ def ns1_from_welcome():
 EXPECTED_ZONE = {
     (f"{DOMAIN}.", "NS", "ns1.group4.umons."),
     (f"{DOMAIN}.", "MX", "10 mail.group4.umons."),
-    ("ns1.group4.umons.", "A", NS1),
-    ("welcome.group4.umons.", "A", WELCOME),
-    ("mail.group4.umons.", "A", WELCOME),
+    ("ns1.group4.umons.", "A", PUBLIC),
+    ("welcome.group4.umons.", "A", PUBLIC),
+    ("mail.group4.umons.", "A", PUBLIC),
     ("imap.group4.umons.", "CNAME", "mail.group4.umons."),
     ("smtp.group4.umons.", "CNAME", "mail.group4.umons."),
 }
 EXPECTED_REVERSE = {
-    ("255.4.10.in-addr.arpa.", "NS", "ns1.group4.umons."),
-    ("10.255.4.10.in-addr.arpa.", "PTR", "ns1.group4.umons."),
-    ("11.255.4.10.in-addr.arpa.", "PTR", "mail.group4.umons."),
+    ("2.4.10.in-addr.arpa.", "NS", "ns1.group4.umons."),
+    ("10.2.4.10.in-addr.arpa.", "PTR", "ns1.group4.umons."),
+    ("11.2.4.10.in-addr.arpa.", "PTR", "mail.group4.umons."),
 }
 
 
@@ -908,14 +932,14 @@ def bind():
     o, er, rc = run("named-checkconf")
     check(rc == 0 and not (o or er), "10.4", "named-checkconf: no errors", f"named-checkconf: {(o or er)[:120]}")
     o, er, rc = run("named-checkconf -z")
-    for z in (DOMAIN, "255.4.10.in-addr.arpa"):
+    for z in (DOMAIN, "2.4.10.in-addr.arpa"):
         m = re.search(rf"zone {re.escape(z)}/IN: loaded serial (\d+)", o + er)
         check(bool(m), "10.4", f"zone {z} loads (serial {m.group(1) if m else '?'})", f"zone {z} does NOT load: {(o + er)[:150]}")
     rs = sh("rndc status 2>/dev/null")
     check("server is up and running" in rs, "D03", "rndc: server is up and running", f"rndc status: {rs[:80] or 'no answer'}")
     conf = sh("named-checkconf -p 2>/dev/null")
     files = dict(re.findall(r'zone "([^"]+)"[^{]*\{[^}]*?file "([^"]+)"', conf, re.S))
-    for zone, expected in ((DOMAIN, EXPECTED_ZONE), ("255.4.10.in-addr.arpa", EXPECTED_REVERSE)):
+    for zone, expected in ((DOMAIN, EXPECTED_ZONE), ("2.4.10.in-addr.arpa", EXPECTED_REVERSE)):
         path = files.get(zone)
         if not path:
             fail("10.4", f"zone {zone} not declared in the configuration")
@@ -941,7 +965,7 @@ def bind():
             else:
                 info(f"{zone}: SOA TTL {ttl}, refresh {f[3]}, retry {f[4]}, expire {f[5]}, minimum {f[6]}")
     fw = re.search(r"forwarders\s*\{([^}]*)\}", conf)
-    check(fw and GW in fw.group(1), "10.4", f"forwarder {GW}", f"forwarders: {fw.group(1).strip() if fw else 'none'}")
+    check(fw and COURSE_DNS in fw.group(1), "10.4", f"forwarder {COURSE_DNS}", f"forwarders: {fw.group(1).strip() if fw else 'none'}")
     for opt in ("allow-recursion", "allow-transfer", "version"):
         if not re.search(rf"^\s*{opt}\s", conf, re.M):
             opn("W8", f"option '{opt}' not written explicitly (defaults apply)")
@@ -954,7 +978,7 @@ def umons_names():
     dv = re.search(r"dnssec-validation\s+(\S+);", sh("named-checkconf -p 2>/dev/null"))
     info(f"dnssec-validation {dv.group(1) if dv else 'not written (default: auto)'}")
     for n in ("welcome.group7.umons", "welcome.group8.umons", "safeupdate.umons"):
-        loc, cd, gw = dig_status("127.0.0.1", n), dig_status("127.0.0.1", n, "+cd"), dig_status(GW, n)
+        loc, cd, gw = dig_status("127.0.0.1", n), dig_status("127.0.0.1", n, "+cd"), dig_status(COURSE_DNS, n)
         line = f"{n}: ns1 {loc}, ns1 without validation (+cd) {cd}, gateway {gw}"
         if loc == "NOERROR":
             ok("10.16", line)
@@ -1008,7 +1032,7 @@ def welcome_from_ns1():
         check("LOGINDISABLED" not in caps, "M1", "IMAP 993: login possible over TLS", "IMAP 993: LOGINDISABLED even over TLS")
     except (OSError, imaplib.IMAP4.error) as ex:
         fail("M1", f"IMAP 993 from ns1: {ex}")
-    for host, label in ((WELCOME, "http://10.4.255.11/ (by address)"), (f"welcome.{DOMAIN}", f"http://welcome.{DOMAIN}/ from ns1")):
+    for host, label in ((WELCOME, f"http://{WELCOME}/ (by address)"), (f"welcome.{DOMAIN}", f"http://welcome.{DOMAIN}/ from ns1")):
         try:
             st, srv, body = http_get(WELCOME, host_header=host)
             report_http(st, srv, body, label)
@@ -1029,6 +1053,7 @@ def main():
     print("Full regression test (read-only). OK = as documented; FAIL = differs from the documentation;")
     print("NEW = not in the documentation; OPEN = known open point (id); INFO = data.")
     identity_and_network(vm, ip, repo)
+    public_view()
     listeners(vm)
     accounts(vm)
     investigation()

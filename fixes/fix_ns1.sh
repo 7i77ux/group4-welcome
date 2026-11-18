@@ -7,6 +7,11 @@
 set -u
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
 { [ "$(hostname)" = ns1 ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.10/'; } || { echo "ERROR: run this script on ns1." >&2; exit 1; }
+if ip -4 -o addr show | grep -q ' 10\.4\.2\.10/'; then
+    echo "OBSOLETE: ns1 is in the DMZ (10.4.2.10) since 2026-11-17. The fixes of this script (address 10.4.255.10/16,"
+    echo "gateway 10.4.255.254, reverse zone db.10.4.255) would undo the new network. Nothing done."
+    exit 1
+fi
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 BK=/root/fixes-backup-$(date +%Y%m%d-%H%M)
 mkdir -p "$BK"

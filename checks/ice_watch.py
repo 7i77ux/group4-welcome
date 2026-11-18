@@ -31,7 +31,7 @@ KNOWN_HASH = {
 }
 KNOWN_BIN = {"ice.py", "ice2.py"}
 KNOWN_CRON = re.compile(r"^30 \* \* \* \* root python3 /usr/local/bin/ice2?\.py$")
-KNOWN_SOURCES = {"10.4.255.10", "10.4.255.11", "10.4.255.41", "10.4.255.46", "10.4.255.47"}
+KNOWN_SOURCES = {"10.4.255.10", "10.4.255.11", "10.4.255.41", "10.4.255.46", "10.4.255.47", "10.4.2.10", "10.4.2.11"}  # 10.4.2.x: DMZ since 2026-11-17
 KNOWN_SUDO = re.compile(
     r"COMMAND=(/usr/bin/ls|/bin/bash|/usr/bin/mv /tmp/ice2?\.py /usr/local/bin/ice2?\.py|/usr/bin/tee -a /etc/crontab"
     r"|/etc/init\.d/cron reload|/usr/sbin/service crond? reload|/usr/bin/python3 /usr/local/bin/ice2?\.py"
@@ -212,7 +212,7 @@ lines.append("\n== 8. Connections of the ice processes now")
 conns = sh("ss -tunp 2>/dev/null | grep -E 'python3|expect|ssh' | grep -v ':22 .*sshd'")
 for l in conns.splitlines()[:10]:
     peer = l.split()[5] if len(l.split()) > 5 else l
-    tag = "SAME" if re.search(r"10\.222\.0\.86:443|10\.4\.255\.\d+:22", peer) else "CHANGED"
+    tag = "SAME" if re.search(r"10\.222\.0\.86:443|10\.4\.(255|2)\.\d+:22", peer) else "CHANGED"
     say(tag, " ".join(l.split()[:6])[:140])
 if not conns:
     say("INFO", "no connection open right now (ice sleeps about 1 hour between rounds)")
