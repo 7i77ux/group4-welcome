@@ -11,6 +11,19 @@ set -u
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0 ..."; exit 1; }
 { [ "$(hostname)" = welcome ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.11/'; } || { echo "ERROR: run this script on welcome." >&2; exit 1; }
 DOMAIN=group4.umons
+MYCNF=""
+trap '[ -n "$MYCNF" ] && rm -f "$MYCNF"' EXIT
+myroot() {  # MariaDB as root: through the system account, else with the admin password (NOTES 1), asked once, not shown
+    command mysql -e 'SELECT 1' >/dev/null 2>&1 && return 0
+    echo "   MariaDB refuses root through the system account (mysql_secure_installation): type the MariaDB admin password (NOTES 1), not shown:"
+    stty -echo 2>/dev/null; read -r p; stty echo 2>/dev/null; echo
+    MYCNF=$(mktemp); chmod 600 "$MYCNF"
+    printf '[client]\nuser=root\npassword="%s"\n' "$p" > "$MYCNF"; p=""
+    command mysql --defaults-extra-file="$MYCNF" -e 'SELECT 1' >/dev/null 2>&1 || { echo "   ERROR: MariaDB refuses this password"; rm -f "$MYCNF"; MYCNF=""; exit 1; }
+    echo "   MariaDB: logged in as root with the password (kept only in a temporary file, deleted at the end)"
+}
+mysql() { if [ -n "$MYCNF" ]; then command mysql --defaults-extra-file="$MYCNF" "$@"; else command mysql "$@"; fi; }
+myroot
 mysql -N mailserver -e 'SELECT 1 FROM virtual_users LIMIT 1' >/dev/null 2>&1 \
     || { echo "ERROR: no database of virtual mailboxes: run fixes/mail_virtual.sh first."; exit 1; }
 sql() { mysql -N mailserver -e "$1"; }

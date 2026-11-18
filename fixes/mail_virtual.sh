@@ -23,6 +23,18 @@ SECRETS=/etc/group4-mail          # passwords of the database users, root only
 DOVECONF=/etc/dovecot/conf.d/99-group4-virtual.conf
 PFMBOX=/etc/postfix/mysql-virtual-mailbox-maps.cf
 PFALIAS=/etc/postfix/mysql-virtual-alias-maps.cf
+MYCNF=""
+trap '[ -n "$MYCNF" ] && rm -f "$MYCNF"' EXIT
+myroot() {  # MariaDB as root: through the system account, else with the admin password (NOTES 1), asked once, not shown
+    command mysql -e 'SELECT 1' >/dev/null 2>&1 && return 0
+    echo "   MariaDB refuses root through the system account (mysql_secure_installation): type the MariaDB admin password (NOTES 1), not shown:"
+    stty -echo 2>/dev/null; read -r p; stty echo 2>/dev/null; echo
+    MYCNF=$(mktemp); chmod 600 "$MYCNF"
+    printf '[client]\nuser=root\npassword="%s"\n' "$p" > "$MYCNF"; p=""
+    command mysql --defaults-extra-file="$MYCNF" -e 'SELECT 1' >/dev/null 2>&1 || { echo "   ERROR: MariaDB refuses this password"; rm -f "$MYCNF"; MYCNF=""; exit 1; }
+    echo "   MariaDB: logged in as root with the password (kept only in a temporary file, deleted at the end)"
+}
+mysql() { if [ -n "$MYCNF" ]; then command mysql --defaults-extra-file="$MYCNF" "$@"; else command mysql "$@"; fi; }
 sql() { mysql -N mailserver -e "$1" 2>/dev/null; }
 pw_of() {  # password of a database user: created once, kept in $SECRETS
     f="$SECRETS/$1.pw"
@@ -75,6 +87,7 @@ else
     echo "Nothing installed: stop."; exit 0
 fi
 systemctl enable --now mariadb >/dev/null 2>&1
+myroot
 echo "   MariaDB $(systemctl is-active mariadb), listening on: $(ss -Htln | awk '$4 ~ /:3306$/ {print $4}' | tr '\n' ' ')"
 ss -Htln | awk '$4 ~ /:3306$/ {print $4}' | grep -vqE '^(127\.0\.0\.1|\[::1\]):3306$' && echo "   WARN: MariaDB listens on more than localhost: check bind-address in /etc/mysql/mariadb.conf.d/50-server.cnf"
 
