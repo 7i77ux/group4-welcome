@@ -3,6 +3,9 @@
 # (10.4.255.254) and of ns1, time left before the course resolver asks us again, and the clock time
 # at which an old answer expires by itself. Expected since 2026-11-17: 10.4.255.1 (pfSense).
 # Run on any VM:  cd ~/Desktop/group4-welcome && git pull && sh checks/public_dns.sh
+# Output: /tmp/public-dns-<host>.txt, pushed to results/public-dns/.
+OUT=/tmp/public-dns-$(hostname).txt
+{
 PUBLIC=10.4.255.1
 now=$(date +%s)
 echo "== Our names for the other groups ($(date '+%Y-%m-%d %H:%M')); expected $PUBLIC"
@@ -23,3 +26,5 @@ echo "INFO  MX of group4.umons for the other groups: ${mx:-none}"
 echo "When every line is OK: open http://welcome.group4.umons from a machine outside (WAN side)."
 echo "To get there before the expiry: IP alias 10.4.255.11 on the WAN of pfSense with the same forwards"
 echo "(DOCUMENTATION.md 7.4), or ask the teacher to clear the cache of his resolver."
+} 2>&1 | tee "$OUT"
+sh "$(dirname "$0")/push-results.sh" public-dns "$OUT"
