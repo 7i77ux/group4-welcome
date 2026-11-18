@@ -295,12 +295,7 @@ def identity_and_network(vm, ip, repo):
               f"profile method '{m}', addresses '{a}': the address is lost at reboot")
         check(g == GW, "D02", f"gateway in the profile: {g}", f"gateway in the profile '{g}', expected {GW}")
         if vm == "ns1":
-            if d.replace(" ", "") == COURSE_DNS:
-                ok("W34", f"DNS in the profile: {d} (resolver of the course: the .umons names of the other groups resolve)")
-            elif d.replace(" ", "").startswith("127.0.0.1"):
-                opn("W34", f"DNS in the profile '{d}': ns1 asks its own BIND, which refuses the .umons names of the other groups (fixes/fix_ns1_dns.sh)")
-            else:
-                fail("10.34", f"DNS in the profile '{d}', expected {COURSE_DNS}")
+            check(d.replace(" ", "") == f"127.0.0.1,{COURSE_DNS}", "10.34", f"DNS in the profile: {d}", f"DNS in the profile '{d}', expected 127.0.0.1,{COURSE_DNS}")
             check(ign == "yes", "10.34", "DHCP DNS ignored (ignore-auto-dns yes)", f"ignore-auto-dns '{ign}'")
         else:
             info(f"DNS in the profile: {d}")
@@ -317,7 +312,7 @@ def identity_and_network(vm, ip, repo):
     resolv = " ".join(re.findall(r"^nameserver\s+(\S+)", read("/etc/resolv.conf") or "", re.M))
     info(f"resolv.conf: {resolv}")
     if vm == "ns1":
-        check(COURSE_DNS in resolv, "W34", f"resolv.conf: ns1 asks the resolver of the course", f"resolv.conf '{resolv}': no resolver of the course")
+        check(resolv.startswith("127.0.0.1"), "10.34", "ns1 asks its own BIND first", f"resolv.conf '{resolv}': ns1 does not ask its own BIND first")
     r = sh(f"getent hosts welcome.{DOMAIN} | awk '{{print $1}}'")
     check(r == PUBLIC, "10.4", f"welcome.{DOMAIN} -> {r} (system resolver)", f"welcome.{DOMAIN} -> {r or 'no answer'} (system resolver)")
     code = sh("curl -s -o /dev/null -w '%{http_code}' --max-time 8 https://deb.debian.org/")
