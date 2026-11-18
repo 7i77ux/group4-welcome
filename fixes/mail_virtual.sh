@@ -34,9 +34,15 @@ echo "== Virtual mailboxes on welcome (NOTES New 4.3 with the five fixes)"
 dv=$(dovecot --version 2>/dev/null)
 echo "   Dovecot $dv, Postfix $(postconf -h mail_version), mail domain $DOMAIN"
 case "$dv" in 2.4*) ;; *) echo "ERROR: this script writes the Dovecot 2.4 syntax; found '$dv'. Nothing done."; exit 1;; esac
+echo "   now: Dovecot configuration $(doveconf -n >/dev/null 2>&1 && echo loads || echo 'does NOT load'), dovecot $(systemctl is-active dovecot);"
+echo "        includes in 10-auth.conf: $(grep -E '^[[:space:]]*!include auth-' /etc/dovecot/conf.d/10-auth.conf | tr -s ' ' | tr '\n' ' ')"
+echo "        Postfix mydestination = $(postconf -h mydestination); virtual_mailbox_domains = '$(postconf -h virtual_mailbox_domains)'"
+echo "   (a New 4.3 started by hand is completed: auth-sql include commented, missing columns added,"
+echo "    user 'mailuser' with all rights removed, Postfix maps rewritten)"
 ask "Did you take a PVE snapshot of welcome?" || { echo "Take it first: PVE > welcome > Snapshots > Take Snapshot."; exit 1; }
 mkdir -p "$BK"
 cp -a /etc/postfix/main.cf "$BK/main.cf"
+for f in "$PFMBOX" "$PFALIAS"; do [ -f "$f" ] && cp -a "$f" "$BK/"; done
 tar -czf "$BK/etc-dovecot.tar.gz" -C / etc/dovecot
 echo "   copies of the current mail configuration in $BK"
 
@@ -45,8 +51,14 @@ restore() {
     cp -a "$BK/main.cf" /etc/postfix/main.cf
     rm -f /etc/dovecot/conf.d/99-group4-virtual.conf
     tar -xzf "$BK/etc-dovecot.tar.gz" -C /
-    systemctl restart dovecot; systemctl reload postfix
-    echo "   done: Postfix and Dovecot as before (MariaDB, vmail and the database stay, unused)"
+    for f in "$PFMBOX" "$PFALIAS"; do [ -f "$BK/$(basename "$f")" ] && cp -a "$BK/$(basename "$f")" "$f"; done
+    postfix check && systemctl reload postfix
+    if doveconf -n >/dev/null 2>&1; then
+        systemctl restart dovecot
+        echo "   done: Postfix and Dovecot as before (MariaDB, vmail and the database stay, unused)"
+    else
+        echo "   Postfix as before; the previous Dovecot configuration does not load either: Dovecot NOT restarted"
+    fi
 }
 
 echo
@@ -70,7 +82,12 @@ echo
 echo "== Step 2/7: system user vmail (uid and gid 5000), owner of all the mailboxes in $VMAIL"
 echo "   Why: the mail accounts are no longer Linux accounts; one user without login keeps every mailbox."
 if [ "$(id -u vmail 2>/dev/null)" = 5000 ]; then
-    echo "   already done"
+    echo "   already there: $(getent passwd vmail)"
+    case "$(getent passwd vmail | cut -d: -f7)" in
+        */nologin|*/false) ;;
+        *) usermod -s /usr/sbin/nologin vmail && echo "   login shell removed: $(getent passwd vmail | cut -d: -f7)" ;;
+    esac
+    [ -d "$VMAIL" ] && chmod 770 "$VMAIL"
 elif getent passwd 5000 >/dev/null || getent group 5000 >/dev/null; then
     echo "   ERROR: uid or gid 5000 already used by another account: $(getent passwd 5000 | cut -d: -f1)"; exit 1
 elif ask "   Create it?"; then
@@ -102,6 +119,12 @@ CREATE TABLE IF NOT EXISTS virtual_aliases (
   source VARCHAR(128) NOT NULL,
   destination VARCHAR(128) NOT NULL,
   PRIMARY KEY (id), UNIQUE KEY source (source));
+ALTER TABLE virtual_users
+  ADD COLUMN IF NOT EXISTS active TINYINT(1) NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  MODIFY password VARCHAR(255) NOT NULL;
+DROP USER IF EXISTS 'mailuser'@'127.0.0.1';
+DROP USER IF EXISTS 'mailuser'@'localhost';
 INSERT IGNORE INTO virtual_aliases (source, destination) VALUES ('postmaster@$DOMAIN', 'calogero@$DOMAIN');
 CREATE USER IF NOT EXISTS 'postfix'@'127.0.0.1';
 CREATE USER IF NOT EXISTS 'dovecot'@'127.0.0.1';
@@ -124,7 +147,7 @@ echo
 echo "== Step 4/7: account calogero@$DOMAIN in the database, mailbox moved to $VMAIL"
 CAL="calogero@$DOMAIN"
 CALDIR="$VMAIL/$DOMAIN/calogero/Maildir"
-if [ -n "$(sql "SELECT email FROM virtual_users WHERE email='$CAL'")" ] && [ -d "$CALDIR" ]; then
+if [ "$(sql "SELECT active FROM virtual_users WHERE email='$CAL'")" = 1 ] && [ -d "$CALDIR" ]; then
     echo "   already done"
 elif ask "   Create it? (you will type its new password twice; choose a long one, W31)"; then
     hash=$(doveadm pw -s SHA512-CRYPT) || { echo "   ERROR: password not set"; exit 1; }
@@ -143,10 +166,12 @@ fi
 
 echo
 echo "== Step 5/7: Dovecot logs in from the database (fix 1: Dovecot 2.4 syntax)"
-if [ -f "$DOVECONF" ] && doveconf -n 2>/dev/null | grep -q 'passdb sql'; then
+if [ -f "$DOVECONF" ] && doveconf -n 2>/dev/null | grep -q 'passdb sql' \
+   && ! grep -qE '^[[:space:]]*!include auth-(system|sql)\.conf\.ext' /etc/dovecot/conf.d/10-auth.conf; then
     echo "   already done"
 elif ask "   Apply?"; then
-    sed -i -E 's/^([[:space:]]*!include auth-system\.conf\.ext)/#\1   # group4: logins from the database (mail_virtual.sh)/' /etc/dovecot/conf.d/10-auth.conf
+    # login from the database is in $DOVECONF: the system login (PAM) and the 2.3-syntax SQL include are switched off
+    sed -i -E 's/^([[:space:]]*!include auth-(system|sql)\.conf\.ext)/#\1   # group4: logins from the database (mail_virtual.sh)/' /etc/dovecot/conf.d/10-auth.conf
     umask 077
     cat > "$DOVECONF" <<EOF
 # group4: virtual mailboxes (fixes/mail_virtual.sh, NOTES New 4.3 with its review)
@@ -190,7 +215,8 @@ echo
 echo "== Step 6/7: Postfix delivers @$DOMAIN to the virtual mailboxes"
 echo "   Why: $DOMAIN leaves mydestination (a domain cannot be local and virtual); recipients and aliases"
 echo "        are read in the database; mails written to $VMAIL/<domain>/<user>/Maildir/ as vmail."
-if [ "$(postconf -h virtual_mailbox_domains)" = "$DOMAIN" ]; then
+if [ "$(postconf -h virtual_mailbox_domains)" = "$DOMAIN" ] && [ "$(postconf -h virtual_alias_maps)" = "mysql:$PFALIAS" ] \
+   && grep -q '^user = postfix' "$PFMBOX" 2>/dev/null && grep -q "/Maildir/')" "$PFMBOX"; then
     echo "   already done"
 elif ask "   Apply?"; then
     umask 027
