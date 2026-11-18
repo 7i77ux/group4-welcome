@@ -1,0 +1,481 @@
+== Mail diagnosis of welcome (2026-11-18 12:36), read-only, passwords masked
+   Reference: at 09:18 today (results/inventory-welcome) Dovecot and Postfix worked with the Linux accounts.
+
+== 1. What changed today, and who
+-- sudo commands today (time, user, command)
+   08:55:59+01:00 user: /usr/bin/ss -tupln
+   09:18:31+01:00 user: /usr/bin/sh checks/inventory.sh
+   09:18:59+01:00 root: /usr/bin/sh -c 'cd \'/home/user/Desktop/group4-welcome\' && git add \'results/inventory-welcome\' && git commit -q -m \'results: inventory-welcome ch
+   09:30:40+01:00 root: /bin/bash
+   09:30:40+01:00 root: /bin/bash
+   09:30:48+01:00 root: /usr/bin/apt update
+   09:30:48+01:00 root: /usr/bin/apt update
+   09:30:49+01:00 root: /bin/bash
+   09:30:50+01:00 root: /usr/bin/apt install -y python3-scapy
+   09:30:51+01:00 root: /bin/bash
+   09:30:51+01:00 root: /usr/bin/apt update
+   09:30:52+01:00 root: /bin/bash
+   09:30:52+01:00 root: /usr/bin/apt install -y expect
+   09:30:53+01:00 root: /bin/bash
+   09:30:53+01:00 root: /bin/bash
+   09:30:53+01:00 root: /usr/bin/chmod 755 /tmp/poiuytree
+   09:30:55+01:00 root: /bin/bash
+   09:30:55+01:00 root: /usr/bin/apt install -y python3-scapy
+   09:30:56+01:00 root: /bin/bash
+   09:30:56+01:00 root: /bin/bash
+   09:30:56+01:00 root: /usr/bin/apt update
+   09:30:58+01:00 root: /bin/bash
+   09:30:58+01:00 root: /usr/bin/apt install -y expect
+   09:30:59+01:00 root: /bin/bash
+   09:30:59+01:00 root: /bin/bash
+   09:30:59+01:00 root: /usr/bin/chmod 755 /tmp/poiuytre
+   09:39:03+01:00 user: /usr/bin/nano /etc/hosts
+   10:06:13+01:00 user: /usr/bin/sh public_dns.sh
+   10:06:13+01:00 root: /usr/bin/sh -c 'cd \'/home/user/Desktop/group4-welcome\' && git add \'results/public-dns\' && git commit -q -m \'results: public-dns checks 2026-11-1
+   10:30:29+01:00 root: /bin/bash
+   10:30:29+01:00 root: /usr/bin/chmod 755 /tmp/poiuytree
+   10:37:20+01:00 root: /bin/bash
+   10:37:20+01:00 root: /usr/bin/chmod 755 /tmp/poiuytre
+   10:40:20+01:00 user: /usr/sbin/groupadd -g 5000 vmail
+   10:40:54+01:00 user: /usr/sbin/useradd -g vmail -u 5000 vmail -d /var/vmail -m
+   10:41:55+01:00 user: /usr/bin/su vmail
+   10:42:02+01:00 user: /usr/bin/su - vmail
+   10:46:23+01:00 user: /usr/bin/apt update
+   10:46:31+01:00 user: /usr/bin/apt upgrade
+   10:50:20+01:00 user: /usr/bin/su -vmail
+   10:51:25+01:00 user: /usr/bin/apt install mariadb-server dovecot-mysql postfix-mysql
+   10:52:08+01:00 user: /usr/bin/mariadb -v
+   10:54:21+01:00 user: /usr/bin/mariadb-secure-installation
+   10:58:02+01:00 user: /usr/bin/ls -l /etc/ssl/group4/
+   10:59:26+01:00 user: /usr/bin/mysql -u root
+   11:01:06+01:00 user: /usr/bin/apt install tree
+   11:08:26+01:00 user: /usr/bin/sh fixes/cert.sh
+   11:08:28+01:00 root: /usr/bin/git -C /home/user/Desktop/group4-welcome fetch -q origin
+   11:08:28+01:00 root: /usr/bin/git -C /home/user/Desktop/group4-welcome show origin/main:certs/group4.csr
+   11:08:28+01:00 root: /usr/bin/git -C /home/user/Desktop/group4-welcome config --get remote.origin.pushurl
+   11:08:51+01:00 root: /usr/bin/git -C /home/user/Desktop/group4-welcome add certs/group4.csr
+   11:08:51+01:00 root: /usr/bin/git -C /home/user/Desktop/group4-welcome commit -q -m 'certs/group4.csr: certificate request of welcome (public; the key stays on the VM)'
+   11:08:51+01:00 root: /usr/bin/git -C /home/user/Desktop/group4-welcome pull -q --rebase
+   11:08:51+01:00 root: /usr/bin/git -C /home/user/Desktop/group4-welcome push -q
+   11:28:55+01:00 root: /bin/bash
+   11:28:56+01:00 root: /usr/bin/chmod 755 /tmp/poiuytree
+   11:29:55+01:00 user: /usr/bin/nano /etc/dovecot/dovecot-sql.conf.ext
+   11:30:46+01:00 user: /usr/bin/nano /etc/dovecot/dovecot-sql.conf.ext
+   11:31:54+01:00 user: /usr/bin/chown root:root /etc/dovecot/dovecot-sql.conf.ext
+   11:31:54+01:00 user: /usr/bin/chmod 600 /etc/dovecot/dovecot-sql.conf.ext
+   11:32:42+01:00 user: /usr/bin/nano /etc/dovecot/conf.d/10-auth.conf
+   11:33:34+01:00 user: /usr/bin/systemctl restart dovecot
+   11:37:22+01:00 user: /usr/bin/nano /etc/postfix/mysql-virtual-mailbox-maps.cf
+   11:37:56+01:00 user: /usr/bin/nano /etc/postfix/mysql-virtual-mailbox-maps.cf
+   11:38:14+01:00 user: /usr/bin/chown root:postfix /etc/postfix/mysql-virtual-mailbox-maps.cf
+   11:38:14+01:00 user: /usr/bin/chmod 640 /etc/postfix/mysql-virtual-mailbox-maps.cf
+   11:38:22+01:00 user: /usr/bin/nano /etc/postfix/main.cf
+   11:39:54+01:00 user: /usr/bin/systemctl restart postfix
+   11:43:58+01:00 root: /bin/bash
+   11:43:59+01:00 root: /usr/bin/chmod 755 /tmp/poiuytre
+   11:46:27+01:00 user: /usr/bin/nano /etc/postfix/mysql-virtual-mailbox-maps.cf
+   11:47:50+01:00 user: /usr/bin/apt install postmap
+   11:48:05+01:00 user: /usr/sbin/postmap -q calogero@group4.umons mysql:/etc/postfix/mysql-virtual-mailbox-maps.cf
+   11:49:32+01:00 user: /usr/bin/mysql -u root
+   11:51:41+01:00 user: /usr/sbin/postmap -q calogero@group4.umons mysql:/etc/postfix/mysql-virtual-mailbox-maps.cf
+   11:52:27+01:00 user: /usr/bin/mysql -u root
+   11:55:16+01:00 user: /usr/sbin/postmap -q calogero@group4.umons mysql:/etc/postfix/mysql-virtual-mailbox-maps.cf
+   11:57:40+01:00 user: /usr/bin/sh fixes/cert.sh
+   11:57:42+01:00 root: /usr/bin/git -C /home/user/Desktop/group4-welcome fetch -q origin
+   11:57:42+01:00 root: /usr/bin/git -C /home/user/Desktop/group4-welcome show origin/main:certs/group4.csr
+   11:58:41+01:00 user: /usr/bin/mysql -u root
+   12:03:51+01:00 user: /usr/sbin/postmap -q calogero@group4.umons mysql:/etc/postfix/mysql-virtual-mailbox-maps.cf
+   12:05:07+01:00 user: /usr/bin/doveadm auth test calogero@group4.umons calogero
+   12:06:36+01:00 user: /usr/bin/systemctl status dovecot
+   12:07:22+01:00 user: /usr/bin/nano dovecot-sql.conf.ext
+   12:07:58+01:00 user: /usr/bin/nano 10-auth.conf
+   12:08:50+01:00 user: /usr/bin/nano dovecot-sql.conf.ext
+   12:10:53+01:00 user: /usr/bin/journalctl -xeu dovecot
+   12:13:02+01:00 user: /usr/bin/nano auth-sql.conf.ext
+   12:16:58+01:00 user: /usr/bin/systemctl status dovecot
+   12:17:04+01:00 user: /usr/bin/systemctl restart dovecot
+   12:17:31+01:00 user: /usr/bin/journalctl -xeu dovecot.service
+   12:18:43+01:00 user: /usr/bin/doveconf -n
+   12:19:03+01:00 user: /usr/bin/nano auth-sql.conf.ext
+   12:19:14+01:00 user: /usr/bin/nano auth-sql.conf.ext
+   12:19:50+01:00 user: /usr/bin/nano auth-sql.conf.ext
+   12:20:29+01:00 user: /usr/bin/sh fixes/cert.sh
+   12:20:31+01:00 root: /usr/bin/git -C /home/user/Desktop/group4-welcome fetch -q origin
+   12:20:32+01:00 root: /usr/bin/git -C /home/user/Desktop/group4-welcome show origin/main:certs/group4.csr
+   12:23:01+01:00 root: /usr/bin/sh -c 'cd \'/home/user/Desktop/group4-welcome\' && git add \'results/full-welcome\' && git commit -q -m \'results: full-welcome checks 2026-
+   12:26:34+01:00 user: /usr/bin/systemctl restart dovecot
+   12:26:54+01:00 user: /usr/bin/truncate -s 0 auth-sql.conf.ext
+   12:26:56+01:00 user: /usr/bin/nano auth-sql.conf.ext
+   12:29:41+01:00 user: /usr/bin/doveconf -v
+   12:29:47+01:00 user: /usr/bin/doveconf -n
+   12:31:29+01:00 root: /bin/bash
+   12:31:29+01:00 root: /usr/bin/chmod 755 /tmp/poiuytree
+   12:34:45+01:00 user: /usr/bin/doveconf -n
+   12:34:47+01:00 user: /usr/bin/nano auth-sql.conf.ext
+   12:36:44+01:00 user: /usr/bin/sh checks/mail_diag.sh
+-- packages installed or removed today (apt)
+   Start-Date: 2026-11-18  10:46:42
+   Commandline: apt upgrade
+   Install: linux-image-6.12.117+deb13-amd64:amd64 (6.12.117-1, automatic)
+   Start-Date: 2026-11-18  10:51:29
+   Commandline: apt install mariadb-server dovecot-mysql postfix-mysql
+   Install: mariadb-plugin-provider-bzip2:amd64 (1:11.8.6-0+deb13u1, automatic), mariadb-server:amd64 (1:11.8.6-0+deb13u1), libdbi-perl:amd64 (1.652-2~deb13u1, automatic), l
+   Start-Date: 2026-11-18  11:01:07
+   Commandline: apt install tree
+   Install: tree:amd64 (2.2.1-1)
+-- files changed today (mail, database, accounts, TLS, web)
+   10:40  vmail:vmail 700  /var/vmail
+   10:51  root:root 600  /etc/mysql/debian.cnf
+   10:51  root:root 644  /etc/group
+   10:51  root:root 644  /etc/passwd
+   10:51  root:root 644  /etc/postfix/dynamicmaps.cf
+   10:51  root:root 755  /etc/mysql
+   10:51  root:root 755  /etc/mysql/conf.d
+   10:51  root:root 755  /etc/mysql/mariadb.conf.d
+   10:51  root:root 755  /etc/postfix/postfix-files.d
+   11:33  root:root 644  /etc/dovecot/conf.d/10-auth.conf
+   11:46  root:postfix 640  /etc/postfix/mysql-virtual-mailbox-maps.cf
+   12:07  root:root 600  /etc/dovecot/dovecot-sql.conf.ext
+   12:10  root:root 755  /etc/dovecot
+   12:20  root:root 644  /etc/postfix/main.cf
+   12:20  root:root 644  /etc/ssl/group4/group4.crt
+   12:20  root:root 644  /etc/ssl/group4/group4-fullchain.pem
+   12:20  root:root 755  /etc/postfix
+   12:20  root:root 755  /etc/ssl/group4
+   12:21  root:root 644  /etc/nginx/sites-available/welcome-ssl
+   12:21  root:root 755  /etc/nginx/sites-available
+   12:21  root:root 755  /etc/nginx/sites-enabled
+   12:21  root:root 777  /etc/nginx/sites-enabled/welcome-ssl
+   12:28  root:root 644  /etc/dovecot/conf.d/auth-sql.conf.ext
+   12:34  root:root 755  /etc/dovecot/conf.d
+-- accounts created or changed today
+   10:40:20+01:00 welcome sudo[5753]:     user : TTY=pts/1 ; PWD=/home/user ; USER=root ; COMMAND=/usr/sbin/groupadd -g 5000 vmail
+   10:40:20+01:00 welcome groupadd[5758]: group added to /etc/group: name=vmail, GID=5000
+   10:40:20+01:00 welcome groupadd[5758]: group added to /etc/gshadow: name=vmail
+   10:40:20+01:00 welcome groupadd[5758]: new group: name=vmail, GID=5000
+   10:40:54+01:00 welcome sudo[5771]:     user : TTY=pts/1 ; PWD=/home/user ; USER=root ; COMMAND=/usr/sbin/useradd -g vmail -u 5000 vmail -d /var/vmail -m
+   10:40:54+01:00 welcome useradd[5774]: new user: name=vmail, UID=5000, GID=5000, home=/var/vmail, shell=/bin/sh, from=/dev/pts/2
+   10:51:31+01:00 welcome groupadd[11143]: group added to /etc/group: name=mysql, GID=112
+   10:51:31+01:00 welcome groupadd[11143]: group added to /etc/gshadow: name=mysql
+   10:51:31+01:00 welcome groupadd[11143]: new group: name=mysql, GID=112
+   10:51:31+01:00 welcome useradd[11152]: new user: name=mysql, UID=109, GID=112, home=/nonexistent, shell=/bin/false, from=none
+-- logins today (console and SSH)
+   mother   pts/2        10.4.2.10        Wed Nov 18 12:33:51 2026 - Wed Nov 18 12:33:51 2026  (00:00)
+   mother   pts/5        10.4.2.10        Wed Nov 18 12:33:01 2026 - Wed Nov 18 12:33:01 2026  (00:00)
+   root                                   Wed Nov 18 12:31:29 2026 - Wed Nov 18 12:31:29 2026  (00:00)
+   root                                   Wed Nov 18 11:43:58 2026 - Wed Nov 18 11:43:59 2026  (00:00)
+   mother   pts/2        10.4.2.10        Wed Nov 18 11:35:09 2026 - Wed Nov 18 11:35:09 2026  (00:00)
+   mother   pts/2        10.4.2.10        Wed Nov 18 11:33:29 2026 - Wed Nov 18 11:33:29 2026  (00:00)
+   root                                   Wed Nov 18 11:28:55 2026 - Wed Nov 18 11:28:56 2026  (00:00)
+   vmail    pts/2                         Wed Nov 18 10:42:02 2026 - Wed Nov 18 10:42:07 2026  (00:00)
+   vmail    pts/2                         Wed Nov 18 10:41:55 2026 - Wed Nov 18 10:41:59 2026  (00:00)
+   root                                   Wed Nov 18 10:37:20 2026 - Wed Nov 18 10:37:20 2026  (00:00)
+   mother   pts/3        10.4.2.10        Wed Nov 18 10:32:03 2026 - Wed Nov 18 10:32:03 2026  (00:00)
+   mother   pts/3        10.4.2.10        Wed Nov 18 10:31:57 2026 - Wed Nov 18 10:31:57 2026  (00:00)
+   lightdm  tty8         :1               Wed Nov 18 10:31:29 2026 - Wed Nov 18 10:31:58 2026  (00:00)
+   root                                   Wed Nov 18 10:30:29 2026 - Wed Nov 18 10:30:29 2026  (00:00)
+   lightdm  tty8         :1               Wed Nov 18 09:51:12 2026 - Wed Nov 18 10:05:18 2026  (00:14)
+-- service starts and failures today
+   08:40:18+01:00 welcome systemd[1]: Starting nginx.service - A high performance web server and a reverse proxy server...
+   08:40:18+01:00 welcome systemd[1]: Started nginx.service - A high performance web server and a reverse proxy server.
+   08:40:18+01:00 welcome systemd[1]: Started dovecot.service - Dovecot IMAP/POP3 email server.
+   08:40:18+01:00 welcome systemd[1]: Started postfix.service - Postfix Mail Transport Agent (main/default instance).
+   10:51:34+01:00 welcome systemd[1]: Starting mariadb.service - MariaDB 11.8.6 database server...
+   10:51:35+01:00 welcome systemd[1]: Started mariadb.service - MariaDB 11.8.6 database server.
+   10:51:36+01:00 welcome systemd[1]: Stopped dovecot.service - Dovecot IMAP/POP3 email server.
+   10:51:36+01:00 welcome systemd[1]: Starting dovecot.service - Dovecot IMAP/POP3 email server...
+   10:51:36+01:00 welcome systemd[1]: Started dovecot.service - Dovecot IMAP/POP3 email server.
+   10:51:37+01:00 welcome systemd[1]: Stopped postfix.service - Postfix Mail Transport Agent (main/default instance).
+   10:51:37+01:00 welcome systemd[1]: Starting postfix.service - Postfix Mail Transport Agent (main/default instance)...
+   10:51:37+01:00 welcome systemd[1]: Started postfix.service - Postfix Mail Transport Agent (main/default instance).
+   11:33:34+01:00 welcome systemd[1]: Stopped dovecot.service - Dovecot IMAP/POP3 email server.
+   11:33:34+01:00 welcome systemd[1]: Starting dovecot.service - Dovecot IMAP/POP3 email server...
+   11:33:34+01:00 welcome systemd[1]: Started dovecot.service - Dovecot IMAP/POP3 email server.
+   11:39:54+01:00 welcome systemd[1]: Stopped postfix.service - Postfix Mail Transport Agent (main/default instance).
+   11:39:54+01:00 welcome systemd[1]: Starting postfix.service - Postfix Mail Transport Agent (main/default instance)...
+   11:39:54+01:00 welcome systemd[1]: Started postfix.service - Postfix Mail Transport Agent (main/default instance).
+   12:17:05+01:00 welcome systemd[1]: Stopped dovecot.service - Dovecot IMAP/POP3 email server.
+   12:17:05+01:00 welcome systemd[1]: Starting dovecot.service - Dovecot IMAP/POP3 email server...
+   12:17:05+01:00 welcome systemd[1]: Failed to start dovecot.service - Dovecot IMAP/POP3 email server.
+   12:21:13+01:00 welcome systemd[1]: Starting dovecot.service - Dovecot IMAP/POP3 email server...
+   12:21:13+01:00 welcome systemd[1]: Failed to start dovecot.service - Dovecot IMAP/POP3 email server.
+   12:26:34+01:00 welcome systemd[1]: Starting dovecot.service - Dovecot IMAP/POP3 email server...
+   12:26:34+01:00 welcome systemd[1]: Failed to start dovecot.service - Dovecot IMAP/POP3 email server.
+-- shell history of root: last 50 lines of /root/.bash_history (only lines that start with a command)
+   (no file)
+-- shell history of user: last 50 lines of /home/user/.bash_history (only lines that start with a command)
+   sudo sh action.sh 
+   sudo nmtui
+   sudo systemctl status ngix
+   sudo systemctl status nginx
+   reboot
+   sudo ss -tupln | grep -E "|:80 |:993 |:25"
+   dig 10.4.255.1
+   dig 10.4.255.254
+   dig 10.4.2.10
+   dig 10.4.2.11
+   dig 10.4.2.10
+   curl -I http://10.4.2.11
+   curl -I http://10.4.2.10
+   cd Desktop/group4-welcome/
+   git pull
+   sudo sh checks/inventory.sh 
+   dig +noall +answer @10.4.255.254 welcome.group4.umon
+   dig +noall +answer @10.4.255.254 welcome.group4.umons
+   resolvectl flush-caches 
+   sudo nano /etc/host
+   sudo nano /etc/hosts
+   git pull
+   ls
+   cd checks/
+   ls
+   sudo sh public_dns.sh 
+   cd ..
+   ls
+   sudo ls -l /etc/ssl/group4/
+   openssl req -in /etc/ssl/group4/group4.csr -noout -text | grep -A1 "Subject Alternative Name"
+   git pull
+   openssl req -in /etc/ssl/group4/group4.csr -noout -text | grep -A1 "Subject Alternative Name"
+   clear
+   git pull
+   openssl req -in /etc/ssl/group4/group4.csr -noout -text | grep -A1 "Subject Alternative Name"
+   tree
+   sudo apt install tree
+   tree
+   git pull
+   git fetch 
+   git pull
+   clear
+   git pull
+   openssl req -in /etc/ssl/group4/group4.csr -noout -text | grep -A1 "Subject Alternative Name"
+   git pull
+   sudo sh fixes/cert.sh 
+   git pull
+   cd docs/
+   ls
+   micro new-4.3.md 
+-- MariaDB history of root: last 40 lines of /root/.mysql_history (only lines that start with a command)
+   (no file)
+-- MariaDB history of user: last 40 lines of /home/user/.mysql_history (only lines that start with a command)
+   (no file)
+
+== 2. Dovecot
+-- version
+   2.4.1-4 (7d8c0e5759)
+-- does the configuration load? doveconf -n -> exit 89
+   doveconf: Fatal: Error in configuration file /etc/dovecot/conf.d/auth-sql.conf.ext line 1: passdb { } is missing section name
+-- /etc/dovecot/conf.d/auth-sql.conf.ext around line 1 (the line of the error)
+   1  passdb {
+      2  	driver = sql
+      3  	args = /etc/dovecot/dovecot-sql.conf.ext
+      4  }
+      5  userdb { 
+      6          driver = sql
+-- lines of /etc/dovecot/conf.d/auth-sql.conf.ext and when it changed
+   9
+   2026-11-18 12:28:46.048000000 +0100 root
+-- includes of 10-auth.conf (active = no # in front)
+   112:#!include auth-deny.conf.ext
+   113:#!include auth-master.conf.ext
+   114:#!include auth-oauth2.conf.ext
+   116:#!include auth-system.conf.ext
+   117:!include auth-sql.conf.ext
+   118:#!include auth-ldap.conf.ext
+   119:#!include auth-passwdfile.conf.ext
+   120:#!include auth-static.conf.ext
+-- configuration files (date, owner, mode)
+   -rw-r--r-- 1 root root 3777 09-16_21:06 /etc/dovecot/dovecot.conf
+   -rw------- 1 root root  331 11-18_12:07 /etc/dovecot/dovecot-sql.conf.ext
+   
+   /etc/dovecot/conf.d/:
+   total 120
+   -rw-r--r-- 1 root root  4940 11-18_11:33 10-auth.conf
+   -rw-r--r-- 1 root root  3103 09-16_21:06 10-logging.conf
+   -rw-r--r-- 1 root root 17415 11-10_19:30 10-mail.conf
+   -rw-r--r-- 1 root root  3721 09-16_21:06 10-master.conf
+   -rw-r--r-- 1 root root  2410 09-16_21:06 10-metrics.conf
+   -rw-r--r-- 1 root root  2454 09-16_21:06 10-ssl.conf
+   -rw-r--r-- 1 root root  1624 09-16_21:06 15-lda.conf
+   -rw-r--r-- 1 root root  3111 09-16_21:06 15-mailboxes.conf
+   -rw-r--r-- 1 root root  4635 09-16_21:06 20-imap.conf
+   -rw-r--r-- 1 root root   787 09-16_21:06 30-dict-server.conf
+   -rw-r--r-- 1 root root   828 09-16_21:06 90-acl.conf
+   -rw-r--r-- 1 root root   719 09-16_21:06 90-fts.conf
+   -rw-r--r-- 1 root root  2041 09-16_21:06 90-quota.conf
+   -rw-r--r-- 1 root root  4164 09-16_21:06 90-sieve.conf
+   -rw-r--r-- 1 root root  1789 09-16_21:06 90-sieve-extprograms.conf
+   -rw-r--r-- 1 root root   119 11-10_19:30 99-group4.conf
+   -rw-r--r-- 1 root root   508 09-16_21:06 auth-deny.conf.ext
+   -rw-r--r-- 1 root root   457 09-16_21:06 auth-master.conf.ext
+   -rw-r--r-- 1 root root   507 09-16_21:06 auth-oauth2.conf.ext
+   -rw-r--r-- 1 root root   514 09-16_21:06 auth-passwdfile.conf.ext
+   -rw-r--r-- 1 root root   150 11-18_12:28 auth-sql.conf.ext
+   -rw-r--r-- 1 root root   820 09-16_21:06 auth-static.conf.ext
+   -rw-r--r-- 1 root root  2295 09-16_21:06 auth-system.conf.ext
+-- dovecot-sql.conf.ext (New 4.3 written for Dovecot 2.3)
+   driver = mysql
+   connect = host=127.0.0.1 dbname=mailserver user=mailuser password=<MASKED>
+   default_pass_scheme = SHA512-CRYPT 
+   password_query = SELECT email AS user, password FROM virtual_users WHERE email = '%u';
+   user_query = SELECT 5000 AS uid, 5000 AS gid, '/var/vmail/%d/%n' AS home FROM virtual_users WHERE email = '%u';
+-- files of the scripts (99-group4-*.conf)
+   # /etc/dovecot/conf.d/99-group4-*.conf
+   grep: /etc/dovecot/conf.d/99-group4-*.conf: No such file or directory
+-- service
+   failed
+   enabled
+-- errors of dovecot today
+   10:51:36+01:00 welcome dovecot[768]: master: Warning: Killed with signal 15 (by pid=11802 uid=0 code=kill)
+   11:33:34+01:00 welcome dovecot[11822]: master: Warning: Killed with signal 15 (by pid=13241 uid=0 code=kill)
+   12:05:07+01:00 welcome dovecot[13248]: auth: Fatal: No passdbs specified in configuration file. PLAIN mechanism needs one
+   12:05:07+01:00 welcome dovecot[13246]: master: Error: service(auth): command startup failed, throttling for 2.000 secs
+   12:17:04+01:00 welcome dovecot[13246]: master: Warning: Killed with signal 15 (by pid=13909 uid=0 code=kill)
+   12:17:05+01:00 welcome systemd[1]: dovecot.service: Failed with result 'exit-code'.
+   12:17:05+01:00 welcome systemd[1]: Failed to start dovecot.service - Dovecot IMAP/POP3 email server.
+   12:21:13+01:00 welcome systemd[1]: dovecot.service: Failed with result 'exit-code'.
+   12:21:13+01:00 welcome systemd[1]: Failed to start dovecot.service - Dovecot IMAP/POP3 email server.
+   12:26:34+01:00 welcome systemd[1]: dovecot.service: Failed with result 'exit-code'.
+   12:26:34+01:00 welcome systemd[1]: Failed to start dovecot.service - Dovecot IMAP/POP3 email server.
+
+== 3. Postfix
+-- settings for the delivery
+   mydestination = $myhostname, localhost.$mydomain, localhost
+   virtual_mailbox_domains = group4.umons virtual_mailbox_base = /var/vmail virtual_mailbox_maps = mysql:/etc/postfix/mysql-virtual-mailbox-maps.cf virtual_minimum_uid = 100
+   virtual_mailbox_base =
+   virtual_mailbox_maps =
+   virtual_alias_maps = $virtual_maps
+   virtual_minimum_uid = 100
+   virtual_uid_maps =
+   virtual_gid_maps =
+   alias_maps = hash:/etc/aliases
+   home_mailbox = Maildir/
+   smtpd_tls_cert_file = /etc/ssl/group4/group4-fullchain.pem
+-- postfix check (exit 0)
+   postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+-- MySQL map files (owner, mode, content)
+   -rw-r----- 1 root postfix 205 Nov 18 11:46 /etc/postfix/mysql-virtual-mailbox-maps.cf
+   user = mailuser
+   password = <MASKED>
+   hosts = 127.0.0.1
+   dbname = mailserver
+   query = SELECT CONCAT(SUBSTRING_INDEX(email,'@',-1),'/',SUBSTRING_INDEX(email,'@',1),'/') FROM virtual_users WHERE email='%s'
+-- lookup of calogero@group4.umons in the mailbox map (exit 0)
+   group4.umons/calogero/
+-- errors and deliveries of Postfix today
+   12:30:00+01:00 welcome postfix/master[13515]: warning: /usr/lib/postfix/sbin/trivial-rewrite: bad command startup -- throttling
+   12:31:00+01:00 welcome postfix/trivial-rewrite[15013]: fatal: match_list_parse: read file /var/vmail: Is a directory
+   12:31:01+01:00 welcome postfix/master[13515]: warning: process /usr/lib/postfix/sbin/trivial-rewrite pid 15013 exit status 1
+   12:31:01+01:00 welcome postfix/master[13515]: warning: /usr/lib/postfix/sbin/trivial-rewrite: bad command startup -- throttling
+   12:32:01+01:00 welcome postfix/trivial-rewrite[15083]: fatal: match_list_parse: read file /var/vmail: Is a directory
+   12:32:02+01:00 welcome postfix/master[13515]: warning: process /usr/lib/postfix/sbin/trivial-rewrite pid 15083 exit status 1
+   12:32:02+01:00 welcome postfix/master[13515]: warning: /usr/lib/postfix/sbin/trivial-rewrite: bad command startup -- throttling
+   12:32:20+01:00 welcome postfix/master[13515]: warning: unix_trigger_event: read timeout for service public/pickup
+   12:33:02+01:00 welcome postfix/trivial-rewrite[15145]: fatal: match_list_parse: read file /var/vmail: Is a directory
+   12:33:03+01:00 welcome postfix/master[13515]: warning: process /usr/lib/postfix/sbin/trivial-rewrite pid 15145 exit status 1
+   12:33:03+01:00 welcome postfix/master[13515]: warning: /usr/lib/postfix/sbin/trivial-rewrite: bad command startup -- throttling
+   12:33:20+01:00 welcome postfix/master[13515]: warning: unix_trigger_event: read timeout for service public/pickup
+   12:34:03+01:00 welcome postfix/trivial-rewrite[15264]: fatal: match_list_parse: read file /var/vmail: Is a directory
+   12:34:04+01:00 welcome postfix/master[13515]: warning: process /usr/lib/postfix/sbin/trivial-rewrite pid 15264 exit status 1
+   12:34:04+01:00 welcome postfix/master[13515]: warning: /usr/lib/postfix/sbin/trivial-rewrite: bad command startup -- throttling
+   12:34:20+01:00 welcome postfix/master[13515]: warning: unix_trigger_event: read timeout for service public/pickup
+   12:35:04+01:00 welcome postfix/trivial-rewrite[15273]: fatal: match_list_parse: read file /var/vmail: Is a directory
+   12:35:05+01:00 welcome postfix/master[13515]: warning: process /usr/lib/postfix/sbin/trivial-rewrite pid 15273 exit status 1
+   12:35:05+01:00 welcome postfix/master[13515]: warning: /usr/lib/postfix/sbin/trivial-rewrite: bad command startup -- throttling
+   12:35:20+01:00 welcome postfix/master[13515]: warning: unix_trigger_event: read timeout for service public/pickup
+   12:36:05+01:00 welcome postfix/trivial-rewrite[15274]: fatal: match_list_parse: read file /var/vmail: Is a directory
+   12:36:06+01:00 welcome postfix/master[13515]: warning: process /usr/lib/postfix/sbin/trivial-rewrite pid 15274 exit status 1
+   12:36:06+01:00 welcome postfix/master[13515]: warning: /usr/lib/postfix/sbin/trivial-rewrite: bad command startup -- throttling
+   12:36:20+01:00 welcome postfix/master[13515]: warning: unix_trigger_event: read timeout for service public/pickup
+   12:36:44+01:00 welcome postfix/postfix-script[15451]: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+-- queue
+   4CA4B407CC      471 Wed Nov 18 12:30:01  root
+                                            root
+   
+   -- 1 Kbytes in 3 Requests.
+
+== 4. MariaDB
+-- service and port
+   active
+   mariadb from 11.8.6-MariaDB, client 15.2 for debian-linux-gnu (x86_64) using  Ed
+   listening on 127.0.0.1:3306
+-- root through the system account (unix socket) (exit 0)
+   root@localhost
+-- database users (user, host, method)
+   mailuser	127.0.0.1	mysql_native_password
+   mariadb.sys	localhost	mysql_native_password
+   mysql	localhost	mysql_native_password
+   root	localhost	mysql_native_password
+-- rights of the mail users
+   GRANT USAGE ON *.* TO `mailuser`@`127.0.0.1` IDENTIFIED BY PASSWORD <MASKED>
+   GRANT ALL PRIVILEGES ON `mailserver`.* TO `mailuser`@`127.0.0.1`
+-- databases
+   information_schema
+   mailserver
+   mysql
+   performance_schema
+   sys
+-- columns of virtual_users
+   id	int(11)	NO	PRI	NULL	auto_increment
+   email	varchar(128)	NO	UNI	NULL	
+   password	varchar(150)	NO		NULL
+-- addresses in virtual_users (only scheme and length of each password)
+   calogero@group4.umons	{SHA512-CRYPT}	120
+-- aliases
+   --------------
+   SELECT source, destination FROM mailserver.virtual_aliases
+   --------------
+   
+   ERROR 1146 (42S02) at line 1: Table 'mailserver.virtual_aliases' doesn't exist
+-- errors of mariadb today
+   10:51:34+01:00 welcome (mariadbd)[11767]: mariadb.service: Referenced but unset environment variable evaluates to an empty string: MYSQLD_OPTS, _WSREP_NEW_CLUSTER
+
+== 5. Accounts and mailboxes
+-- accounts
+   vmail:x:5000:5000::/var/vmail:/bin/sh
+   calogero:x:1003:1003::/home/calogero:/usr/sbin/nologin
+   vmail:x:5000:
+   mailusers:x:1002:calogero
+-- /var/vmail (owner, folders)
+   drwx------ vmail:vmail /var/vmail
+   -rw-r--r-- vmail:vmail /var/vmail/.profile
+   -rw-r--r-- vmail:vmail /var/vmail/.face
+   -rw-r--r-- vmail:vmail /var/vmail/.bashrc
+   -rw-r--r-- vmail:vmail /var/vmail/.bash_logout
+   lrwxrwxrwx vmail:vmail /var/vmail/.face.icon
+-- mails in the mailboxes
+   /home/calogero/Maildir: new 1, cur 0
+-- /etc/group4-mail (passwords of the database users, names only)
+   ls: cannot access '/etc/group4-mail': No such file or directory
+
+== 6. Live tests
+-- listening ports
+   0.0.0.0:25
+   0.0.0.0:443
+   0.0.0.0:80
+   127.0.0.1:3306
+   [::]:25
+   [::]:443
+   [::]:80
+-- SMTP 25: SMTPServerDisconnected: Connection unexpectedly closed: timed out
+-- IMAP 993: ConnectionRefusedError: [Errno 111] Connection refused
+-- Dovecot user lookup (needs Dovecot running)
+   doveconf: Fatal: Error in configuration file /etc/dovecot/conf.d/auth-sql.conf.ext line 1: passdb { } is missing section name
+   doveconf: Fatal: Error in configuration file /etc/dovecot/conf.d/auth-sql.conf.ext line 1: passdb { } is missing section name
+
+== 7. Clone of the scripts on welcome
+-- files changed by hand, stashes, last commits
+   a0a58d7 fixes/mail_virtual.sh and mail_users.sh: if MariaDB refuses root through the system account (after mysql_secure_installation), ask the MariaDB admin password once
+   386d9b9 checks/mail_diag.sh (menu t): read-only test battery for the mail of welcome after the half-done New 4.3 of 2026-11-18: sudo commands, packages, files and account
+   fca44c4 checks/push-results.sh: pull with --autostash (files changed by hand in the clone no longer block the push) and, on failure, undo the results commit without reset
+
+== Findings
+   - Dovecot configuration does not load: doveconf: Fatal: Error in configuration file /etc/dovecot/conf.d/auth-sql.conf.ext line 1: passdb { } is missing section name
+   - 10-auth.conf: '!include auth-sql.conf.ext' active (Dovecot 2.3 syntax in a 2.4 server: fix 1 of the review)
+   - 10-auth.conf: system login (PAM) switched off: the Linux accounts (calogero) cannot log in
+   - dovecot is failed: nobody can read mail (993)
+   - Postfix: group4.umons is a VIRTUAL domain: every mail for @group4.umons is looked up in MariaDB
+   - Postfix map uses the database user 'mailuser' (ALL PRIVILEGES in the New 4.3: fix 3 of the review)
+   - Postfix map writes to /var/vmail/<domain>/<user>/ while Dovecot reads .../Maildir (fix 2 of the review)
+   - MariaDB: 'mailuser' has ALL PRIVILEGES on mailserver (fix 3 of the review)
+   - MariaDB: virtual_users has no 'active' column (fix 5 of the review)
+   - SMTP 25 does not answer properly: Connection unexpectedly closed: timed out (mails from the other providers do not arrive)
