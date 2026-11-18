@@ -1,0 +1,104 @@
+== Inventory of ns1 (2026-11-18 09:17), read-only, passwords masked
+
+== 1. Network of this VM
+-- addresses: ip -br -4 addr
+   lo               UNKNOWN        127.0.0.1/8 
+   ens18            UP             10.4.2.10/24
+-- routes: ip -4 route
+   default via 10.4.2.1 dev ens18 proto static metric 100 
+   10.4.2.0/24 dev ens18 proto kernel scope link src 10.4.2.10 metric 100
+-- NetworkManager profile of ens18: c=$(nmcli -g GENERAL.CONNECTION device show ens18 2>/dev/null); echo "profile: $c"; nmcli -g ipv4.method,ipv4.addresses,ipv4.gateway,ipv4.dns,ipv4.ignore-auto-dns connection show "$c" 2>/dev/null
+   profile: Wired connection 1
+   manual
+   10.4.2.10/24
+   10.4.2.1
+   127.0.0.1,10.4.255.254
+   yes
+-- /etc/network/interfaces (without comments): grep -vE '^\s*(#|$)' /etc/network/interfaces /etc/network/interfaces.d/* 2>/dev/null
+   /etc/network/interfaces:source /etc/network/interfaces.d/*
+   /etc/network/interfaces:auto lo
+   /etc/network/interfaces:iface lo inet loopback
+-- resolv.conf: grep -E '^(nameserver|search)' /etc/resolv.conf
+   nameserver 127.0.0.1
+   nameserver 10.4.255.254
+   ping 10.4.2.1: answers
+   ping 10.4.255.1: answers
+   ping 10.4.255.254: answers
+   outgoing HTTPS (deb.debian.org): 200
+   GitHub SSH (github.com:22, used to push the results): open
+
+== 2. Our names as the other groups see them (resolver of the course 10.4.255.254) and through ns1
+   group4.umons MX: course resolver -> 10 mail.group4.umons. | ns1 10.4.2.10 -> 10 mail.group4.umons. | ns1 10.4.255.10 -> ;; communications error to 10.4.255.10#53: timed out ;; no servers could be reached
+   group4.umons NS: course resolver -> ns1.group4.umons. | ns1 10.4.2.10 -> ns1.group4.umons. | ns1 10.4.255.10 -> ;; communications error to 10.4.255.10#53: timed out ;; no servers could be reached
+   welcome.group4.umons A: course resolver -> 10.4.255.11 | ns1 10.4.2.10 -> 10.4.255.1 | ns1 10.4.255.10 -> ;; communications error to 10.4.255.10#53: timed out ;; no servers could be reached
+   mail.group4.umons A: course resolver -> 10.4.255.11 | ns1 10.4.2.10 -> 10.4.255.1 | ns1 10.4.255.10 -> ;; communications error to 10.4.255.10#53: timed out ;; no servers could be reached
+   ns1.group4.umons A: course resolver -> 10.4.255.1 | ns1 10.4.2.10 -> 10.4.255.1 | ns1 10.4.255.10 -> ;; communications error to 10.4.255.10#53: timed out ;; no servers could be reached
+   reverse 10.4.255.1: course resolver -> nothing | ns1 10.4.2.10 -> nothing
+   reverse 10.4.2.11: course resolver -> nothing | ns1 10.4.2.10 -> mail.group4.umons.
+   reverse 10.4.255.11: course resolver -> nothing | ns1 10.4.2.10 -> nothing
+   reverse 10.4.2.10: course resolver -> nothing | ns1 10.4.2.10 -> ns1.group4.umons.
+   10.4.255.1: 53 closed/filtered (TimeoutError), 25 closed/filtered (TimeoutError), 80 closed/filtered (TimeoutError), 993 closed/filtered (TimeoutError), 22 closed/filtered (TimeoutError)
+   10.4.2.11: 53 closed/filtered (ConnectionRefusedError), 25 open, 80 open, 993 open, 22 open
+   10.4.2.10: 53 open, 25 closed/filtered (ConnectionRefusedError), 80 closed/filtered (ConnectionRefusedError), 993 closed/filtered (ConnectionRefusedError), 22 open
+
+== 3. Listening services of this VM
+-- ss -tlnup: ss -Htlnup | awk '{print $1, $5, $7}' | sed -E 's/users:\(\("([^"]+)".*/\1/' | sort -u
+   tcp 0.0.0.0:22 sshd
+   tcp 10.4.2.10:53 named
+   tcp 127.0.0.1:53 named
+   tcp 127.0.0.1:631 cupsd
+   tcp 127.0.0.1:953 named
+   tcp [::1]:53 named
+   tcp [::1]:631 cupsd
+   tcp [::1]:953 named
+   tcp [::]:22 sshd
+   tcp [fe80::be24:11ff:fe78:d3a6]%ens18:53 named
+   udp 0.0.0.0:5353 avahi-daemon
+   udp 0.0.0.0:53616 avahi-daemon
+   udp 10.4.2.10:53 named
+   udp 127.0.0.1:53 named
+   udp [::1]:53 named
+   udp [::]:53342 avahi-daemon
+   udp [::]:5353 avahi-daemon
+   udp [fe80::be24:11ff:fe78:d3a6]%ens18:53 named
+-- services: for s in named bind9 nginx apache2 postfix dovecot mariadb mysql php8.4-fpm php8.3-fpm suricata ssh; do a=$(systemctl is-active $s 2>/dev/null); [ "$a" = inactive ] && continue; echo "$s $a $(systemctl is-enabled $s 2>/dev/null)"; done
+   named active enabled
+   bind9 active alias
+   ssh active enabled
+
+== 4. DNS server (ns1)
+-- zones loaded: named-checkconf -z 2>&1 | grep -E 'loaded serial|error|not loaded'
+   zone group4.umons/IN: loaded serial 2026111012
+   zone 2.4.10.in-addr.arpa/IN: loaded serial 2026111001
+-- options and zones (named-checkconf -p, selected lines)
+   forwarders {
+   zone "group4.umons" {
+   type primary;
+   file "/etc/bind/group4.umons";
+   zone "2.4.10.in-addr.arpa" {
+   type master;
+   file "/etc/bind/db.10.4.2";
+   zone "." {
+   type hint;
+   file "/usr/share/dns/root.hints";
+-- records of group4.umons: named-checkzone -D -o - group4.umons /etc/bind/group4.umons 2>&1 | grep -vE '^;|^$'
+   zone group4.umons/IN: loaded serial 2026111012
+   group4.umons.				      172800 IN	SOA	ns1.group4.umons. hostmaster.group4.umons. 2026111012 43200 900 345600 7200
+   group4.umons.				      172800 IN	NS	ns1.group4.umons.
+   group4.umons.				      172800 IN	MX	10 mail.group4.umons.
+   imap.group4.umons.			      172800 IN	CNAME	mail.group4.umons.
+   mail.group4.umons.			      172800 IN	A	10.4.255.1
+   ns1.group4.umons.			      172800 IN	A	10.4.255.1
+   smtp.group4.umons.			      172800 IN	CNAME	mail.group4.umons.
+   welcome.group4.umons.			      172800 IN	A	10.4.255.1
+   OK
+-- records of 2.4.10.in-addr.arpa: named-checkzone -D -o - 2.4.10.in-addr.arpa /etc/bind/db.10.4.2 2>&1 | grep -vE '^;|^$'
+   zone 2.4.10.in-addr.arpa/IN: loaded serial 2026111001
+   2.4.10.in-addr.arpa.			      172800 IN	SOA	ns1.group4.umons. postmaster.group4.umons. 2026111001 43200 900 345600 7200
+   2.4.10.in-addr.arpa.			      172800 IN	NS	ns1.group4.umons.
+   10.2.4.10.in-addr.arpa.			      172800 IN	PTR	ns1.group4.umons.
+   11.2.4.10.in-addr.arpa.			      172800 IN	PTR	mail.group4.umons.
+   OK
+-- records of .: named-checkzone -D -o - . /usr/share/dns/root.hints 2>&1 | grep -vE '^;|^$'
+   zone ./IN: has 0 SOA records
+   zone ./IN: not loaded due to errors.
