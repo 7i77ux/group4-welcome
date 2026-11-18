@@ -1,15 +1,13 @@
 # fixes
 
-Scripts that CHANGE a VM, one fix at a time. For each fix they show the current state and the reason, ask for confirmation (`y`), back up the files they change in `/root/fixes-backup-<date>`, apply and check. At the end they run the check of the VM, which pushes the result to `results/`.
+Scripts that CHANGE a VM, one fix at a time: current state, reason, confirmation (`y`), backup of the files they change in `/root/fixes-backup-<date>`, change, check (and restore of the backup if the check fails). Take a PVE snapshot of the VM first. Each script refuses to run on another VM; most end with `checks/full.sh`.
 
-Before running one: take a PVE snapshot of the VM.
-
-| VM | Command | Fixes |
+| VM | Command | What |
 |---|---|---|
-| welcome (10.4.255.11) | `sudo sh fixes/fix_welcome.sh` | hostname `welcome`; Postfix `myhostname = mail.group4.umons`; remove the leftover BIND; `mynetworks` only local (closes the relay, repairs incoming mail); Maildir; account `calogero` + mail login only for group `mailusers`; IMAP only on 993; Postfix protections; relay refused with 554 instead of 454 (W30); DNS of welcome = resolver of the course 10.4.255.254 (W34) |
-| welcome | `sudo sh fixes/fix_suricata.sh` | Repair of Suricata after the installation by hand: network card of the default route (not a fixed name), `HOME_NET`, rules folder, rules (`suricata-update`), `suricata -T` (configuration restored if it fails), start, test alert; then `checks/suricata.sh`. Manual steps: DOCUMENTATION.md 10.17, "Repair by hand" |
-| ns1 | `sudo sh fixes/fix_dns_serial.sh` | Raise the serial of `group4.umons` and `2.4.10.in-addr.arpa` (records changed on 2026-11-17 with the old serials); `named-checkzone`, file restored if it fails, reload, served serial checked |
-| welcome (10.4.255.11) | `sudo sh fixes/suricata_welcome.sh` | Suricata as IDS (alerts only, D10): Debian packages `suricata` and `suricata-update`; `HOME_NET` = 10.4.0.0/16, capture on ens18; ET Open rules; start at boot; test alert (rule 2100498). Alerts in `/var/log/suricata/fast.log` |
-| ns1 (10.4.255.10) | `sudo sh fixes/fix_ns1.sh` | one tool for the network (NetworkManager, gateway and DNS 127.0.0.1 in the profile, ens18 removed from `/etc/network/interfaces`); one PTR for 10.4.255.11 (`mail.group4.umons.`), serial raised |
+| welcome | `sudo sh fixes/fix_welcome.sh` | Fixes 1-10 of welcome: hostname; Postfix `myhostname`; leftover BIND removed; `mynetworks` local only; Maildir; account `calogero` + mail login only for `mailusers`; IMAP only on 993; Postfix protections; relay refused with 554 (W30); DNS of welcome = course resolver 10.4.255.254 (W34) |
+| welcome | `sudo sh fixes/mail_virtual.sh` | Virtual mailboxes (NOTES "New 4.3" with the five fixes of its review): MariaDB, user `vmail`, Dovecot login from the database, Postfix virtual domain, `postmaster` alias, migration of `calogero`, tests; the previous configuration is put back if a test fails |
+| welcome | `sudo sh fixes/mail_users.sh` | Mail accounts of the virtual mailboxes: `list`, `add <name>`, `activate`, `disable`, `passwd` |
+| welcome | `sudo sh fixes/fix_suricata.sh` | Repair of Suricata (card of the default route, `HOME_NET`, rules folder, rules, `suricata -T`, start, test alert) |
+| ns1 | `sudo sh fixes/fix_dns_serial.sh` | Raise the serial of `group4.umons` and `2.4.10.in-addr.arpa` |
 
-Each script refuses to run on another VM.
+Manual steps of every fix: DOCUMENTATION.md section 10.

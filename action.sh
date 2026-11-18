@@ -18,11 +18,10 @@ s|ns1|sudo sh fixes/fix_dns_serial.sh|-|CHANGE: raise the serial of our two zone
 1|both|sudo sh checks/full.sh|full-VM|Full test of everything documented (on welcome it also asks for the mail login test)
 2|welcome|sudo sh checks/suricata.sh|suricata|Suricata: installation, settings, rules, running, test alert (DOCUMENTATION 10.17)
 3|both|sudo sh checks/ice_watch.sh|ice-watch-VM|What ice and mother do now, compared with 2026-11-12 (SAME / CHANGED)
-4|both|sudo sh checks/ice_timing.sh|ice-timing-VM|How often ice attacks (logins of mother per source, rounds of ice)
 5|welcome|sudo sh checks/mail_exchange.sh|mail-exchange|Mail exchange with the other providers (sends a test mail only if you choose a group)
 6|both|sudo sh checks/evidence_ice.sh|evidence-VM|Evidence of ice: its code with secrets redacted, orders of the servers (not executed)
 7|welcome|sudo sh deploy.sh|-|CHANGE: publish the welcome page from index.md
-8|welcome|sudo sh fixes/fix_welcome.sh|-|CHANGE: fixes 1-9 of welcome (each asks y/N; "already done" when nothing to do)
+8|welcome|sudo sh fixes/fix_welcome.sh|-|CHANGE: fixes 1-10 of welcome (each asks y/N; "already done" when nothing to do)
 9|welcome|sudo sh fixes/fix_suricata.sh|-|CHANGE: repair Suricata (card, HOME_NET, rules, test, start, test alert)
 11|both|sudo sh checks/save_volatile.sh|volatile-VM|CHANGE: before a reboot, save the evidence of /tmp in /root/evidence (root only)'
 

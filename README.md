@@ -1,38 +1,23 @@
 # group4-welcome
 
-Source of the welcome page of Group 4: http://welcome.group4.umons
+Source of the welcome page of Group 4 (http://welcome.group4.umons) and the scripts used on our VMs.
 
 - `index.md`: the page, written in Markdown
-- `deploy.sh`: publishes the page with nginx on the Welcome + mail VM and keeps it always on
-- `make-csr.sh`: generates the private key and the certificate signing request (CSR) for the course CA
-- `checks/`: read-only test scripts for the VMs (see `checks/README.md`)
+- `deploy.sh`: publishes the page with nginx on welcome and keeps it always on
+- `action.sh`: menu of the activities of the VM where it runs
+- `checks/`: read-only checks (see `checks/README.md`)
+- `fixes/`: scripts that change a VM, one fix at a time, with confirmation (see `fixes/README.md`)
 
-`deploy.sh` and `make-csr.sh` refuse to run on a VM other than welcome (10.4.255.11).
+The scripts recognise the VM by its host name (`welcome`, `ns1`) or by its address (DMZ 10.4.2.x since 2026-11-17) and refuse to run on the wrong one. Scripts removed on 2026-11-18 because done or replaced (still in the git history): `make-csr.sh`, `checks/welcome.sh`, `checks/ns1.sh`, `checks/mail.sh`, `checks/setup-results.sh`, `checks/mailtest_ns1.sh`, `checks/ice_timing.*`, `fixes/fix_ns1.sh`, `fixes/suricata_welcome.sh`.
 
-## Deploy (on the Welcome + mail VM)
+## On a VM
 
 ```
-git clone https://github.com/7i77ux/group4-welcome
-sudo sh group4-welcome/deploy.sh
+cd ~/Desktop/group4-welcome && sh action.sh
 ```
+
+It lists the activities of that VM with the date of the last result of each check, runs the one you choose (asking the sudo password), and `r` runs the recommended order, asking before each step.
 
 ## Update the page
 
-Edit `index.md`, push, then on the VM:
-
-```
-cd group4-welcome && git pull && sudo sh deploy.sh
-```
-
-## TLS certificate request (on the Welcome + mail VM)
-
-```
-cd group4-welcome && git pull
-sudo sh make-csr.sh
-```
-
-The key is created in `/etc/ssl/group4/group4.key` (root only) and never leaves the VM. Send only `~/group4.csr` to the teacher, and ask to keep the `subjectAltName` (`welcome.group4.umons`, `mail.group4.umons`). The script refuses to overwrite an existing key.
-
-## Menu of the activities
-
-On ns1 or welcome, as user: `cd ~/Desktop/group4-welcome && sh action.sh`. It lists the activities of that VM (update, checks, changes) with the date of the last result of each check, runs the one you choose (asking the sudo password), and `r` runs the recommended order, asking before each step.
+Edit `index.md`, push, then on welcome: `cd ~/Desktop/group4-welcome && git pull && sudo sh deploy.sh` (menu 7).

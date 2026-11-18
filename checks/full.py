@@ -320,7 +320,7 @@ def identity_and_network(vm, ip, repo):
           "no outgoing HTTPS to the Internet (apt and git pull will fail)")
     info(f"running since {sh('uptime -s')} (last boot)")
     pushurl = sh(f"git -c safe.directory='*' -C '{repo}' config --get remote.origin.pushurl")
-    info(f"results push: {pushurl or 'not configured (setup-results.sh)'}")
+    info(f"results push: {pushurl or 'not configured'}")
 
 
 def public_view():
@@ -774,7 +774,7 @@ def dovecot():
     if proof:
         ok("D27", f"proof of reception from ns1 found in the mailbox of calogero ({os.path.basename(proof)[:40]})")
     else:
-        opn("D27", "no test mail from ns1 in the mailbox of calogero yet (checks/mailtest_ns1.sh)")
+        opn("D27", "no test mail from ns1 in the mailbox of calogero")
     mbox = sh("find /var/mail -type f -size +0 2>/dev/null")
     if mbox:
         info(f"old mailboxes in /var/mail (before Maildir): {' '.join(mbox.split())}")

@@ -25,7 +25,7 @@ NET='[10.4.0.0/16]'
 IFACE=$(ip -4 route show default 2>/dev/null | awk '{for (i = 1; i < NF; i++) if ($i == "dev") {print $(i + 1); exit}}')
 [ -n "$IFACE" ] || IFACE=ens18
 
-dpkg -l suricata 2>/dev/null | grep -q '^ii' || { echo "Suricata is not installed: DOCUMENTATION.md 10.17 step 1 (or sudo sh fixes/suricata_welcome.sh)."; exit 1; }
+dpkg -l suricata 2>/dev/null | grep -q '^ii' || { echo "Suricata is not installed: DOCUMENTATION.md 10.17 step 1."; exit 1; }
 [ -f "$Y" ] || { echo "ERROR: $Y not found"; exit 1; }
 since_start() { awk '/This is Suricata version/ {buf = ""} {buf = buf $0 "\n"} END {printf "%s", buf}' "$LOG/suricata.log" 2>/dev/null; }
 

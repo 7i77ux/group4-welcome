@@ -15,7 +15,7 @@ if [ -d "$RES/.git/rebase-merge" ] || [ -d "$RES/.git/rebase-apply" ]; then
 fi
 
 if [ -z "$(g config --get remote.origin.pushurl)" ]; then
-    echo "Results not pushed: run once 'sh checks/setup-results.sh' (as user, without sudo)."
+    echo "Results not pushed: no push URL in this clone (deploy key of the repo; see git history of checks/setup-results.sh)."
     exit 0
 fi
 

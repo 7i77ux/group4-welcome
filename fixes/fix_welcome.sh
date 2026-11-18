@@ -92,7 +92,7 @@ elif ask "   Apply?"; then
     if postfix check; then
         systemctl reload postfix
         echo "   done: mynetworks = $(postconf -h mynetworks)"
-        echo "   check from ns1: sudo sh checks/ns1.sh (section 8: relay 554, postmaster 250, unknown user 550)"
+        echo "   check from ns1: sudo sh checks/full.sh (welcome seen from ns1: relay 554, postmaster 250, unknown user 550)"
     else
         cp -a "$BK/main.cf.fix4" /etc/postfix/main.cf
         echo "   ERROR: postfix check failed, main.cf restored"
