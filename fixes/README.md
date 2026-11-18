@@ -8,6 +8,7 @@ Before running one: take a PVE snapshot of the VM.
 |---|---|---|
 | welcome (10.4.255.11) | `sudo sh fixes/fix_welcome.sh` | hostname `welcome`; Postfix `myhostname = mail.group4.umons`; remove the leftover BIND; `mynetworks` only local (closes the relay, repairs incoming mail); Maildir; account `calogero` + mail login only for group `mailusers`; IMAP only on 993; Postfix protections; relay refused with 554 instead of 454 (W30) |
 | welcome | `sudo sh fixes/fix_suricata.sh` | Repair of Suricata after the installation by hand: network card of the default route (not a fixed name), `HOME_NET`, rules folder, rules (`suricata-update`), `suricata -T` (configuration restored if it fails), start, test alert; then `checks/suricata.sh`. Manual steps: DOCUMENTATION.md 10.17, "Repair by hand" |
+| ns1 | `sudo sh fixes/fix_dns_serial.sh` | Raise the serial of `group4.umons` and `2.4.10.in-addr.arpa` (records changed on 2026-11-17 with the old serials); `named-checkzone`, file restored if it fails, reload, served serial checked |
 | welcome (10.4.255.11) | `sudo sh fixes/suricata_welcome.sh` | Suricata as IDS (alerts only, D10): Debian packages `suricata` and `suricata-update`; `HOME_NET` = 10.4.0.0/16, capture on ens18; ET Open rules; start at boot; test alert (rule 2100498). Alerts in `/var/log/suricata/fast.log` |
 | ns1 (10.4.255.10) | `sudo sh fixes/fix_ns1.sh` | one tool for the network (NetworkManager, gateway and DNS 127.0.0.1 in the profile, ens18 removed from `/etc/network/interfaces`); one PTR for 10.4.255.11 (`mail.group4.umons.`), serial raised |
 

@@ -13,6 +13,8 @@ fi
 # key | VM (both, welcome, ns1) | command | results folder | description
 LIST='p|both|git pull|-|Update the scripts (always first)
 i|both|sudo sh checks/inventory.sh|inventory-VM|Inventory of the new structure (DMZ/NAT, virtual mailboxes): read-only, used to update the checks
+d|both|sh checks/public_dns.sh|-|Our names as the other groups get them: answer, time left, clock time of expiry (a few seconds)
+s|ns1|sudo sh fixes/fix_dns_serial.sh|-|CHANGE: raise the serial of our two zones (after the change of records of 2026-11-17)
 1|both|sudo sh checks/full.sh|full-VM|Full test of everything documented (on welcome it also asks for the mail login test)
 2|welcome|sudo sh checks/suricata.sh|suricata|Suricata: installation, settings, rules, running, test alert (DOCUMENTATION 10.17)
 3|both|sudo sh checks/ice_watch.sh|ice-watch-VM|What ice and mother do now, compared with 2026-11-12 (SAME / CHANGED)
