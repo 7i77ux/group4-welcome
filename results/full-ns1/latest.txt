@@ -1,24 +1,34 @@
 Full regression test (read-only). OK = as documented; FAIL = differs from the documentation;
 NEW = not in the documentation; OPEN = known open point (id); INFO = data.
 
-== 1. Identity and network (ns1, 2026-11-16 09:28, checks commit 21d2578)
+== 1. Identity and network (ns1, 2026-11-18 11:22, checks commit 274f25d)
 OK    [D08] hostname ns1
 OK    [10.11] /etc/hosts: 127.0.1.1 ns1
-OK    [D02] 10.4.255.10/16 on ens18
-INFO  NetworkManager profile 'Wired connection 1': method=manual addresses=10.4.255.10/16 gateway=10.4.255.254 dns=127.0.0.1,10.4.255.254 ignore-auto-dns=yes
+OK    [D02] 10.4.2.10/24 on ens18
+INFO  NetworkManager profile 'Wired connection 1': method=manual addresses=10.4.2.10/24 gateway=10.4.2.1 dns=10.4.255.254 ignore-auto-dns=yes
 OK    [10.28/10.34] address saved in the profile (survives a reboot)
-OK    [D02] gateway in the profile: 10.4.255.254
-OK    [10.34] DNS in the profile: 127.0.0.1,10.4.255.254
+OK    [D02] gateway in the profile: 10.4.2.1
+OK    [W34] DNS in the profile: 10.4.255.254 (resolver of the course: the .umons names of the other groups resolve)
 OK    [10.34] DHCP DNS ignored (ignore-auto-dns yes)
 OK    [W7] no ifupdown configuration for ens18 (one tool only)
-OK    [W7] networking.service inactive (not failed)
-OK    [D02] default route via 10.4.255.254
-INFO  resolv.conf: 127.0.0.1 10.4.255.254
-OK    [10.34] ns1 asks its own BIND first
-OK    [10.4] welcome.group4.umons -> 10.4.255.11 (system resolver)
+OK    [W7] networking.service active (not failed)
+OK    [D02] default route via 10.4.2.1
+INFO  resolv.conf: 10.4.255.254
+OK    [W34] resolv.conf: ns1 asks the resolver of the course
+OK    [10.4] welcome.group4.umons -> 10.4.255.1 (system resolver)
 OK    [fn. 2] outgoing HTTPS to the Internet works (deb.debian.org -> 200)
-INFO  running since 2026-11-10 10:12:56 (last boot)
+INFO  running since 2026-11-18 08:40:10 (last boot)
 INFO  results push: github-welcome:7i77ux/group4-welcome.git
+
+== 1b. As the other groups see us (resolver of the course, public address of pfSense)
+OK    [16.x] group4.umons MX 10 mail.group4.umons.
+OK    [16.x] welcome.group4.umons -> 10.4.255.1 (pfSense) for the other groups
+OK    [16.x] mail.group4.umons -> 10.4.255.1 (pfSense) for the other groups
+OK    [16.x] ns1.group4.umons -> 10.4.255.1 (pfSense) for the other groups
+INFO  public address 10.4.255.1:53 from this VM: open (from inside the DMZ it needs NAT reflection; the real test is from outside)
+INFO  public address 10.4.255.1:25 from this VM: open (from inside the DMZ it needs NAT reflection; the real test is from outside)
+INFO  public address 10.4.255.1:80 from this VM: open (from inside the DMZ it needs NAT reflection; the real test is from outside)
+INFO  public address 10.4.255.1:993 from this VM: open (from inside the DMZ it needs NAT reflection; the real test is from outside)
 
 == 2. Listening services (non-local addresses), compared with the documentation
 INFO  local only: tcp/53 named, tcp/631 cupsd, tcp/953 named, udp/53 named
@@ -26,8 +36,9 @@ OK    [0.3] tcp/53 listening: DNS (BIND)
 OK    [0.3] udp/53 listening: DNS (BIND)
 OPEN  [W9] tcp/22 sshd: SSH open to every group (D19)
 INFO  udp/5353 avahi-daemon (mDNS, kept: D18)
-INFO  udp/44700 avahi-daemon (mDNS, kept: D18)
-INFO  udp/45396 avahi-daemon (mDNS, kept: D18)
+INFO  udp/53342 avahi-daemon (mDNS, kept: D18)
+INFO  udp/53616 avahi-daemon (mDNS, kept: D18)
+NEW   udp/58749 systemd-timesyn listening on the network: not in the documentation
 
 == 3. Accounts
 INFO  accounts with uid >= 1000: mother user
@@ -42,25 +53,15 @@ INFO  accounts created (useradd in the logs):
 
 == 4. Account mother: read-only observation (D28, nothing is changed)
 INFO  password status: mother P 2026-10-22 0 99999 7 -1
-INFO  processes of mother: 8
-        97735       1 Sun Nov 15 22:40:18 2026 /usr/lib/systemd/systemd --user
-          97737   97735 Sun Nov 15 22:40:18 2026 (sd-pam)
-          97757   97735 Sun Nov 15 22:40:18 2026 /usr/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation --syslog-only
-          97758   97735 Sun Nov 15 22:40:18 2026 /usr/bin/pipewire
-          97759   97735 Sun Nov 15 22:40:18 2026 /usr/bin/pipewire -c filter-chain.conf
-          97760   97735 Sun Nov 15 22:40:18 2026 /usr/bin/wireplumber
-          97764   97735 Sun Nov 15 22:40:18 2026 /usr/bin/pipewire-pulse
-          97803       1 Sun Nov 15 22:40:23 2026 sh -c cat /tmp/.test | sudo -S python3 /usr/local/bin/ice.py
-INFO  their parent processes (who started them):
-        1 root     /sbin/init
-          97735 mother   /usr/lib/systemd/systemd --user
-INFO  systemd linger (user services kept running without login): no
-INFO  SSH logins of mother in the whole journal: 376; methods: Accepted password
+INFO  processes of mother: none now
+INFO  systemd linger (user services kept running without login): no session
+INFO  SSH logins of mother in the whole journal: 467; methods: Accepted password
         from 10.222.0.86: 2 logins, first 2026-11-04T09:36, last 2026-11-04T09:36
         from 10.4.255.50: 3 logins, first 2026-11-04T09:43, last 2026-11-04T10:44
-        from 10.4.255.46: 27 logins, first 2026-11-04T11:34, last 2026-11-15T22:30
-        from 10.4.255.11: 317 logins, first 2026-11-04T11:35, last 2026-11-16T09:25
-        from 10.4.255.41: 27 logins, first 2026-11-10T09:30, last 2026-11-16T09:23
+        from 10.4.255.46: 31 logins, first 2026-11-04T11:34, last 2026-11-16T13:33
+        from 10.4.255.11: 381 logins, first 2026-11-04T11:35, last 2026-11-17T17:32
+        from 10.4.255.41: 46 logins, first 2026-11-10T09:30, last 2026-11-17T17:48
+        from 10.4.2.11: 4 logins, first 2026-11-18T09:31, last 2026-11-18T10:37
 INFO  commands run with sudo by mother (whole journal): 716; first 5 and last 5:
         2026-10-22T12:09 COMMAND=/usr/bin/ls
         2026-11-04T09:36 COMMAND=/bin/bash
@@ -74,8 +75,8 @@ INFO  commands run with sudo by mother (whole journal): 716; first 5 and last 5:
         2026-11-15T22:40 COMMAND=/etc/init.d/cron reload
         2026-11-15T22:40 COMMAND=/usr/sbin/service crond reload
 INFO  files of ice (metadata only, contents not printed):
+        ls: cannot access '/tmp/.test': No such file or directory
         ls: cannot access '/tmp/ice*': No such file or directory
-        -rw-rw-r-- 1 mother mother    7 2026-11-15T22:40 /tmp/.test
         /usr/local/bin/:
         drwxr-xr-x  2 root   root   4096 2026-11-15T22:40 .
         drwxr-xr-x 11 root   root   4096 2026-10-22T11:57 ..
@@ -85,12 +86,10 @@ INFO  files of ice (metadata only, contents not printed):
         d18b295830034bc7311d4cc469e37c7a303ae5ecb1a1eb3f77fdf48b25acd34c  /usr/local/bin/ice2.py
 INFO  lines of /etc/crontab that run ice: 104
 INFO  processes running ice now: 
-        1821    1808 root     Tue Nov 10 10:30:00 2026 /bin/sh -c python3 /usr/local/bin/ice2.py
-           1824    1821 root     Tue Nov 10 10:30:00 2026 python3 /usr/local/bin/ice2.py
-          97803       1 mother   Sun Nov 15 22:40:23 2026 sh -c cat /tmp/.test | sudo -S python3 /usr/local/bin/ice.py
-          97805   97803 root     Sun Nov 15 22:40:23 2026 sudo -S python3 /usr/local/bin/ice.py
-          97807   97805 root     Sun Nov 15 22:40:23 2026 sudo -S python3 /usr/local/bin/ice.py
-          97808   97807 root     Sun Nov 15 22:40:23 2026 python3 /usr/local/bin/ice.py
+        3119    2904 root     Wed Nov 18 09:30:20 2026 /bin/sh -c python3 /usr/local/bin/ice.py
+           3159    3119 root     Wed Nov 18 09:30:20 2026 python3 /usr/local/bin/ice.py
+           3296    2977 root     Wed Nov 18 09:30:39 2026 /bin/sh -c python3 /usr/local/bin/ice2.py
+           3312    3296 root     Wed Nov 18 09:30:39 2026 python3 /usr/local/bin/ice2.py
 INFO  network sockets of python processes: none
 INFO  configuration files that mention mother: none
 INFO  outgoing SSH connections now: none
@@ -101,7 +100,7 @@ OK    SSH root login: without-password
 OPEN  [W12] no automatic security updates (unattended-upgrades not installed)
 OPEN  [W10] no fail2ban (no automatic blocking)
 OPEN  [W2] no host firewall rules (nftables empty)
-INFO  packages with an update available (apt cache): 41
+INFO  packages with an update available (apt cache): 43
 
 == 5b. Clock and NTP (W28; question 7 for the teacher)
 OPEN  [W28] clock not synchronized (NTP)
@@ -110,42 +109,45 @@ INFO  systemd-timesyncd: active, enabled at boot
 INFO  timesyncd SystemNTPServers: -
 INFO  timesyncd FallbackNTPServers: 0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
 INFO  timesyncd LinkNTPServers: -
-INFO  timesyncd ServerName: 3.debian.pool.ntp.org
-INFO  timesyncd ServerAddress: 156.106.214.52
-        2026-11-16T09:00:42+01:00 ns1 systemd-timesyncd[325]: Timed out waiting for reply from 162.159.200.123:123 (3.debian.pool.ntp.org).
-        2026-11-16T09:00:52+01:00 ns1 systemd-timesyncd[325]: Timed out waiting for reply from 45.87.77.15:123 (3.debian.pool.ntp.org).
-        2026-11-16T09:01:02+01:00 ns1 systemd-timesyncd[325]: Timed out waiting for reply from 156.106.214.52:123 (3.debian.pool.ntp.org).
-INFO  NTP 10.4.255.254 (10.4.255.254): reply, stratum 12, offset of this clock +13.727 s
-INFO  NTP 0.debian.pool.ntp.org (94.142.246.192): no reply
-INFO  NTP 1.debian.pool.ntp.org (45.138.55.60): no reply
-INFO  NTP 2.debian.pool.ntp.org (45.87.77.15): no reply
-INFO  NTP 3.debian.pool.ntp.org (156.106.214.52): no reply
-INFO  NTP servers that answer from this VM: 10.4.255.254 (candidates for W28)
-INFO  this clock vs the HTTPS Date of deb.debian.org: -6 s (precision about 1 s)
+INFO  timesyncd ServerName: 2.debian.pool.ntp.org
+INFO  timesyncd ServerAddress: 185.111.204.220
+        2026-11-18T11:22:15+01:00 ns1 systemd-timesyncd[329]: Timed out waiting for reply from 45.138.55.62:123 (1.debian.pool.ntp.org).
+        2026-11-18T11:22:26+01:00 ns1 systemd-timesyncd[329]: Timed out waiting for reply from 45.87.77.15:123 (2.debian.pool.ntp.org).
+        2026-11-18T11:22:36+01:00 ns1 systemd-timesyncd[329]: Timed out waiting for reply from 45.87.76.3:123 (2.debian.pool.ntp.org).
+INFO  NTP 10.4.2.1 (10.4.2.1): reply, stratum 12, offset of this clock -4.093 s
+INFO  NTP 10.4.255.254 (10.4.255.254): reply, stratum 12, offset of this clock +20.451 s
+INFO  NTP 0.debian.pool.ntp.org (162.159.200.123): no reply
+INFO  NTP 1.debian.pool.ntp.org (185.89.20.5): no reply
+INFO  NTP 2.debian.pool.ntp.org (185.51.192.62): no reply
+INFO  NTP 3.debian.pool.ntp.org (45.138.55.60): no reply
+INFO  NTP servers that answer from this VM: 10.4.2.1 10.4.255.254 (candidates for W28)
+INFO  this clock vs the HTTPS Date of deb.debian.org: -2 s (precision about 1 s)
 
 == 6. Health
 OK    no failed systemd unit
 OK    disk / used 40%
-INFO  RAM: 1973 MB, used 612 MB
+INFO  RAM: 1973 MB, used 1038 MB
 INFO  most frequent errors in the logs (24 h):
-        3 pam_systemd(lightdm-greeter:session): Failed to release session: Transport endpoint is not connected
-        3 gkr-pam: unable to locate daemon control file
-        1 client @0x7f01aa24b000 10.4.255.11#52720 (group4.umons): zone transfer 'group4.umons/AXFR/IN' denied
+        9 pam_systemd(lightdm-greeter:session): Failed to release session: Transport endpoint is not connected
+        9 gkr-pam: unable to locate daemon control file
+        3 /usr/lib/udev/rules.d/90-alsa-restore.rules:22 GOTO="alsa_restore_std" has no matching label, ignoring.
+        3 /usr/lib/udev/rules.d/90-alsa-restore.rules:18 GOTO="alsa_restore_std" has no matching label, ignoring.
+        3 /usr/lib/systemd/system-generators/systemd-ssh-generator failed with exit status 1.
 
 == 7. DNS: BIND
 OK    [D03] named active, enabled at boot
 OK    [10.4] named-checkconf: no errors
-OK    [10.4] zone group4.umons loads (serial 2026111012)
-OK    [10.4] zone 255.4.10.in-addr.arpa loads (serial 2026111001)
+OK    [10.4] zone group4.umons loads (serial 2026111813)
+OK    [10.4] zone 2.4.10.in-addr.arpa loads (serial 2026111001)
 OK    [D03] rndc: server is up and running
 INFO  zone group4.umons: file /etc/bind/group4.umons, 7 records besides the SOA
 OK    [10.4] group4.umons: records exactly as documented
-OK    [10.4] group4.umons: serial 2026111012 in the file = serial served
-OK    [D06] time fields unchanged: TTL 2d, refresh 12h, retry 15m, expire 4d, minimum 2h
-INFO  zone 255.4.10.in-addr.arpa: file /etc/bind/db.10.4.255, 3 records besides the SOA
-OK    [10.4] 255.4.10.in-addr.arpa: records exactly as documented
-OK    [10.4] 255.4.10.in-addr.arpa: serial 2026111001 in the file = serial served
-INFO  255.4.10.in-addr.arpa: SOA TTL 172800, refresh 43200, retry 900, expire 345600, minimum 7200
+OK    [10.4] group4.umons: serial 2026111813 in the file = serial served
+FAIL  [D06] time fields changed: TTL 60, refresh 60, retry 900, expire 345600, minimum 7200 (D06 says unchanged)
+INFO  zone 2.4.10.in-addr.arpa: file /etc/bind/db.10.4.2, 3 records besides the SOA
+OK    [10.4] 2.4.10.in-addr.arpa: records exactly as documented
+OK    [10.4] 2.4.10.in-addr.arpa: serial 2026111001 in the file = serial served
+INFO  2.4.10.in-addr.arpa: SOA TTL 172800, refresh 43200, retry 900, expire 345600, minimum 7200
 OK    [10.4] forwarder 10.4.255.254
 OPEN  [W8] option 'allow-recursion' not written explicitly (defaults apply)
 OPEN  [W8] option 'allow-transfer' not written explicitly (defaults apply)
@@ -153,12 +155,12 @@ OPEN  [W8] option 'version' not written explicitly (defaults apply)
 OK    [10.4] local: group4.umons. MX 10 mail.group4.umons.
 OK    [10.4] local: group4.umons. NS ns1.group4.umons.
 OK    [10.4] local: imap.group4.umons. CNAME mail.group4.umons.
-OK    [10.4] local: mail.group4.umons. A 10.4.255.11
-OK    [10.4] local: ns1.group4.umons. A 10.4.255.10
+OK    [10.4] local: mail.group4.umons. A 10.4.255.1
+OK    [10.4] local: ns1.group4.umons. A 10.4.255.1
 OK    [10.4] local: smtp.group4.umons. CNAME mail.group4.umons.
-OK    [10.4] local: welcome.group4.umons. A 10.4.255.11
-OK    [W25] local: PTR 10.4.255.10 -> ns1.group4.umons.
-OK    [W25] local: PTR 10.4.255.11 -> mail.group4.umons.
+OK    [10.4] local: welcome.group4.umons. A 10.4.255.1
+OK    [W25] local: PTR 10.4.2.10 -> ns1.group4.umons.
+OK    [W25] local: PTR 10.4.2.11 -> mail.group4.umons.
 OK    [10.4] local: authoritative answer (aa)
 OK    [10.4] Internet names through the forwarder
 
@@ -169,8 +171,10 @@ NEW   welcome.group8.umons: ns1 NXDOMAIN, ns1 without validation (+cd) NXDOMAIN,
 NEW   safeupdate.umons: ns1 NXDOMAIN, ns1 without validation (+cd) NXDOMAIN, gateway NOERROR
 INFO  validation for the Internet: deb.debian.org flags 'qr rd ra
  do' (ad = validated)
-INFO  'broken trust chain' lines of named in the last 24 h: 61
-        61 resolving 'safeupdate.umons
+INFO  'broken trust chain' lines of named in the last 24 h: 36
+        30 resolving 'safeupdate.umons
+        3 resolving 'welcome.group7.umons
+        3 resolving 'welcome.group5.umons
 
 == 8. Leftovers on ns1
 OK    [10.11] apache2 not installed
@@ -197,15 +201,17 @@ OK    [D21] SMTP from ns1: RCPT postmaster@group4.umons: 250 (reception works)
 OK    [10.41] SMTP from ns1: RCPT to an unknown user refused: 550
 OK    [M1] IMAP 993 from ns1: * OK [CAPABILITY IMAP4rev1 LOGIN-REFERRALS ID ENAB
 OK    [M1] IMAP 993: login possible over TLS
-OK    [10.10] http://10.4.255.11/ (by address): HTTP 200
-OK    [W20] http://10.4.255.11/ (by address): Server header 'nginx' (no version)
-OK    [10.10] http://10.4.255.11/ (by address): title 'Group 4 Mail'
+OK    [10.10] http://10.4.2.11/ (by address): HTTP 200
+OK    [W20] http://10.4.2.11/ (by address): Server header 'nginx' (no version)
+OK    [10.10] http://10.4.2.11/ (by address): title 'Group 4 Mail'
 OK    [10.10] http://welcome.group4.umons/ from ns1: HTTP 200
 OK    [W20] http://welcome.group4.umons/ from ns1: Server header 'nginx' (no version)
 OK    [10.10] http://welcome.group4.umons/ from ns1: title 'Group 4 Mail'
 
 == Summary
-64 OK, 0 FAIL, 3 NEW, 14 OPEN, 46 INFO
+67 OK, 1 FAIL, 4 NEW, 14 OPEN, 50 INFO
+FAIL  [D06] time fields changed: TTL 60, refresh 60, retry 900, expire 345600, minimum 7200 (D06 says unchanged)
+NEW   udp/58749 systemd-timesyn listening on the network: not in the documentation
 NEW   welcome.group7.umons: ns1 NXDOMAIN, ns1 without validation (+cd) NXDOMAIN, gateway NOERROR
 NEW   welcome.group8.umons: ns1 NXDOMAIN, ns1 without validation (+cd) NXDOMAIN, gateway NOERROR
 NEW   safeupdate.umons: ns1 NXDOMAIN, ns1 without validation (+cd) NXDOMAIN, gateway NOERROR
