@@ -597,7 +597,8 @@ def web():
     _, err, rc = run("nginx -t")
     check(rc == 0, "10.10", "nginx -t: configuration valid", f"nginx -t: {err.splitlines()[-1] if err else rc}")
     sites = sorted(os.listdir("/etc/nginx/sites-enabled")) if os.path.isdir("/etc/nginx/sites-enabled") else []
-    check(sites == ["welcome"], "10.10", "sites enabled: welcome only", f"sites enabled: {' '.join(sites) or 'none'} (expected welcome only)")
+    check(sites in (["welcome"], ["welcome", "welcome-ssl"]), "10.10", f"sites enabled: {' '.join(sites)} (welcome-ssl = HTTPS of fixes/cert.sh)",
+          f"sites enabled: {' '.join(sites) or 'none'} (expected welcome, and welcome-ssl after fixes/cert.sh)")
     conf = read("/etc/nginx/sites-enabled/welcome") or ""
     for pat, what in ((r"listen\s+80\s+default_server", "listen 80 default_server"),
                       (rf"server_name\s+welcome\.{DOMAIN}", f"server_name welcome.{DOMAIN}"),
