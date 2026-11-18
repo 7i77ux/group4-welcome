@@ -7,6 +7,8 @@ Source of the welcome page of Group 4 (http://welcome.group4.umons) and the scri
 - `action.sh`: menu of the activities of the VM where it runs
 - `checks/`: read-only checks (see `checks/README.md`)
 - `fixes/`: scripts that change a VM, one fix at a time, with confirmation (see `fixes/README.md`)
+- `certs/`: public files of the course certificate: chain of the course CA, our request (`group4.csr`), our signed certificate when it arrives. The private key never leaves welcome
+- `docs/new-4.3.md`: virtual mailboxes on welcome (plan of Fabio and its review)
 
 The scripts recognise the VM by its host name (`welcome`, `ns1`) or by its address (DMZ 10.4.2.x since 2026-11-17) and refuse to run on the wrong one. Scripts removed on 2026-11-18 because done or replaced (still in the git history): `make-csr.sh`, `checks/welcome.sh`, `checks/ns1.sh`, `checks/mail.sh`, `checks/setup-results.sh`, `checks/mailtest_ns1.sh`, `checks/ice_timing.*`, `fixes/fix_ns1.sh`, `fixes/suricata_welcome.sh`.
 

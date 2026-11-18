@@ -1,5 +1,5 @@
 #!/bin/sh
-# Virtual mailboxes on welcome: NOTES "New 4.3" (Fabio) with the five fixes of its review (2026-11-18):
+# Virtual mailboxes on welcome: "New 4.3" of Fabio (docs/new-4.3.md) with the five fixes of its review (2026-11-18):
 #   1. Dovecot 2.4 syntax (sql_driver, mysql block, passdb/userdb sql, %{user});
 #   2. one mailbox folder for Postfix and Dovecot: /var/vmail/<domain>/<user>/Maildir/;
 #   3. three database users with the least rights: postfix and dovecot SELECT, register INSERT only;
