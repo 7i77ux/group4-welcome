@@ -8,6 +8,7 @@ Read-only checks: they change nothing on the VMs. Exceptions, always asked first
 | both | `sudo sh checks/inventory.sh` | Inventory of the structure (addresses, routes, names, zones, mail, web); passwords masked |
 | both | `sh checks/public_dns.sh` | Our names as the other groups get them, time left and expiry time of an old answer |
 | welcome | `sudo sh checks/suricata.sh` | Suricata step by step (DOCUMENTATION.md 10.17); optional test alert |
+| welcome | `sudo sh checks/mail_diag.sh` | Mail diagnosis: who changed what today (sudo commands, packages, files, accounts, histories), Dovecot, Postfix, MariaDB, mailboxes, live tests on 25 and 993, findings; passwords masked, not pushed if something looks like a password |
 | welcome | `sudo sh checks/mail_exchange.sh` | Mail exchange with the other providers; one test mail per group you choose |
 | both | `sudo sh checks/ice_watch.sh` | What ice and mother do now compared with 2026-11-12 (SAME / CHANGED); secrets redacted |
 | both | `sudo sh checks/evidence_ice.sh` | Code of ice with secrets redacted, orders of its servers (saved, never executed) |

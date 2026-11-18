@@ -18,6 +18,7 @@ s|ns1|sudo sh fixes/fix_dns_serial.sh|-|CHANGE: raise the serial of our two zone
 1|both|sudo sh checks/full.sh|full-VM|Full test of everything documented (on welcome it also asks for the mail login test)
 2|welcome|sudo sh checks/suricata.sh|suricata|Suricata: installation, settings, rules, running, test alert (DOCUMENTATION 10.17)
 3|both|sudo sh checks/ice_watch.sh|ice-watch-VM|What ice and mother do now, compared with 2026-11-12 (SAME / CHANGED)
+t|welcome|sudo sh checks/mail_diag.sh|mail-diag|Mail diagnosis (read-only): who changed what today, Dovecot, Postfix, MariaDB, mailboxes, live tests, findings
 5|welcome|sudo sh checks/mail_exchange.sh|mail-exchange|Mail exchange with the other providers (sends a test mail only if you choose a group)
 6|both|sudo sh checks/evidence_ice.sh|evidence-VM|Evidence of ice: its code with secrets redacted, orders of the servers (not executed)
 7|welcome|sudo sh deploy.sh|-|CHANGE: publish the welcome page from index.md
