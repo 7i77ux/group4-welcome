@@ -192,6 +192,9 @@ echo "== B3. Postfix, port 25 STARTTLS (now: cert $cf, key $ck${cc:+, chain_file
 echo "   Why: the other providers and the customers get the course certificate instead of the Debian one (D23)."
 if [ "$cf" = "$FULL" ] && [ "$ck" = "$KEY" ] && [ -z "$cc" ]; then
     echo "   already done"
+elif ! pre=$(postfix check 2>&1); then
+    echo "   SKIPPED: the Postfix configuration is already broken (not by this script); Postfix not touched:"
+    echo "$pre" | head -3 | sed 's/^/   /'
 elif ask "   Apply?"; then
     bk /etc/postfix/main.cf
     postconf -e "smtpd_tls_cert_file = $FULL" "smtpd_tls_key_file = $KEY"
@@ -199,7 +202,8 @@ elif ask "   Apply?"; then
     if postfix check && systemctl reload postfix && sleep 2 && tlstest "25 STARTTLS" "-starttls smtp -connect 127.0.0.1:25"; then
         echo "   done"
     else
-        cp -a "$BK/main.cf" /etc/postfix/main.cf; systemctl reload postfix
+        cp -a "$BK/main.cf" /etc/postfix/main.cf
+        postfix check && systemctl reload postfix
         echo "   ERROR: check failed, main.cf put back"
     fi
 fi
@@ -215,6 +219,10 @@ echo "   Why: the customers read their mail on 993; today they get the Debian ce
 echo "        certificate and key paths change)."
 if [ "$cur" = "$FULL" ] || [ "$cur" = "<$FULL" ]; then
     echo "   already done"
+elif ! pre=$(doveconf -n 2>&1 >/dev/null); then
+    echo "   SKIPPED: the Dovecot configuration is already broken (not by this script); Dovecot not touched"
+    echo "   and NOT restarted (a restart would stop it). Error:"
+    echo "$pre" | head -3 | sed 's/^/   /'
 elif ask "   Apply? (file $DOVE)"; then
     had=0; [ -e "$DOVE" ] && { bk "$DOVE"; had=1; }
     printf '# Course certificate (fixes/cert.sh, DOCUMENTATION 10.27)\n%s\n' "$want" > "$DOVE"
@@ -223,7 +231,7 @@ elif ask "   Apply? (file $DOVE)"; then
     else
         [ -n "${err:-}" ] && echo "$err" | head -5 | sed 's/^/   /'
         if [ "$had" = 1 ]; then cp -a "$BK/$(basename "$DOVE")" "$DOVE"; else rm -f "$DOVE"; fi
-        systemctl restart dovecot
+        if doveconf -n >/dev/null 2>&1; then systemctl restart dovecot; else echo "   Dovecot NOT restarted: its configuration does not load"; fi
         echo "   ERROR: check failed, Dovecot back to the previous configuration"
     fi
 fi
@@ -253,6 +261,8 @@ if [ -n "$other" ]; then
     echo "   SKIPPED: 443 already used by $other (not changed by this script)."
 elif cmp -s "$TMP/site" "$SITE" && [ -L /etc/nginx/sites-enabled/welcome-ssl ]; then
     echo "   already done"
+elif ! nginx -t >/dev/null 2>&1; then
+    echo "   SKIPPED: the nginx configuration is already broken (nginx -t fails); nginx not touched"
 elif ask "   Apply? (site $SITE)"; then
     had=0; [ -e "$SITE" ] && { bk "$SITE"; had=1; }
     cp "$TMP/site" "$SITE"; ln -sf "$SITE" /etc/nginx/sites-enabled/welcome-ssl
