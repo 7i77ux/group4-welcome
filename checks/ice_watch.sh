@@ -7,8 +7,8 @@
 # Run on each VM:  cd ~/Desktop/group4-welcome && git pull && sudo sh checks/ice_watch.sh
 # Output: /tmp/ice-watch-<vm>.txt, pushed to results/ice-watch-<vm>/.
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
-if ip -4 -o addr show | grep -q ' 10\.4\.255\.11/'; then VM=welcome
-elif ip -4 -o addr show | grep -q ' 10\.4\.255\.10/'; then VM=ns1
+if { [ "$(hostname)" = welcome ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.11/'; }; then VM=welcome
+elif { [ "$(hostname)" = ns1 ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.10/'; }; then VM=ns1
 else VM=$(hostname)
 fi
 DIR=$(cd "$(dirname "$0")" && pwd)

@@ -4,7 +4,7 @@
 # Output saved in /tmp/check-welcome.txt (scroll with: less /tmp/check-welcome.txt)
 
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
-ip -4 -o addr show | grep -q ' 10\.4\.255\.11/' || { echo "ERROR: this is the check of welcome (10.4.255.11); on ns1 run checks/ns1.sh" >&2; exit 1; }
+{ [ "$(hostname)" = welcome ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.11/'; } || { echo "ERROR: this is the check of welcome; on ns1 run checks/ns1.sh" >&2; exit 1; }
 IF=ens18
 IP=10.4.255.11
 OUT=/tmp/check-welcome.txt

@@ -1,11 +1,11 @@
 #!/bin/sh
-# Read-only checks of the mail service on welcome (10.4.255.11). It changes nothing,
+# Read-only checks of the mail service on welcome. It changes nothing,
 # it does not log in and it sends no mail.
 # Run:  cd ~/Desktop/group4-welcome && git pull && sudo sh checks/mail.sh
 # Output saved in /tmp/check-mail.txt and pushed to results/mail/.
 
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
-ip -4 -o addr show | grep -q ' 10\.4\.255\.11/' || { echo "ERROR: run this check on welcome (10.4.255.11)." >&2; exit 1; }
+{ [ "$(hostname)" = welcome ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.11/'; } || { echo "ERROR: run this check on welcome." >&2; exit 1; }
 OUT=/tmp/check-mail.txt
 REPO="$(dirname "$0")/.."
 

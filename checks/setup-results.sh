@@ -13,8 +13,8 @@ REPO=$(cd "$(dirname "$0")/.." && pwd)
 KEY="$HOME/.ssh/group4_welcome_push"
 GITHUB_ED25519="SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU"   # published by GitHub
 
-if ip -4 -o addr show | grep -q ' 10\.4\.255\.11/'; then VM=welcome
-elif ip -4 -o addr show | grep -q ' 10\.4\.255\.10/'; then VM=ns1
+if { [ "$(hostname)" = welcome ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.11/'; }; then VM=welcome
+elif { [ "$(hostname)" = ns1 ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.10/'; }; then VM=ns1
 else echo "ERROR: this is neither welcome (10.4.255.11) nor ns1 (10.4.255.10)." >&2; exit 1
 fi
 echo "== VM: $VM"

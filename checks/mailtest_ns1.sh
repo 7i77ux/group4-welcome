@@ -5,7 +5,7 @@
 # Run:  cd ~/Desktop/group4-welcome && git pull && sudo sh checks/mailtest_ns1.sh
 # Then on welcome: sudo sh checks/mail.sh (section 5 counts the new mails of calogero).
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
-ip -4 -o addr show | grep -q ' 10\.4\.255\.10/' || { echo "ERROR: run this test on ns1 (10.4.255.10)." >&2; exit 1; }
+{ [ "$(hostname)" = ns1 ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.10/'; } || { echo "ERROR: run this test on ns1." >&2; exit 1; }
 OUT=/tmp/check-mailtest.txt
 TO="${1:-calogero@group4.umons}"
 printf 'Send ONE test mail from ns1 to %s through welcome (10.4.255.11:25)? [y/N] ' "$TO"; read -r a

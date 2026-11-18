@@ -5,13 +5,14 @@
 #   cd ~/Desktop/group4-welcome && sh action.sh
 cd "$(dirname "$0")" || exit 1
 
-if ip -4 -o addr show | grep -q ' 10\.4\.255\.11/' || [ "$(hostname)" = welcome ]; then VM=welcome
-elif ip -4 -o addr show | grep -q ' 10\.4\.255\.10/' || [ "$(hostname)" = ns1 ]; then VM=ns1
+if { [ "$(hostname)" = welcome ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.11/'; } || [ "$(hostname)" = welcome ]; then VM=welcome
+elif { [ "$(hostname)" = ns1 ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.10/'; } || [ "$(hostname)" = ns1 ]; then VM=ns1
 else echo "ERROR: run it on welcome or ns1." >&2; exit 1
 fi
 
 # key | VM (both, welcome, ns1) | command | results folder | description
 LIST='p|both|git pull|-|Update the scripts (always first)
+i|both|sudo sh checks/inventory.sh|inventory-VM|Inventory of the new structure (DMZ/NAT, virtual mailboxes): read-only, used to update the checks
 1|both|sudo sh checks/full.sh|full-VM|Full test of everything documented (on welcome it also asks for the mail login test)
 2|welcome|sudo sh checks/suricata.sh|suricata|Suricata: installation, settings, rules, running, test alert (DOCUMENTATION 10.17)
 3|both|sudo sh checks/ice_watch.sh|ice-watch-VM|What ice and mother do now, compared with 2026-11-12 (SAME / CHANGED)
@@ -25,7 +26,7 @@ LIST='p|both|git pull|-|Update the scripts (always first)
 11|both|sudo sh checks/save_volatile.sh|volatile-VM|CHANGE: before a reboot, save the evidence of /tmp in /root/evidence (root only)'
 
 # recommended order for each VM (key r)
-if [ "$VM" = welcome ]; then SEQ="p 2 1 3 5"; else SEQ="p 1 3"; fi
+if [ "$VM" = welcome ]; then SEQ="p i 2 1 3 5"; else SEQ="p i 1 3"; fi
 
 last() {  # date of the last result of a check
     d=$(echo "$1" | sed "s/VM/$VM/")

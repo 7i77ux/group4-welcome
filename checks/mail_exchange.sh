@@ -7,7 +7,7 @@
 # Run:  cd ~/Desktop/group4-welcome && git pull && sudo sh checks/mail_exchange.sh
 # Output: /tmp/check-mail-exchange.txt, pushed to results/mail-exchange/.
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
-[ "$(hostname)" = welcome ] || ip -4 -o addr show | grep -q ' 10\.4\.255\.11/' || { echo "ERROR: run it on welcome." >&2; exit 1; }
+[ "$(hostname)" = welcome ] || { [ "$(hostname)" = welcome ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.11/'; } || { echo "ERROR: run it on welcome." >&2; exit 1; }
 DIR=$(cd "$(dirname "$0")" && pwd)
 OUT=/tmp/check-mail-exchange.txt
 python3 -I -u "$DIR/mail_exchange.py" 2>&1 | tee "$OUT"

@@ -6,7 +6,7 @@
 # Run:  cd ~/Desktop/group4-welcome && git pull && sudo sh fixes/fix_ns1.sh
 set -u
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
-ip -4 -o addr show | grep -q ' 10\.4\.255\.10/' || { echo "ERROR: run this script on ns1 (10.4.255.10)." >&2; exit 1; }
+{ [ "$(hostname)" = ns1 ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.10/'; } || { echo "ERROR: run this script on ns1." >&2; exit 1; }
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 BK=/root/fixes-backup-$(date +%Y%m%d-%H%M)
 mkdir -p "$BK"
