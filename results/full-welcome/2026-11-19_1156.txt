@@ -1,0 +1,276 @@
+Full regression test (read-only). OK = as documented; FAIL = differs from the documentation;
+NEW = not in the documentation; OPEN = known open point (id); INFO = data.
+
+== 1. Identity and network (welcome, 2026-11-19 11:55, checks commit d09f300)
+OK    [D08] hostname welcome
+OK    [10.11] /etc/hosts: 127.0.1.1 welcome
+OK    [D02] 10.4.2.11/24 on ens18
+INFO  NetworkManager profile 'Wired connection 1': method=manual addresses=10.4.2.11/24 gateway=10.4.2.1 dns=10.4.2.10 ignore-auto-dns=no
+OK    [10.28/10.34] address saved in the profile (survives a reboot)
+OK    [D02] gateway in the profile: 10.4.2.1
+INFO  DNS in the profile: 10.4.2.10
+OPEN  [W34] welcome asks ns1 for names: the .umons names of the other groups do not resolve (DNSSEC), so mail to other providers fails
+OK    [W7] no ifupdown configuration for ens18 (one tool only)
+OK    [W7] networking.service active (not failed)
+OK    [D02] default route via 10.4.2.1
+INFO  resolv.conf: 127.0.0.53
+OK    [10.4] welcome.group4.umons -> 10.4.255.1 (system resolver)
+OK    [fn. 2] outgoing HTTPS to the Internet works (deb.debian.org -> 200)
+INFO  running since 2026-11-18 08:40:13 (last boot)
+INFO  results push: github-welcome:7i77ux/group4-welcome.git
+
+== 1b. As the other groups see us (resolver of the course, public address of pfSense)
+OK    [16.x] group4.umons MX 10 mail.group4.umons.
+OK    [16.x] welcome.group4.umons -> 10.4.255.1 (pfSense) for the other groups
+OK    [16.x] mail.group4.umons -> 10.4.255.1 (pfSense) for the other groups
+OK    [16.x] ns1.group4.umons -> 10.4.255.1 (pfSense) for the other groups
+INFO  public address 10.4.255.1:53 from this VM: open (from inside the DMZ it needs NAT reflection; the real test is from outside)
+INFO  public address 10.4.255.1:25 from this VM: open (from inside the DMZ it needs NAT reflection; the real test is from outside)
+INFO  public address 10.4.255.1:80 from this VM: open (from inside the DMZ it needs NAT reflection; the real test is from outside)
+INFO  public address 10.4.255.1:993 from this VM: open (from inside the DMZ it needs NAT reflection; the real test is from outside)
+
+== 2. Listening services (non-local addresses), compared with the documentation
+INFO  local only: tcp/3306 mariadbd, tcp/53 systemd-resolve, tcp/631 cupsd, udp/53 systemd-resolve
+OK    [0.3] tcp/25 listening: SMTP (Postfix)
+OK    [0.3] tcp/80 listening: web (nginx)
+OK    [0.3] tcp/993 listening: IMAP over TLS (Dovecot)
+OPEN  [W9] tcp/22 sshd: SSH open to every group (D19)
+INFO  tcp/443 nginx open (HTTPS): certificate subject=C=BE, ST=Hainaut, O=Group4, OU=CyberDefense, CN=welcome.group4.umons | issuer=C=BE, ST=Hainaut, O=UMONS, OU=CYSI, CN=Simply The Best, Really, emailAddress=quentin.deconinck@umons.ac.be
+OPEN  [W14] tcp/5355 systemd-resolve: LLMNR open on the network
+INFO  udp/5353 avahi-daemon (mDNS, kept: D18)
+OPEN  [W14] udp/5355 systemd-resolve: LLMNR open on the network
+INFO  udp/36382 avahi-daemon (mDNS, kept: D18)
+INFO  udp/49764 avahi-daemon (mDNS, kept: D18)
+
+== 3. Accounts
+INFO  accounts with uid >= 1000: calogero mother user vmail
+NEW   account 'vmail' is not in the documentation (when was it created? see the logs below)
+OPEN  [W1] user/user (template password) is an administrator (D12)
+OPEN  [W29] account mother: administrator (mother sudo users), not touched for now (D28)
+OK    [D24] calogero: shell nologin (mail only)
+OK    [D24] calogero in group mailusers
+OK    [D20] /home/calogero/Maildir exists (cur, new, tmp)
+INFO  accounts created (useradd in the logs):
+        2026-10-22T12:06:17+02:00 mother
+        2026-10-22T12:06:31+02:00 mother
+        2026-10-22T12:08:11+02:00 mother
+        2026-11-04T09:42:14+01:00 bind
+        2026-11-08T19:32:20+01:00 postfix
+        2026-11-09T16:46:49+01:00 dovecot
+        2026-11-09T16:46:49+01:00 dovenull
+        2026-11-10T19:30:16+01:00 calogero
+        2026-11-18T10:40:54+01:00 vmail
+        2026-11-18T10:51:31+01:00 mysql
+
+== 4. Account mother: read-only observation (D28, nothing is changed)
+INFO  password status: mother P 2026-10-22 0 99999 7 -1
+INFO  processes of mother: none now
+INFO  systemd linger (user services kept running without login): no session
+INFO  SSH logins of mother in the whole journal: 382; methods: Accepted password
+        from 10.4.255.47: 3 logins, first 2026-11-04T09:42, last 2026-11-04T10:41
+        from 10.4.255.10: 248 logins, first 2026-11-04T11:34, last 2026-11-17T17:47
+        from 10.4.255.46: 31 logins, first 2026-11-04T11:34, last 2026-11-16T13:33
+        from 10.4.255.41: 46 logins, first 2026-11-10T09:30, last 2026-11-17T17:48
+        from 10.4.2.10: 54 logins, first 2026-11-18T09:31, last 2026-11-19T11:35
+INFO  commands run with sudo by mother (whole journal): 16; first 5 and last 5:
+        2026-10-22T12:09 COMMAND=/usr/bin/ls
+        2026-11-04T09:42 COMMAND=/bin/bash
+        2026-11-04T09:42 COMMAND=/usr/bin/mv /tmp/ice2.py /usr/local/bin/ice2.py
+        2026-11-04T09:42 COMMAND=/usr/bin/tee -a /etc/crontab
+        2026-11-04T09:42 COMMAND=/etc/init.d/cron reload
+        ...
+        2026-11-10T10:29 COMMAND=/bin/bash
+        2026-11-10T10:29 COMMAND=/usr/bin/mv /tmp/ice.py /usr/local/bin/ice.py
+        2026-11-10T10:29 COMMAND=/usr/bin/tee -a /etc/crontab
+        2026-11-10T10:29 COMMAND=/etc/init.d/cron reload
+        2026-11-10T10:29 COMMAND=/usr/bin/python3 /usr/local/bin/ice.py
+INFO  files of ice (metadata only, contents not printed):
+        ls: cannot access '/tmp/.test': No such file or directory
+        ls: cannot access '/tmp/ice*': No such file or directory
+        /usr/local/bin/:
+        drwxr-xr-x  2 root   root   4096 2026-11-10T10:29 .
+        drwxr-xr-x 11 root   root   4096 2026-10-22T11:57 ..
+        -rw-rw-r--  1 mother mother 5494 2026-11-04T09:42 ice2.py
+        -rw-rw-r--  1 mother mother 5504 2026-11-10T10:29 ice.py
+        c72cf5f54d8806ed90ba4d62de621a467da00ef716153ef2d4485ee5a1509048  /usr/local/bin/ice.py
+        d18b295830034bc7311d4cc469e37c7a303ae5ecb1a1eb3f77fdf48b25acd34c  /usr/local/bin/ice2.py
+INFO  lines of /etc/crontab that run ice: 3
+INFO  processes running ice now: 
+        4172    4167 root     Wed Nov 18 09:30:00 2026 /bin/sh -c python3 /usr/local/bin/ice.py
+           4173    4172 root     Wed Nov 18 09:30:00 2026 python3 /usr/local/bin/ice.py
+           4177    4170 root     Wed Nov 18 09:30:00 2026 /bin/sh -c python3 /usr/local/bin/ice2.py
+           4178    4177 root     Wed Nov 18 09:30:00 2026 python3 /usr/local/bin/ice2.py
+INFO  network sockets of python processes: none
+INFO  configuration files that mention mother: none
+INFO  outgoing SSH connections now: none
+
+== 5. Hardening and open weaknesses
+OPEN  [W9] SSH accepts password logins (D19)
+OK    SSH root login: without-password
+OPEN  [W12] no automatic security updates (unattended-upgrades not installed)
+OPEN  [W10] no fail2ban (no automatic blocking)
+OK    [D10] Suricata active, enabled at boot
+INFO  Suricata: HOME_NET "[10.4.0.0/16]", 53476 rules in /var/lib/suricata/rules/suricata.rules
+INFO  Suricata alerts in fast.log: 583
+OPEN  [W2] no host firewall rules (nftables empty)
+INFO  packages with an update available (apt cache): 0
+
+== 5b. Clock and NTP (W28; question 7 for the teacher)
+OPEN  [W28] clock not synchronized (NTP)
+INFO  timedatectl: NTP service enabled = yes, time zone Europe/Brussels
+INFO  systemd-timesyncd: active, enabled at boot
+INFO  timesyncd SystemNTPServers: -
+INFO  timesyncd FallbackNTPServers: 0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
+INFO  timesyncd LinkNTPServers: -
+INFO  timesyncd ServerName: 3.debian.pool.ntp.org
+INFO  timesyncd ServerAddress: 185.153.41.4
+        2026-11-19T11:23:37+01:00 welcome systemd-timesyncd[324]: Timed out waiting for reply from 109.68.160.220:123 (3.debian.pool.ntp.org).
+        2026-11-19T11:23:47+01:00 welcome systemd-timesyncd[324]: Timed out waiting for reply from 45.138.55.62:123 (3.debian.pool.ntp.org).
+        2026-11-19T11:23:58+01:00 welcome systemd-timesyncd[324]: Timed out waiting for reply from 185.153.41.4:123 (3.debian.pool.ntp.org).
+INFO  NTP 10.4.2.1 (10.4.2.1): reply, stratum 12, offset of this clock -3.959 s
+INFO  NTP 10.4.255.254 (10.4.255.254): reply, stratum 12, offset of this clock +20.585 s
+INFO  NTP 0.debian.pool.ntp.org (45.87.76.3): no reply
+INFO  NTP 1.debian.pool.ntp.org (185.111.204.220): no reply
+INFO  NTP 2.debian.pool.ntp.org (45.138.55.60): no reply
+INFO  NTP 3.debian.pool.ntp.org (185.89.20.5): no reply
+INFO  NTP servers that answer from this VM: 10.4.2.1 10.4.255.254 (candidates for W28)
+INFO  this clock vs the HTTPS Date of deb.debian.org: -3 s (precision about 1 s)
+
+== 6. Health
+OK    no failed systemd unit
+OK    disk / used 47%
+INFO  RAM: 1973 MB, used 958 MB
+INFO  most frequent errors in the logs (24 h):
+        1389 fatal: match_list_parse: read file /var/vmail: Is a directory
+        15 fatal: watchdog timeout
+        12 /usr/lib/systemd/system-generators/systemd-ssh-generator failed with exit status 1.
+        12 Failed to query local AF_VSOCK CID: Cannot assign requested address
+        5 auth-worker(25932): Error: mysql(127.0.0.1): Connect failed to database (mailserver): Access denied for user '
+
+== 7. Web (nginx)
+OK    [10.10] nginx active, enabled at boot
+OK    [10.10] nginx restarts after a crash (Restart=on-failure, after 5s)
+OK    [10.10] nginx -t: configuration valid
+OK    [10.10] sites enabled: welcome welcome-ssl (welcome-ssl = HTTPS of fixes/cert.sh)
+OK    [10.10] site: listen 80 default_server
+OK    [10.10] site: server_name welcome.group4.umons
+OK    [10.10] site: root /var/www/welcome
+OK    [10.10] site: server_tokens off
+OK    [10.10] /var/www/welcome/index.html present (5749 bytes)
+OK    [10.10] http://welcome (local): HTTP 200
+OK    [W20] http://welcome (local): Server header 'nginx' (no version)
+OK    [10.10] http://welcome (local): title 'Group 4 Mail'
+OK    [10.10] http://welcome (local): served page = /var/www/welcome/index.html
+OK    [10.10] unknown path -> 404
+OK    [10.10] http://welcome.group4.umons/ (by name) -> 200
+OK    [10.10] apache2 not installed
+
+== 8. Mail: Postfix
+OK    [D05] postfix active, enabled at boot
+NEW   postfix check warning: postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+INFO  version 3.10.13
+OK    [W21] myhostname = mail.group4.umons
+FAIL  [10.13] mydestination = $myhostname, localhost.$mydomain, localhost
+OK    [10.13] /etc/mailname = group4.umons
+OK    [D21] mynetworks only local: 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128
+OK    [W26] mynetworks entries well formed
+OK    [W26] no 'non-null host address bits' warning in 24 h
+OK    [D20] home_mailbox = Maildir/
+OK    [D20] mailbox_command empty
+OK    [D26] disable_vrfy_command = yes
+OK    [D26] smtpd_helo_required = yes
+OK    [D26] smtpd_banner = $myhostname ESMTP
+OK    [D26] smtpd_client_connection_rate_limit = 30
+OK    [W30] smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated reject_unauth_destination
+OPEN  [M2] sending with login on 587 not ready (waits for the course certificate, D23)
+OK    [W18] alias postmaster present
+INFO  aliases: postmaster root
+FAIL  [10.13] aliases database differs from /etc/aliases, run 'sudo newaliases': root (file: user, database: missing)
+INFO  /etc/aliases is newer than its database
+OK    mail queue empty
+INFO  certificate on 25 (STARTTLS): subject=C=BE, ST=Hainaut, O=Group4, OU=CyberDefense, CN=welcome.group4.umons | issuer=C=BE, ST=Hainaut, O=UMONS, OU=CYSI, CN=Simply The Best, Really, emailAddress=quentin.deconinck@umons.ac.be
+OK    [D26] local greeting: 220 mail.group4.umons ESMTP
+OK    [D26] local VRFY: 502
+OK    [D26] local MAIL before HELO: 503
+NEW   Postfix error in 24 h: fatal: open /etc/postfix/mysql-virtual-alias-maps.cf: No such file or directory
+
+== 9. Mail: Dovecot and mailboxes
+OK    [M1] dovecot active, enabled at boot
+OK    [10.41] doveconf -n: configuration valid
+INFO  version 2.4.1-4 (7d8c0e5759)
+OK    [D20] mail_driver = maildir
+OK    [D20] mail_path = %{home}/Maildir
+OK    [D20] mail_inbox_path not /var/mail ('')
+OK    [D25] 99-group4.conf closes 143 (port = 0)
+OK    [D25] 143 closed
+OK    [4.3] login from the database only (passdb sql, no PAM)
+OK    [4.3] mail_home /var/vmail/%{user | domain}/%{user | username}
+OK    [4.3] user vmail (uid 5000) owns the mailboxes
+OK    [4.3] mariadb active, enabled at boot
+OK    [4.3] MariaDB listens on localhost only
+INFO  mail accounts: calogero@group4.umons
+OK    [4.3] postmaster@group4.umons -> calogero@group4.umons
+OK    [4.3] /etc/postfix/mysql-virtual-mailbox-maps.cf: 640 root:postfix (database password not readable by others)
+OK    [4.3] /etc/postfix/mysql-virtual-alias-maps.cf: 640 root:postfix (database password not readable by others)
+OK    [4.3] /etc/dovecot/conf.d/99-group4-virtual.conf: 640 root:dovecot (database password not readable by others)
+INFO  PAM rule of D24 not used any more: logins come from the database
+OPEN  [M2] no auth socket for Postfix yet (needed for login on 587)
+OK    [M1] IMAP 993 over TLS: * OK [CAPABILITY IMAP4rev1 LOGIN-REFERRALS ID ENABLE IDLE SA
+INFO  IMAP 993 capabilities: IMAP4REV1 LOGIN-REFERRALS ID ENABLE IDLE SASL-IR LITERAL+ AUTH=PLAIN
+OPEN  [D23] 993 still uses the Debian certificate: subject=CN=debian | issuer=CN=debian
+INFO  /home/calogero/Maildir: 1 new, 0 read
+INFO  /home/user/Maildir: 1 new, 0 read
+INFO  /var/vmail/group4.umons/calogero/Maildir: 2 new, 0 read
+OK    [D27] proof of reception from ns1 found in the mailbox of calogero (1794482547.V801Ia38feM683048.debian)
+INFO  old mailboxes in /var/mail (before Maildir): /var/mail/root
+INFO  doveadm auth test output (passwords are never printed):
+        passdb: calogero@group4.umons auth succeeded
+        extra fields:
+        user=calogero@group4.umons
+        passdb: user auth failed
+        extra fields:
+        user=user
+OK    [D24] mail login of calogero: auth succeeded
+OK    [D24] mail login of user refused (not a mail account), with its real password
+
+== 10. TLS key, request and certificate
+OK    [D09] key: mode 600, owner root
+OK    [D09] request: signature valid
+OK    [D09] request subject=C=BE, ST=Hainaut, O=Group4, OU=CyberDefense, CN=welcome.group4.umons
+OK    [D09] request: SAN welcome + mail
+OK    [D09] request and key match
+OK    [10.15] copy for the teacher identical (/home/user/group4.csr)
+OK    [D23] /etc/ssl/group4/group4-fullchain.pem: course CA, matches our key
+OK    [D23] /etc/ssl/group4/group4.crt: course CA, matches our key
+
+== 11. Leftovers on welcome
+OK    [W23] no BIND on welcome (removed 10.31)
+INFO  backups of the fixes: /root/fixes-backup-20261110-1835 /root/fixes-backup-20261110-1842 /root/fixes-backup-20261110-1930 /root/fixes-backup-20261116-0925 /root/fixes-backup-20261116-0929 /root/fixes-backup-20261116-1923 /root/fixes-backup-20261116-1925 /root/fixes-backup-20261116-1928 /root/fixes-backup-20261116-1935 /root/fixes-backup-20261118-1220 /root/fixes-backup-20261118-1237 /root/fixes-backup-20261119-1153 /root/fixes-backup-20261119-1154
+
+== 12. ns1 seen from welcome (DNS as the other groups ask it)
+OK    [10.4] from welcome: group4.umons. MX 10 mail.group4.umons.
+OK    [10.4] from welcome: group4.umons. NS ns1.group4.umons.
+OK    [10.4] from welcome: imap.group4.umons. CNAME mail.group4.umons.
+OK    [10.4] from welcome: mail.group4.umons. A 10.4.255.1
+OK    [10.4] from welcome: ns1.group4.umons. A 10.4.255.1
+OK    [10.4] from welcome: smtp.group4.umons. CNAME mail.group4.umons.
+OK    [10.4] from welcome: welcome.group4.umons. A 10.4.255.1
+OK    [W25] from welcome: PTR 10.4.2.10 -> ns1.group4.umons.
+OK    [W25] from welcome: PTR 10.4.2.11 -> mail.group4.umons.
+OK    [10.4] from welcome: authoritative answer (aa)
+OK    [W8] zone transfer (AXFR) refused to welcome
+OK    [W8] BIND version hidden
+INFO  ns1 resolves Internet names for welcome (recursion): yes
+OK    [D03] ns1 53/tcp reachable
+OPEN  [W9] ns1 22/tcp reachable (SSH)
+INFO  provider welcome.group7.umons -> no answer (system resolver); asked to ns1: NXDOMAIN, to the course resolver: SERVFAIL
+INFO  provider welcome.group8.umons -> no answer (system resolver); asked to ns1: NXDOMAIN, to the course resolver: NOERROR
+
+== Summary
+100 OK, 2 FAIL, 3 NEW, 15 OPEN, 64 INFO
+FAIL  [10.13] mydestination = $myhostname, localhost.$mydomain, localhost
+FAIL  [10.13] aliases database differs from /etc/aliases, run 'sudo newaliases': root (file: user, database: missing)
+NEW   account 'vmail' is not in the documentation (when was it created? see the logs below)
+NEW   postfix check warning: postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
+NEW   Postfix error in 24 h: fatal: open /etc/postfix/mysql-virtual-alias-maps.cf: No such file or directory
+OPEN ids: D23 M2 W1 W10 W12 W14 W2 W28 W29 W34 W9
