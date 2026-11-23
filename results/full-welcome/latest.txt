@@ -1,7 +1,7 @@
 Full regression test (read-only). OK = as documented; FAIL = differs from the documentation;
 NEW = not in the documentation; OPEN = known open point (id); INFO = data.
 
-== 1. Identity and network (welcome, 2026-11-19 11:55, checks commit d09f300)
+== 1. Identity and network (welcome, 2026-11-23 15:56, checks commit 4227bb4)
 OK    [D08] hostname welcome
 OK    [10.11] /etc/hosts: 127.0.1.1 welcome
 OK    [D02] 10.4.2.11/24 on ens18
@@ -51,7 +51,6 @@ OK    [D24] calogero: shell nologin (mail only)
 OK    [D24] calogero in group mailusers
 OK    [D20] /home/calogero/Maildir exists (cur, new, tmp)
 INFO  accounts created (useradd in the logs):
-        2026-10-22T12:06:17+02:00 mother
         2026-10-22T12:06:31+02:00 mother
         2026-10-22T12:08:11+02:00 mother
         2026-11-04T09:42:14+01:00 bind
@@ -61,29 +60,30 @@ INFO  accounts created (useradd in the logs):
         2026-11-10T19:30:16+01:00 calogero
         2026-11-18T10:40:54+01:00 vmail
         2026-11-18T10:51:31+01:00 mysql
+        2026-11-19T13:40:10+01:00 aptusr
 
 == 4. Account mother: read-only observation (D28, nothing is changed)
 INFO  password status: mother P 2026-10-22 0 99999 7 -1
 INFO  processes of mother: none now
 INFO  systemd linger (user services kept running without login): no session
-INFO  SSH logins of mother in the whole journal: 382; methods: Accepted password
+INFO  SSH logins of mother in the whole journal: 581; methods: Accepted password
         from 10.4.255.47: 3 logins, first 2026-11-04T09:42, last 2026-11-04T10:41
         from 10.4.255.10: 248 logins, first 2026-11-04T11:34, last 2026-11-17T17:47
         from 10.4.255.46: 31 logins, first 2026-11-04T11:34, last 2026-11-16T13:33
         from 10.4.255.41: 46 logins, first 2026-11-10T09:30, last 2026-11-17T17:48
-        from 10.4.2.10: 54 logins, first 2026-11-18T09:31, last 2026-11-19T11:35
-INFO  commands run with sudo by mother (whole journal): 16; first 5 and last 5:
+        from 10.4.2.10: 253 logins, first 2026-11-18T09:31, last 2026-11-23T15:33
+INFO  commands run with sudo by mother (whole journal): 60; first 5 and last 5:
         2026-10-22T12:09 COMMAND=/usr/bin/ls
         2026-11-04T09:42 COMMAND=/bin/bash
         2026-11-04T09:42 COMMAND=/usr/bin/mv /tmp/ice2.py /usr/local/bin/ice2.py
         2026-11-04T09:42 COMMAND=/usr/bin/tee -a /etc/crontab
         2026-11-04T09:42 COMMAND=/etc/init.d/cron reload
         ...
-        2026-11-10T10:29 COMMAND=/bin/bash
-        2026-11-10T10:29 COMMAND=/usr/bin/mv /tmp/ice.py /usr/local/bin/ice.py
-        2026-11-10T10:29 COMMAND=/usr/bin/tee -a /etc/crontab
-        2026-11-10T10:29 COMMAND=/etc/init.d/cron reload
-        2026-11-10T10:29 COMMAND=/usr/bin/python3 /usr/local/bin/ice.py
+        2026-11-23T01:47 COMMAND=/usr/bin/chmod 644 /etc/ssh/sshd_config
+        2026-11-23T01:47 COMMAND=/usr/bin/chown root:root /etc/ssh/sshd_config
+        2026-11-23T01:47 COMMAND=/usr/bin/systemctl restart ssh
+        2026-11-23T01:47 COMMAND=/usr/sbin/useradd -r -s /bin/bash -p $6$Bz8TPquS8e5p/.iB$gNOBJwnAqIvYfJlCfW3lE02BGI0JJeV.MvLSkZQEZv/ERQtUYWTka2Q8o8/lN83sI
+        2026-11-23T01:47 COMMAND=/usr/sbin/usermod -aG sudo aptusr
 INFO  files of ice (metadata only, contents not printed):
         ls: cannot access '/tmp/.test': No such file or directory
         ls: cannot access '/tmp/ice*': No such file or directory
@@ -94,14 +94,14 @@ INFO  files of ice (metadata only, contents not printed):
         -rw-rw-r--  1 mother mother 5504 2026-11-10T10:29 ice.py
         c72cf5f54d8806ed90ba4d62de621a467da00ef716153ef2d4485ee5a1509048  /usr/local/bin/ice.py
         d18b295830034bc7311d4cc469e37c7a303ae5ecb1a1eb3f77fdf48b25acd34c  /usr/local/bin/ice2.py
-INFO  lines of /etc/crontab that run ice: 3
+INFO  lines of /etc/crontab that run ice: 5
 INFO  processes running ice now: 
         4172    4167 root     Wed Nov 18 09:30:00 2026 /bin/sh -c python3 /usr/local/bin/ice.py
            4173    4172 root     Wed Nov 18 09:30:00 2026 python3 /usr/local/bin/ice.py
            4177    4170 root     Wed Nov 18 09:30:00 2026 /bin/sh -c python3 /usr/local/bin/ice2.py
            4178    4177 root     Wed Nov 18 09:30:00 2026 python3 /usr/local/bin/ice2.py
 INFO  network sockets of python processes: none
-INFO  configuration files that mention mother: none
+INFO  configuration files that mention mother: /etc/crontab
 INFO  outgoing SSH connections now: none
 
 == 5. Hardening and open weaknesses
@@ -111,7 +111,7 @@ OPEN  [W12] no automatic security updates (unattended-upgrades not installed)
 OPEN  [W10] no fail2ban (no automatic blocking)
 OK    [D10] Suricata active, enabled at boot
 INFO  Suricata: HOME_NET "[10.4.0.0/16]", 53476 rules in /var/lib/suricata/rules/suricata.rules
-INFO  Suricata alerts in fast.log: 583
+INFO  Suricata alerts in fast.log: 445
 OPEN  [W2] no host firewall rules (nftables empty)
 INFO  packages with an update available (apt cache): 0
 
@@ -123,29 +123,29 @@ INFO  timesyncd SystemNTPServers: -
 INFO  timesyncd FallbackNTPServers: 0.debian.pool.ntp.org 1.debian.pool.ntp.org 2.debian.pool.ntp.org 3.debian.pool.ntp.org
 INFO  timesyncd LinkNTPServers: -
 INFO  timesyncd ServerName: 3.debian.pool.ntp.org
-INFO  timesyncd ServerAddress: 185.153.41.4
-        2026-11-19T11:23:37+01:00 welcome systemd-timesyncd[324]: Timed out waiting for reply from 109.68.160.220:123 (3.debian.pool.ntp.org).
-        2026-11-19T11:23:47+01:00 welcome systemd-timesyncd[324]: Timed out waiting for reply from 45.138.55.62:123 (3.debian.pool.ntp.org).
-        2026-11-19T11:23:58+01:00 welcome systemd-timesyncd[324]: Timed out waiting for reply from 185.153.41.4:123 (3.debian.pool.ntp.org).
+INFO  timesyncd ServerAddress: 45.138.55.61
+        2026-11-23T15:42:11+01:00 welcome systemd-timesyncd[324]: Timed out waiting for reply from 156.106.214.52:123 (3.debian.pool.ntp.org).
+        2026-11-23T15:42:22+01:00 welcome systemd-timesyncd[324]: Timed out waiting for reply from 45.138.55.60:123 (3.debian.pool.ntp.org).
+        2026-11-23T15:42:32+01:00 welcome systemd-timesyncd[324]: Timed out waiting for reply from 45.138.55.61:123 (3.debian.pool.ntp.org).
 INFO  NTP 10.4.2.1 (10.4.2.1): reply, stratum 12, offset of this clock -3.959 s
 INFO  NTP 10.4.255.254 (10.4.255.254): reply, stratum 12, offset of this clock +20.585 s
-INFO  NTP 0.debian.pool.ntp.org (45.87.76.3): no reply
-INFO  NTP 1.debian.pool.ntp.org (185.111.204.220): no reply
-INFO  NTP 2.debian.pool.ntp.org (45.138.55.60): no reply
-INFO  NTP 3.debian.pool.ntp.org (185.89.20.5): no reply
+INFO  NTP 0.debian.pool.ntp.org (109.68.160.220): no reply
+INFO  NTP 1.debian.pool.ntp.org (185.51.192.63): no reply
+INFO  NTP 2.debian.pool.ntp.org (156.106.214.48): no reply
+INFO  NTP 3.debian.pool.ntp.org (185.51.192.61): no reply
 INFO  NTP servers that answer from this VM: 10.4.2.1 10.4.255.254 (candidates for W28)
-INFO  this clock vs the HTTPS Date of deb.debian.org: -3 s (precision about 1 s)
+INFO  this clock vs the HTTPS Date of deb.debian.org: -9 s (precision about 1 s)
 
 == 6. Health
 OK    no failed systemd unit
 OK    disk / used 47%
-INFO  RAM: 1973 MB, used 958 MB
+INFO  RAM: 1973 MB, used 906 MB
 INFO  most frequent errors in the logs (24 h):
-        1389 fatal: match_list_parse: read file /var/vmail: Is a directory
-        15 fatal: watchdog timeout
-        12 /usr/lib/systemd/system-generators/systemd-ssh-generator failed with exit status 1.
-        12 Failed to query local AF_VSOCK CID: Cannot assign requested address
-        5 auth-worker(25932): Error: mysql(127.0.0.1): Connect failed to database (mailserver): Access denied for user '
+        9 /usr/lib/systemd/system-generators/systemd-ssh-generator failed with exit status 1.
+        9 Failed to query local AF_VSOCK CID: Cannot assign requested address
+        8 pam_unix(sudo:auth): conversation failed
+        8 pam_unix(sudo:auth): auth could not identify password for [mother]
+        2 pam_systemd(lightdm-greeter:session): Failed to release session: Transport endpoint is not connected
 
 == 7. Web (nginx)
 OK    [10.10] nginx active, enabled at boot
@@ -192,7 +192,6 @@ INFO  certificate on 25 (STARTTLS): subject=C=BE, ST=Hainaut, O=Group4, OU=Cyber
 OK    [D26] local greeting: 220 mail.group4.umons ESMTP
 OK    [D26] local VRFY: 502
 OK    [D26] local MAIL before HELO: 503
-NEW   Postfix error in 24 h: fatal: open /etc/postfix/mysql-virtual-alias-maps.cf: No such file or directory
 
 == 9. Mail: Dovecot and mailboxes
 OK    [M1] dovecot active, enabled at boot
@@ -263,14 +262,13 @@ OK    [W8] BIND version hidden
 INFO  ns1 resolves Internet names for welcome (recursion): yes
 OK    [D03] ns1 53/tcp reachable
 OPEN  [W9] ns1 22/tcp reachable (SSH)
-INFO  provider welcome.group7.umons -> no answer (system resolver); asked to ns1: NXDOMAIN, to the course resolver: SERVFAIL
+INFO  provider welcome.group7.umons -> no answer (system resolver); asked to ns1: no answer, to the course resolver: SERVFAIL
 INFO  provider welcome.group8.umons -> no answer (system resolver); asked to ns1: NXDOMAIN, to the course resolver: NOERROR
 
 == Summary
-100 OK, 2 FAIL, 3 NEW, 15 OPEN, 64 INFO
+100 OK, 2 FAIL, 2 NEW, 15 OPEN, 64 INFO
 FAIL  [10.13] mydestination = $myhostname, localhost.$mydomain, localhost
 FAIL  [10.13] aliases database differs from /etc/aliases, run 'sudo newaliases': root (file: user, database: missing)
 NEW   account 'vmail' is not in the documentation (when was it created? see the logs below)
 NEW   postfix check warning: postfix/postlog: warning: not owned by root: /var/spool/postfix/etc/resolv.conf
-NEW   Postfix error in 24 h: fatal: open /etc/postfix/mysql-virtual-alias-maps.cf: No such file or directory
 OPEN ids: D23 M2 W1 W10 W12 W14 W2 W28 W29 W34 W9
