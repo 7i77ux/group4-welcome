@@ -29,6 +29,8 @@ header-includes: |
     .note { border-left: 4px solid #1d4c9c; }
     .later { background: #f4f6f8; color: #5f6b78; }
     .footer { color: #5f6b78; font-size: .85em; border-top: 1px solid #dde2e7; margin-top: 2.5em; padding-top: .8em; }
+    a.button { display: inline-block; background: #1d4c9c; color: #fff; text-decoration: none; border-radius: 6px; padding: .3em .9em; font-size: .9em; margin: .3em 0; }
+    .fp { font-family: monospace; font-size: .8em; word-break: break-all; background: #eef1f5; padding: .1em .3em; }
   </style>
   ```
 ---
@@ -48,7 +50,7 @@ Address
 :   `name@group4.umons`
 
 User name
-:   your account name, without `@group4.umons`
+:   your full address, `name@group4.umons`
 
 Password
 :   the one we gave you (normal password)
@@ -75,7 +77,7 @@ Security
 
 [Not available yet]{.wait}
 
-Sending from your mail client opens together with our certificate from the course authority.
+Sending from your mail client (SMTP, port 587) is not open yet.
 :::
 
 ::::
@@ -83,9 +85,15 @@ Sending from your mail client opens together with our certificate from the cours
 ::: {.card .note}
 ### Certificate
 
-Today the mail server uses a temporary certificate (`CN=debian`): the first time you connect, your mail client asks you to accept it.
+Our website (HTTPS) and our mail server use a certificate signed by the certificate authority of the course (*Simply The Best*). Import this authority once in your mail client and in your browser:
 
-We have asked the certificate authority of the course for our own certificate. Once it is installed, this page will tell you how to trust it, and the warning disappears.
+[Download the course authority](course-root-ca.pem){.button}
+
+After the import, check that its SHA-256 fingerprint is exactly:\
+[CD:B8:69:AE:E5:49:74:CB:28:C5:C9:A2:6B:13:29:D8:7D:B7:D2:41:DE:3C:2C:CB:6C:63:D3:A8:F9:32:8D:02]{.fp}
+
+Thunderbird: Settings → Privacy & Security → Manage Certificates → Authorities → Import, choose the file, tick "This certificate can identify websites", OK.\
+Firefox: Settings → Privacy & Security → View Certificates → Authorities → Import, tick "Trust this CA to identify websites", OK.
 :::
 
 :::: {.cards}
@@ -93,21 +101,24 @@ We have asked the certificate authority of the course for our own certificate. O
 ::: {.card}
 ### Ask for an account
 
-Accounts are created by our administrator. Write to `calogero@group4.umons`.
+Accounts are created by our administrator. The button prepares the request in your mail client:
+
+[Request an account](mailto:calogero@group4.umons?subject=Account%20request&body=Company%3A%20%0AName%3A%20%0AWished%20address%3A%20____%40group4.umons){.button}
+
+We create the account and contact you.
 :::
 
 ::: {.card}
 ### Service status
 
-[Website (HTTP): online]{.ok}\
+[Website (HTTP and HTTPS): online]{.ok}\
 [Receiving mail from every provider (SMTP, port 25): online]{.ok}\
 [Reading your mailbox (IMAP over TLS, port 993): online]{.ok}\
-[Sending from your mail client (port 587): not yet]{.wait}\
-[Website over HTTPS: not yet]{.wait}
+[Sending from your mail client (port 587): not yet]{.wait}
 :::
 
 ::::
 
 ::: {.footer}
-Group 4 · `group4.umons` · Last update: 2026-11-18
+Group 4 · `group4.umons` · Last update: 2026-11-24
 :::
