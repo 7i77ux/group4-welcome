@@ -9,6 +9,7 @@ Scripts that CHANGE a VM, one fix at a time: current state, reason, confirmation
 | welcome | `sudo sh fixes/mail_users.sh` | Mail accounts of the virtual mailboxes: `list`, `add <name>`, `activate`, `disable`, `passwd` |
 | welcome | `sudo sh fixes/cert.sh` | Course certificate. Part A: key and request checked (CN `welcome.group4.umons`, names welcome + mail), request put in `certs/group4.csr` for the teacher. Part B, once the signed certificate is in `certs/` (pushed from the laptop): checks (course CA, chain, our key, expiry, names), files in `/etc/ssl/group4`, Postfix 25, Dovecot 993, nginx 443 (new site `welcome-ssl`, 80 unchanged), TLS tests. The forward of 443 on pfSense is done by hand (printed at the end) |
 | welcome | `sudo sh fixes/fix_suricata.sh` | Repair of Suricata (card of the default route, `HOME_NET`, rules folder, rules, `suricata -T`, start, test alert) |
+| both | `sudo sh ~/Desktop/group4-welcome/fixes/cleanup_repo.sh` | Removes the repo from the VM: the clone folder, the push key and the SSH alias of GitHub, the GitHub host keys, stored git credentials, the outputs of the scripts outside the clone. Keeps the evidence of ice, the backups of the fixes and the published page. The deploy key must also be removed on GitHub |
 | ns1 | `sudo sh fixes/fix_dns_serial.sh` | Raise the serial of `group4.umons` and `2.4.10.in-addr.arpa` |
 
 Manual steps of every fix: DOCUMENTATION.md section 10.
