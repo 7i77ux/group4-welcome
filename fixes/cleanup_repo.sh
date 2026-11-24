@@ -11,7 +11,7 @@
 # Deploy keys): only that cuts the access of a key already copied (ice runs as root on both VMs).
 # The repo stays public: a VM can still read it with git clone over HTTPS, but no longer write to it.
 # Run on each VM:  sudo sh ~/Desktop/group4-welcome/fixes/cleanup_repo.sh
-# Manual steps: DOCUMENTATION.md 10.29.
+# Manual steps: DOCUMENTATION.md 10.28.
 set -u
 [ "$(id -u)" = 0 ] || { echo "Run it with sudo: sudo sh $0"; exit 1; }
 if { [ "$(hostname)" = welcome ] || ip -4 -o addr show | grep -qE ' 10\.4\.(255|2)\.11/'; }; then VM=welcome
