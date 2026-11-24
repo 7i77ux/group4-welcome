@@ -15,6 +15,8 @@ command -v pandoc >/dev/null || { apt-get update && apt-get install -y pandoc; }
 # 2. page
 mkdir -p /var/www/welcome
 pandoc "$SRC/index.md" -s -o /var/www/welcome/index.html
+# root certificate of the course CA, offered for download on the page (public file)
+[ -f "$SRC/certs/course-root-ca.pem" ] && install -m 644 "$SRC/certs/course-root-ca.pem" /var/www/welcome/course-root-ca.pem
 
 # 3. nginx site (default site disabled; its file stays in sites-available)
 cat > /etc/nginx/sites-available/welcome <<'EOF'
