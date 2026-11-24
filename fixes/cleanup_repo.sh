@@ -32,7 +32,11 @@ ask() { printf '%s [y/N] ' "$1"; read -r a; [ "$a" = y ] || [ "$a" = Y ]; }
 CLONES=$(find /home /root /opt /srv -maxdepth 5 -type d -name .git 2>/dev/null | while read -r d; do
     d=${d%/.git}
     case "$(git -c safe.directory='*' -C "$d" config --get remote.origin.url 2>/dev/null)" in *7i77ux/*) echo "$d" ;; esac
-done)
+done
+# also copies or broken clones named group4-welcome (welcome had ~/group4-welcome from 2026-11-10, no valid .git)
+find /home /root -maxdepth 4 -type d -name group4-welcome 2>/dev/null | while read -r d; do [ -d "$d/.git" ] || [ -f "$d/deploy.sh" ] && echo "$d"; done
+)
+CLONES=$(echo "$CLONES" | sort -u)
 KEYS=$(grep -lsF 'group4-welcome push' /home/*/.ssh/*.pub /root/.ssh/*.pub 2>/dev/null | while read -r p; do echo "${p%.pub} $p"; done)
 CONFS=$(grep -lsE '^Host[[:space:]]+github-welcome([[:space:]]|$)' /home/*/.ssh/config /root/.ssh/config 2>/dev/null)
 KNOWN=$(for f in /home/*/.ssh/known_hosts /root/.ssh/known_hosts; do
@@ -70,7 +74,7 @@ if [ -z "$CLONES" ]; then
 else
     for d in $CLONES; do
         case "$d" in /home/*/*|/root/*|/opt/*|/srv/*) ;; *) echo "   SKIPPED $d (unexpected place)"; continue ;; esac
-        [ -d "$d/.git" ] || { echo "   SKIPPED $d (not a git clone)"; continue; }
+        [ -d "$d/.git" ] || [ -f "$d/deploy.sh" ] || { echo "   SKIPPED $d (not a copy of the repo)"; continue; }
         n=$(git -c safe.directory='*' -C "$d" status --porcelain 2>/dev/null | grep -vc '^?? results/')
         s=$(git -c safe.directory='*' -C "$d" stash list 2>/dev/null | wc -l)
         [ "$n" -gt 0 ] || [ "$s" -gt 0 ] && echo "   WARN $d: $n file(s) changed by hand and $s stash(es) are lost with the folder:" \
