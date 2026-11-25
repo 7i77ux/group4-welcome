@@ -42,6 +42,8 @@ Group 4 gives the companies of the umons network addresses **@group4.umons**. Ma
 
 ## Configure your mail client
 
+New customer? Follow the guide, step by step: [How to join Group 4 Mail](join.html){.button}
+
 :::: {.cards}
 
 ::: {.card}
@@ -114,7 +116,7 @@ Accounts are created by our administrator. The button prepares the request in yo
 
 [Request an account](mailto:calogero@group4.umons?subject=Account%20request&body=Company%3A%20%0AName%3A%20%0AWished%20address%3A%20____%40group4.umons){.button}
 
-We create the account and contact you.
+We create the account and contact you. All the steps: [step-by-step guide](join.html).
 :::
 
 ::: {.card}
