@@ -17,7 +17,8 @@ header-includes: |
     .subtitle { margin-top: 0; color: #5f6b78; }
     h2 { color: #1d4c9c; margin-top: 1.8em; }
     .badge { display: inline-block; font-size: .8em; color: #5f6b78; background: #fff; border: 1px solid #dde2e7; border-radius: 1em; padding: .1em .8em; }
-    .badge::before, .wait::before { content: "\25CF\00A0"; color: #c98a00; }
+    .wait::before { content: "\25CF\00A0"; color: #c98a00; }
+    .badge::before { content: "\25CF\00A0"; color: #2e7d32; }
     .ok::before { content: "\25CF\00A0"; color: #2e7d32; }
     .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(13em, 1fr)); gap: 1em; margin: 1em 0; }
     .card { background: #fff; border: 1px solid #dde2e7; border-radius: 8px; padding: .9em 1.1em; }
@@ -35,7 +36,7 @@ header-includes: |
   ```
 ---
 
-[Service being set up]{.badge}
+[Service online]{.badge}
 
 Group 4 gives the companies of the umons network addresses **@group4.umons**. Mail sent from any provider of the network arrives in your mailbox, and you read it with your usual mail client (Thunderbird or any IMAP client).
 
@@ -72,12 +73,20 @@ Security
 :   SSL/TLS
 :::
 
-::: {.card .later}
+::: {.card}
 ### Outgoing server
 
-[Not available yet]{.wait}
+Server
+:   `mail.group4.umons`
 
-Sending from your mail client (SMTP, port 587) is not open yet.
+Protocol
+:   SMTP
+
+Port
+:   587
+
+Security
+:   STARTTLS
 :::
 
 ::::
@@ -114,11 +123,11 @@ We create the account and contact you.
 [Website (HTTP and HTTPS): online]{.ok}\
 [Receiving mail from every provider (SMTP, port 25): online]{.ok}\
 [Reading your mailbox (IMAP over TLS, port 993): online]{.ok}\
-[Sending from your mail client (port 587): not yet]{.wait}
+[Sending from your mail client (SMTP with login, port 587): online]{.ok}
 :::
 
 ::::
 
 ::: {.footer}
-Group 4 · `group4.umons` · Last update: 2026-11-24
+Group 4 · `group4.umons` · Last update: 2026-11-25
 :::
