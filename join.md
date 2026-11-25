@@ -42,7 +42,7 @@ header-includes: |
   ```
 ---
 
-[← Back to the main page](index.html)
+[← Back to the main page](index.html) · [Download this guide as PDF](Group4_How_to_join.pdf)
 
 This guide explains, step by step, how to get a mail address `@group4.umons` and use it in **Thunderbird**. It takes about 15 minutes. Do the steps **in order**.
 

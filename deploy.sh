@@ -16,6 +16,7 @@ command -v pandoc >/dev/null || { apt-get update && apt-get install -y pandoc; }
 mkdir -p /var/www/welcome
 pandoc "$SRC/index.md" -s -o /var/www/welcome/index.html
 [ -f "$SRC/join.md" ] && pandoc "$SRC/join.md" -s -o /var/www/welcome/join.html
+[ -f "$SRC/docs/Group4_How_to_join.pdf" ] && install -m 644 "$SRC/docs/Group4_How_to_join.pdf" /var/www/welcome/Group4_How_to_join.pdf
 # root certificate of the course CA, offered for download on the page (public file)
 [ -f "$SRC/certs/course-root-ca.pem" ] && install -m 644 "$SRC/certs/course-root-ca.pem" /var/www/welcome/course-root-ca.pem
 
